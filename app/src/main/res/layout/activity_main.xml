@@ -12,15 +12,16 @@
         android:gravity="center_horizontal"
         android:paddingLeft="22dp"
         android:paddingRight="22dp"
-        android:paddingTop="28dp"
+        android:paddingTop="24dp"
         android:paddingBottom="28dp">
 
         <ImageView
-            android:layout_width="108dp"
-            android:layout_height="108dp"
-            android:src="@drawable/ic_yom"
+            android:id="@+id/imgLogo"
+            android:layout_width="132dp"
+            android:layout_height="132dp"
+            android:scaleType="fitCenter"
             android:contentDescription="Logo Yom Dental"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="6dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -37,7 +38,7 @@
             android:textSize="15sp"
             android:textColor="#2C7E86"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="22dp" />
 
         <TextView
             android:id="@+id/btnSteiner"
@@ -45,7 +46,7 @@
             android:layout_height="86dp"
             android:gravity="center_vertical"
             android:background="@drawable/card_steiner"
-            android:text="ANÁLISIS DE STEINER\nSolo ángulos cefalométricos"
+            android:text="ANÁLISIS DE STEINER&#10;Solo ángulos cefalométricos"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="17sp"
@@ -62,7 +63,7 @@
             android:layout_height="86dp"
             android:gravity="center_vertical"
             android:background="@drawable/card_vertebral"
-            android:text="ANÁLISIS VERTEBRAL / CRANEOCERVICAL\nSolo mediciones angulares"
+            android:text="ANÁLISIS VERTEBRAL / CRANEOCERVICAL&#10;Solo mediciones angulares"
             android:textColor="#15383D"
             android:textStyle="bold"
             android:textSize="16sp"
@@ -91,9 +92,9 @@
                 android:layout_marginBottom="8dp" />
 
             <ImageView
+                android:id="@+id/imgMascot"
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:src="@drawable/mascot_preview"
+                android:layout_height="190dp"
                 android:scaleType="centerCrop"
                 android:contentDescription="Mascota Yom Dental" />
         </LinearLayout>
@@ -101,7 +102,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="La app no incluye medidas lineales en mm o cm."
+            android:text="Solo mediciones angulares · sin medidas lineales"
             android:gravity="center"
             android:textSize="13sp"
             android:textColor="#645B73"

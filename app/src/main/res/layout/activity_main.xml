@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="28dp"
+    android:background="#F5F6F8">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CefaloÁngulos"
+        android:textStyle="bold"
+        android:textSize="30sp"
+        android:textColor="#111111"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Seleccione el análisis"
+        android:textSize="17sp"
+        android:textColor="#555555"
+        android:layout_marginBottom="36dp" />
+
+    <Button
+        android:id="@+id/btnSteiner"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="ANÁLISIS DE STEINER"
+        android:textSize="17sp"
+        android:layout_marginBottom="18dp" />
+
+    <Button
+        android:id="@+id/btnVertebral"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="ANÁLISIS VERTEBRAL / CRANEOCERVICAL"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Solo mediciones angulares. No incluye medidas lineales en mm o cm."
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:layout_marginTop="32dp" />
+</LinearLayout>

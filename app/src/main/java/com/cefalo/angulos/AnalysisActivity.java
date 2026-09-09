@@ -1504,6 +1504,24 @@ public class AnalysisActivity extends Activity {
         );
         container.addView(intro);
 
+        TextView evidenceNotice = new TextView(this);
+        evidenceNotice.setText(resultsSafetyNotice());
+        evidenceNotice.setTextSize(12.5f);
+        evidenceNotice.setTextColor(0xFF5A4615);
+        evidenceNotice.setGravity(Gravity.CENTER);
+        evidenceNotice.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        evidenceNotice.setBackgroundResource(R.drawable.button_soft_mint_centered);
+        evidenceNotice.setPadding(dp(12), dp(10), dp(12), dp(10));
+
+        LinearLayout.LayoutParams evidenceLp =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+        evidenceLp.setMargins(0, 0, 0, dp(12));
+        evidenceNotice.setLayoutParams(evidenceLp);
+        container.addView(evidenceNotice);
+
         for (MeasurementDefinition def : definitions) {
             Double value =
                     measurementView.calculate(def);
@@ -1520,7 +1538,7 @@ public class AnalysisActivity extends Activity {
                             "%.1f°",
                             value
                     ) +
-                    "   ·   Norma: " +
+                    "   ·   Referencia: " +
                     def.normText +
                     "\n" +
                     def.diagnosis(value)
@@ -1607,7 +1625,7 @@ public class AnalysisActivity extends Activity {
                             def.name +
                             "\n" +
                             String.format(Locale.US, "%.2f mm", value) +
-                            "   ·   Norma: " +
+                            "   ·   Referencia: " +
                             linearNormText(def, value) +
                             "\n" +
                             linearDiagnosis(def, value)
@@ -1718,6 +1736,24 @@ public class AnalysisActivity extends Activity {
                 .show();
     }
 
+    private String resultsSafetyNotice() {
+        if ("AIRWAY".equals(mode)) {
+            return "Interpretación cefalométrica orientativa. La telerradiografía lateral es una imagen 2D tomada despierto y no puede confirmar ni excluir obstrucción de vía aérea o apnea del sueño. Los valores se comparan con referencias publicadas o, cuando se indica, con la tabla docente aportada.";
+        }
+
+        if ("LEVANDOSKI".equals(mode)) {
+            return "Interpretación orientativa para tamizaje de asimetría. La radiografía panorámica presenta magnificación y distorsión no uniformes; una discrepancia relevante debe correlacionarse clínicamente y confirmarse con un método apropiado cuando sea necesario.";
+        }
+
+        return "Interpretación cefalométrica orientativa. Los intervalos son referencias de análisis y poblaciones concretas; no sustituyen historia clínica, examen físico ni valoración profesional. Una sola medida no debe utilizarse como diagnóstico independiente.";
+    }
+
+    private boolean isProvidedAirwayTableReference(String name) {
+        return name.startsWith("AD1")
+                || name.startsWith("AD2")
+                || name.startsWith("AD3");
+    }
+
     private String linearSectionTitle() {
         if ("VERTEBRAL".equals(mode)) return "Medidas lineales · Rocabado";
         if ("LEVANDOSKI".equals(mode)) return "Medidas lineales · Levandoski";
@@ -1734,18 +1770,22 @@ public class AnalysisActivity extends Activity {
         }
 
         AirwayRef ref = airwayReference(def.name);
+
         if (ref == null) {
-            if (def.name.startsWith("AD1") || def.name.startsWith("AD2") || def.name.startsWith("AD3")) {
-                return "Tabla disponible para 6 y 16 años";
+            if (isProvidedAirwayTableReference(def.name)) {
+                return "Tabla docente aportada: referencia disponible solo para edades específicas";
             }
             return def.normText;
         }
 
         return String.format(
                 Locale.US,
-                "%.2f ± %.2f mm",
+                "%.2f ± %.2f mm%s",
                 ref.mean,
-                ref.sd
+                ref.sd,
+                isProvidedAirwayTableReference(def.name)
+                        ? " · tabla docente aportada"
+                        : " · referencia McNamara"
         );
     }
 
@@ -1758,46 +1798,58 @@ public class AnalysisActivity extends Activity {
         }
 
         AirwayRef ref = airwayReference(def.name);
+
+        if (isProvidedAirwayTableReference(def.name)) {
+            if (ref == null) {
+                return "Medida obtenida sin clasificación automática. Los valores AD1/AD2/AD3 conservan la tabla docente aportada, pero no se encontró evidencia suficiente para usarlos como umbrales diagnósticos individuales.";
+            }
+
+            double min = ref.mean - ref.sd;
+            double max = ref.mean + ref.sd;
+
+            String position =
+                    value < min
+                            ? "por debajo"
+                            : value > max
+                                    ? "por encima"
+                                    : "dentro";
+
+            return "La medida está " +
+                    position +
+                    " de ±1 DE de la referencia tabular aportada. " +
+                    "No debe interpretarse como diagnóstico de hipertrofia adenoidea, obstrucción ni apnea del sueño.";
+        }
+
         if (ref == null) {
-            if ((def.name.startsWith("AD1") || def.name.startsWith("AD2") || def.name.startsWith("AD3"))
-                    && !("6".equals(patientAge.trim()) || "16".equals(patientAge.trim()))) {
-                return "La tabla proporcionada solo incluye referencias a los 6 y 16 años; se muestra la medida sin clasificar.";
-            }
-
-            if ((def.name.startsWith("Faringe superior") || def.name.startsWith("Faringe posterior"))
+            if ((def.name.startsWith("Faringe superior")
+                    || def.name.startsWith("Faringe posterior"))
                     && patientSex.trim().isEmpty()) {
-                return "Seleccione sexo en Datos / Guardar para aplicar la referencia correspondiente.";
+
+                return "Seleccione sexo en Datos / Guardar para mostrar la referencia de McNamara. La medida por sí sola no diagnostica obstrucción ni apnea del sueño.";
             }
 
-            return "Medida obtenida; no hay una referencia aplicable con los datos actuales.";
+            return "Medida obtenida; no hay una referencia aplicable con los datos actuales. No se realiza clasificación diagnóstica.";
         }
 
         double min = ref.mean - ref.sd;
         double max = ref.mean + ref.sd;
 
         if (value >= min && value <= max) {
-            return "Dentro del intervalo de referencia.";
+            return "Dentro de ±1 DE de la referencia cefalométrica de McNamara. Estar dentro del intervalo no descarta un trastorno respiratorio.";
         }
 
-        if (def.name.startsWith("Faringe superior")) {
-            return value > max
-                    ? "Tubo aéreo superior amplio."
-                    : "Tubo aéreo superior estrecho.";
-        }
-
-        if (def.name.startsWith("Faringe posterior")) {
-            return value > max
-                    ? "Valor aumentado: puede asociarse con localización anterior de la lengua o amígdalas grandes según la tabla proporcionada."
-                    : "Valor disminuido respecto a la referencia.";
-        }
-
-        return value > max
-                ? "Valor aumentado respecto a la referencia; la tabla lo relaciona con vía aérea funcionalmente adecuada."
-                : "Valor disminuido respecto a la referencia; la tabla lo relaciona con vía aérea funcionalmente inadecuada.";
+        return (
+                value < min
+                        ? "Por debajo"
+                        : "Por encima"
+        ) +
+                " de ±1 DE de la referencia cefalométrica de McNamara. " +
+                "Una telerradiografía lateral 2D no diagnostica obstrucción, apnea del sueño ni hipertrofia amigdalina/adenoidea.";
     }
 
     private AirwayRef airwayReference(String name) {
         int age;
+
         try {
             age = Integer.parseInt(patientAge.trim());
         } catch (Exception e) {
@@ -1807,33 +1859,41 @@ public class AnalysisActivity extends Activity {
         boolean female = "Femenino".equals(patientSex);
         boolean male = "Masculino".equals(patientSex);
 
+        // AD1/AD2/AD3: se conservan únicamente como referencias de la tabla
+        // docente aportada por la usuaria; no se usan para diagnóstico.
         if (name.startsWith("AD1")) {
             if (!female && !male) return null;
+
             if (age == 6) {
                 return female
                         ? new AirwayRef(20.66, 5.50)
                         : new AirwayRef(14.74, 5.69);
             }
+
             if (age == 16) {
                 return female
                         ? new AirwayRef(26.48, 4.45)
                         : new AirwayRef(26.32, 4.28);
             }
+
             return null;
         }
 
         if (name.startsWith("AD2")) {
             if (!female && !male) return null;
+
             if (age == 6) {
                 return female
                         ? new AirwayRef(15.89, 3.53)
                         : new AirwayRef(14.93, 3.52);
             }
+
             if (age == 16) {
                 return female
                         ? new AirwayRef(22.44, 4.26)
                         : new AirwayRef(21.78, 4.67);
             }
+
             return null;
         }
 
@@ -1843,15 +1903,17 @@ public class AnalysisActivity extends Activity {
             return null;
         }
 
+        // McNamara: mujeres primero en la tabla original (17.4±3.4;
+        // 11.3±3.3) y hombres (17.4±4.3; 13.5±4.3).
         if (name.startsWith("Faringe superior")) {
-            if (male) return new AirwayRef(17.4, 3.4);
-            if (female) return new AirwayRef(17.4, 4.3);
+            if (male) return new AirwayRef(17.4, 4.3);
+            if (female) return new AirwayRef(17.4, 3.4);
             return null;
         }
 
         if (name.startsWith("Faringe posterior")) {
-            if (male) return new AirwayRef(13.5, 3.3);
-            if (female) return new AirwayRef(11.3, 4.3);
+            if (male) return new AirwayRef(13.5, 4.3);
+            if (female) return new AirwayRef(11.3, 3.3);
             return null;
         }
 
@@ -1870,6 +1932,7 @@ public class AnalysisActivity extends Activity {
 
     private void addTweedSummary(LinearLayout container) {
         MeasurementDefinition fmaDef = null;
+
         for (MeasurementDefinition def : definitions) {
             if ("FMA".equals(def.name)) {
                 fmaDef = def;
@@ -1878,39 +1941,42 @@ public class AnalysisActivity extends Activity {
         }
 
         if (fmaDef == null) return;
+
         Double fma = measurementView.calculate(fmaDef);
         if (fma == null) return;
 
-        String prognosis;
-        if (fma >= 16 && fma <= 20) {
-            prognosis = "Pronóstico bueno";
-        } else if (fma >= 21 && fma <= 29) {
-            prognosis = "Pronóstico excelente";
-        } else if (fma >= 30 && fma <= 35) {
-            prognosis = "Pronóstico regular";
-        } else if (fma > 35) {
-            prognosis = "Pronóstico desfavorable";
+        String description;
+
+        if (fma < 20) {
+            description = "FMA bajo respecto al intervalo clásico.";
+        } else if (fma <= 30) {
+            description = "FMA dentro del intervalo central clásico de Tweed.";
         } else {
-            prognosis = "FMA fuera de los intervalos de pronóstico mostrados en la tabla proporcionada";
+            description = "FMA elevado respecto al intervalo central clásico.";
         }
 
         TextView summary = new TextView(this);
+
         summary.setText(
-                "Pronóstico de Tweed según FMA\n" +
-                String.format(Locale.US, "FMA %.1f° · %s", fma, prognosis)
+                "Triángulo de Tweed · referencia histórica\n" +
+                String.format(Locale.US, "FMA %.1f° · %s", fma, description) +
+                "\nFMA, FMIA e IMPA deben interpretarse en conjunto; no se muestra un «pronóstico» clínico automático."
         );
-        summary.setTextSize(14f);
+
+        summary.setTextSize(13.5f);
         summary.setTextColor(0xFF5B3FA4);
         summary.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         summary.setGravity(Gravity.CENTER);
         summary.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
-        summary.setBackgroundResource(R.drawable.button_soft_mint);
+        summary.setBackgroundResource(R.drawable.button_soft_mint_centered);
         summary.setPadding(dp(12), dp(10), dp(12), dp(10));
 
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
+        LinearLayout.LayoutParams lp =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
         lp.setMargins(0, dp(4), 0, dp(10));
         summary.setLayoutParams(lp);
         container.addView(summary);
@@ -1920,7 +1986,8 @@ public class AnalysisActivity extends Activity {
         TextView note = new TextView(this);
         note.setText(
                 "Líneas medias: la tabla proporcionada indica observación de coincidencia, no una medida en mm. " +
-                "Por eso YomCeph no asigna un valor ni un umbral automático a esa fila."
+                "YomCeph no asigna un umbral automático. Las panorámicas tienen magnificación y distorsión no uniformes; " +
+                "las diferencias derecha/izquierda son orientativas y una asimetría relevante debe confirmarse clínicamente o con imagen apropiada."
         );
         note.setTextSize(12.5f);
         note.setTextColor(0xFF4A4652);
@@ -2089,9 +2156,9 @@ public class AnalysisActivity extends Activity {
     private Bitmap buildReportBitmap() {
         int width = 1400;
         int margin = 70;
-        int titleHeight = 275;
+        int titleHeight = 390;
         int rowHeight = 220;
-        int footer = 70;
+        int footer = 125;
 
         int linearCount =
                 (!linearDefinitions.isEmpty() &&
@@ -2323,6 +2390,21 @@ public class AnalysisActivity extends Activity {
             );
         }
 
+        Paint safetyPaint =
+                new Paint(Paint.ANTI_ALIAS_FLAG);
+        safetyPaint.setColor(Color.rgb(95, 73, 25));
+        safetyPaint.setTextSize(23f);
+
+        drawWrappedText(
+                canvas,
+                resultsSafetyNotice(),
+                margin,
+                285,
+                width - margin,
+                safetyPaint,
+                30f
+        );
+
         int y = titleHeight;
 
         for (MeasurementDefinition def : definitions) {
@@ -2369,7 +2451,7 @@ public class AnalysisActivity extends Activity {
             String valueLine =
                     String.format(
                             Locale.US,
-                            "%.1f°   ·   Norma: %s",
+                            "%.1f°   ·   Referencia: %s",
                             value,
                             def.normText
                     );
@@ -2441,7 +2523,7 @@ public class AnalysisActivity extends Activity {
                 String valueLine =
                         String.format(
                                 Locale.US,
-                                "%.2f mm   ·   Norma: %s",
+                                "%.2f mm   ·   Referencia: %s",
                                 value,
                                 linearNormText(def, value)
                         );
@@ -2483,7 +2565,7 @@ public class AnalysisActivity extends Activity {
         footerPaint.setTextSize(24f);
 
         canvas.drawText(
-                "Resultados calculados a partir de los puntos marcados; las medidas lineales requieren calibración de la radiografía.",
+                "Referencia educativa: interpretar junto con historia clínica y exploración. Una medida cefalométrica aislada no equivale a un diagnóstico.",
                 margin,
                 height - 28,
                 footerPaint

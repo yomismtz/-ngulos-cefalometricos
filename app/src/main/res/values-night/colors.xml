@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="yom_icon_bg">#8C6DDF</color>
+    <color name="brand_purple">#CDBBFF</color>
+    <color name="brand_teal">#7ADDE1</color>
+    <color name="mint_text">#D8FAF4</color>
+    <color name="text_primary">#F1EDF7</color>
+    <color name="text_secondary">#C4BCCF</color>
+    <color name="surface">#FF1A1721</color>
+    <color name="surface_points">#FF211C2A</color>
+    <color name="surface_help">#FF172426</color>
+    <color name="card_stroke">#5A4C72</color>
+    <color name="points_stroke">#5E5272</color>
+    <color name="soft_purple">#2C2440</color>
+    <color name="soft_purple_stroke">#715C9C</color>
+    <color name="soft_mint">#17383A</color>
+    <color name="soft_mint_stroke">#377D7F</color>
+    <color name="home_start">#100D17</color>
+    <color name="home_center">#12171B</color>
+    <color name="home_end">#0D1A1B</color>
+    <color name="status_bar">#100D17</color>
+    <color name="nav_bar">#0D1A1B</color>
+    <color name="white">#FFFFFF</color>
+    <color name="hero_subtitle">#E8FFFB</color>
+    <color name="analysis_panel">#07070B</color>
+    <color name="analysis_panel_stroke">#8065B8</color>
+    <color name="warning_text">#FFD886</color>
+</resources>

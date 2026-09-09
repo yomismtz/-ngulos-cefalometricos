@@ -1,6 +1,5 @@
 package com.cefalo.angulos;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -11,7 +10,9 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class InfoActivity extends Activity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class InfoActivity extends AppCompatActivity {
 
     private static final String PRIVACY_URL =
             "https://github.com/yomismtz/-ngulos-cefalometricos/blob/main/PRIVACY_POLICY.md";
@@ -31,14 +32,14 @@ public class InfoActivity extends Activity {
         header.setPadding(dp(10), dp(10), dp(10), dp(10));
         header.setBackgroundResource(R.drawable.header_gradient);
 
-        TextView back = button("←", R.drawable.button_soft_purple_centered, 0xFF5B3FA4);
+        TextView back = button("←", R.drawable.button_soft_purple_centered, getColor(R.color.brand_purple));
         back.setTextSize(24f);
         back.setOnClickListener(v -> finish());
         header.addView(back, new LinearLayout.LayoutParams(dp(48), dp(48)));
 
         TextView title = new TextView(this);
         title.setText("Información y privacidad");
-        title.setTextColor(0xFFFFFFFF);
+        title.setTextColor(getColor(R.color.white));
         title.setTextSize(18f);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setGravity(Gravity.CENTER);
@@ -54,7 +55,7 @@ public class InfoActivity extends Activity {
 
         TextView brand = new TextView(this);
         brand.setText("YomCeph\nTraza. Mide. Aprende.");
-        brand.setTextColor(0xFF5B3FA4);
+        brand.setTextColor(getColor(R.color.brand_purple));
         brand.setTextSize(22f);
         brand.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         brand.setGravity(Gravity.CENTER);
@@ -90,7 +91,7 @@ public class InfoActivity extends Activity {
         TextView privacy = button(
                 "VER POLÍTICA DE PRIVACIDAD",
                 R.drawable.button_primary_centered,
-                0xFFFFFFFF
+                getColor(R.color.white)
         );
         privacy.setTextSize(13f);
         privacy.setOnClickListener(v -> {
@@ -119,7 +120,7 @@ public class InfoActivity extends Activity {
     private TextView section(String heading, String body) {
         TextView view = new TextView(this);
         view.setText(heading + "\n" + body);
-        view.setTextColor(0xFF3D3946);
+        view.setTextColor(getColor(R.color.text_primary));
         view.setTextSize(14f);
         view.setLineSpacing(0f, 1.08f);
         view.setBackgroundResource(R.drawable.card_white);

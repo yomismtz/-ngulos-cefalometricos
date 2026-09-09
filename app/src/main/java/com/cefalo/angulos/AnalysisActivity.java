@@ -1,7 +1,6 @@
 package com.cefalo.angulos;
 
-import android.app.Activity;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,10 +9,15 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.pdf.PdfDocument;
 import android.graphics.Typeface;
 import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.ViewGroup;
@@ -26,25 +30,31 @@ import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-public class AnalysisActivity extends Activity {
+public class AnalysisActivity extends AppCompatActivity {
 
     private static final int REQ_IMAGE = 1001;
     private static final int REQ_SAVE_ANNOTATED = 1002;
     private static final int REQ_SAVE_REPORT = 1003;
+    private static final int REQ_SAVE_PDF = 1004;
 
     private MeasurementView measurementView;
     private TextView txtProgress;
     private TextView txtInstruction;
     private TextView txtStudyInfo;
+    private TextView txtAutosaveStatus;
     private TextView btnCalculate;
     private TextView btnLock;
     private TextView btnCalibrate;
@@ -68,6 +78,9 @@ public class AnalysisActivity extends Activity {
     private SavedStudyStore.StudyData restoredStudy;
     private boolean restoring = false;
     private Bitmap pendingSaveBitmap;
+    private Bitmap pendingPdfBitmap;
+    private Handler autosaveHandler;
+    private Runnable autosaveRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,6 +158,14 @@ public class AnalysisActivity extends Activity {
         txtProgress = findViewById(R.id.txtProgress);
         txtInstruction = findViewById(R.id.txtInstruction);
         txtStudyInfo = findViewById(R.id.txtStudyInfo);
+        txtAutosaveStatus = findViewById(R.id.txtAutosaveStatus);
+
+        autosaveHandler = new Handler(Looper.getMainLooper());
+        autosaveRunnable = () -> {
+            if (saveStudy(true)) {
+                updateAutosaveStatus(R.string.autosave_saved);
+            }
+        };
         btnCalculate = findViewById(R.id.btnCalculate);
         btnLock = findViewById(R.id.btnLock);
         btnCalibrate = findViewById(R.id.btnCalibrate);
@@ -219,8 +240,21 @@ public class AnalysisActivity extends Activity {
 
     @Override
     protected void onPause() {
+        if (autosaveHandler != null && autosaveRunnable != null) {
+            autosaveHandler.removeCallbacks(autosaveRunnable);
+        }
+        if (saveStudy(true)) {
+            updateAutosaveStatus(R.string.autosave_saved);
+        }
         super.onPause();
-        saveStudy(true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (autosaveHandler != null && autosaveRunnable != null) {
+            autosaveHandler.removeCallbacks(autosaveRunnable);
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -442,7 +476,27 @@ public class AnalysisActivity extends Activity {
         updateLockButton();
 
         if (!restoring) {
-            saveStudy(true);
+            scheduleAutosave();
+        }
+    }
+
+    private void scheduleAutosave() {
+        if (autosaveHandler == null
+                || autosaveRunnable == null
+                || measurementView == null
+                || !measurementView.hasBitmap()
+                || imageUriString == null) {
+            return;
+        }
+
+        updateAutosaveStatus(R.string.autosave_saving);
+        autosaveHandler.removeCallbacks(autosaveRunnable);
+        autosaveHandler.postDelayed(autosaveRunnable, 650L);
+    }
+
+    private void updateAutosaveStatus(int textRes) {
+        if (txtAutosaveStatus != null) {
+            txtAutosaveStatus.setText(textRes);
         }
     }
 
@@ -522,25 +576,25 @@ public class AnalysisActivity extends Activity {
                 chip.setBackgroundResource(
                         R.drawable.chip_selected
                 );
-                chip.setTextColor(0xFF5B3FA4);
+                chip.setTextColor(getColor(R.color.brand_purple));
 
             } else if (placed) {
                 chip.setBackgroundResource(
                         R.drawable.button_soft_mint
                 );
-                chip.setTextColor(0xFF15383D);
+                chip.setTextColor(getColor(R.color.mint_text));
 
             } else {
                 chip.setBackgroundResource(
                         R.drawable.button_soft_purple
                 );
-                chip.setTextColor(0xFF5B3FA4);
+                chip.setTextColor(getColor(R.color.brand_purple));
             }
 
             ViewGroup.MarginLayoutParams lp =
                     new ViewGroup.MarginLayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
-                            dp(40)
+                            dp(48)
                     );
 
             lp.setMargins(0, 0, 0, 0);
@@ -673,7 +727,7 @@ public class AnalysisActivity extends Activity {
         );
 
         description.setTextSize(15f);
-        description.setTextColor(0xFF3D3946);
+        description.setTextColor(getColor(R.color.text_primary));
         description.setPadding(
                 0,
                 dp(8),
@@ -736,7 +790,7 @@ public class AnalysisActivity extends Activity {
             btnLock.setBackgroundResource(
                     R.drawable.button_soft_purple_centered
             );
-            btnLock.setTextColor(0xFF5B3FA4);
+            btnLock.setTextColor(getColor(R.color.brand_purple));
             return;
         }
 
@@ -747,14 +801,14 @@ public class AnalysisActivity extends Activity {
             btnLock.setBackgroundResource(
                     R.drawable.button_soft_mint_centered
             );
-            btnLock.setTextColor(0xFF15383D);
+            btnLock.setTextColor(getColor(R.color.mint_text));
 
         } else {
             btnLock.setText("BLOQ. PUNTO");
             btnLock.setBackgroundResource(
                     R.drawable.button_soft_purple_centered
             );
-            btnLock.setTextColor(0xFF5B3FA4);
+            btnLock.setTextColor(getColor(R.color.brand_purple));
         }
     }
 
@@ -994,7 +1048,7 @@ public class AnalysisActivity extends Activity {
     private TextView formLabel(String text) {
         TextView label = new TextView(this);
         label.setText(text);
-        label.setTextColor(0xFF5B3FA4);
+        label.setTextColor(getColor(R.color.brand_purple));
         label.setTypeface(
                 Typeface.DEFAULT,
                 Typeface.BOLD
@@ -1009,7 +1063,7 @@ public class AnalysisActivity extends Activity {
         return label;
     }
 
-    private void saveStudy(boolean silent) {
+    private boolean saveStudy(boolean silent) {
         if (measurementView == null
                 || !measurementView.hasBitmap()
                 || imageUriString == null) {
@@ -1022,7 +1076,7 @@ public class AnalysisActivity extends Activity {
                 ).show();
             }
 
-            return;
+            return false;
         }
 
         if (studyId == null) {
@@ -1065,6 +1119,8 @@ public class AnalysisActivity extends Activity {
                 study
         );
 
+        updateAutosaveStatus(R.string.autosave_saved);
+
         if (!silent) {
             Toast.makeText(
                     this,
@@ -1072,6 +1128,8 @@ public class AnalysisActivity extends Activity {
                     Toast.LENGTH_LONG
             ).show();
         }
+
+        return true;
     }
 
     private void promptCalibrationBeforePoints() {
@@ -1151,28 +1209,28 @@ public class AnalysisActivity extends Activity {
         TextView step = new TextView(this);
         step.setText("1. Localice una referencia de longitud conocida en la radiografía.");
         step.setTextSize(14f);
-        step.setTextColor(0xFF3D3946);
+        step.setTextColor(getColor(R.color.text_primary));
         step.setPadding(0, 0, 0, dp(8));
         content.addView(step);
 
         TextView step2 = new TextView(this);
         step2.setText("2. Toque un extremo y después el otro. Puede ser horizontal, vertical o diagonal.");
         step2.setTextSize(14f);
-        step2.setTextColor(0xFF3D3946);
+        step2.setTextColor(getColor(R.color.text_primary));
         step2.setPadding(0, 0, 0, dp(8));
         content.addView(step2);
 
         TextView step3 = new TextView(this);
         step3.setText("3. Después escribirá cuánto mide realmente en mm o cm.");
         step3.setTextSize(14f);
-        step3.setTextColor(0xFF3D3946);
+        step3.setTextColor(getColor(R.color.text_primary));
         step3.setPadding(0, 0, 0, dp(8));
         content.addView(step3);
 
         TextView note = new TextView(this);
         note.setText(calibrationInstructions());
         note.setTextSize(12.5f);
-        note.setTextColor(0xFF2C7E86);
+        note.setTextColor(getColor(R.color.brand_teal));
         note.setBackgroundResource(R.drawable.button_soft_mint);
         note.setPadding(dp(12), dp(10), dp(12), dp(10));
         content.addView(note);
@@ -1231,7 +1289,7 @@ public class AnalysisActivity extends Activity {
                 "Referencia marcada: " +
                 String.format(Locale.US, "%.1f píxeles", pixelDistance)
         );
-        info.setTextColor(0xFF5B3FA4);
+        info.setTextColor(getColor(R.color.brand_purple));
         info.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         info.setTextSize(14f);
         info.setGravity(Gravity.CENTER);
@@ -1242,7 +1300,7 @@ public class AnalysisActivity extends Activity {
         help.setText(
                 "Escriba la longitud REAL de la regla, calibrador o marcador que acaba de señalar."
         );
-        help.setTextColor(0xFF4A4652);
+        help.setTextColor(getColor(R.color.text_primary));
         help.setTextSize(13f);
         help.setGravity(Gravity.CENTER);
         help.setPadding(0, 0, 0, dp(8));
@@ -1545,7 +1603,7 @@ public class AnalysisActivity extends Activity {
                                 : " · " + patientSex
                 )
         );
-        heading.setTextColor(0xFF5B3FA4);
+        heading.setTextColor(getColor(R.color.brand_purple));
         heading.setTextSize(15f);
         heading.setTypeface(
                 Typeface.DEFAULT,
@@ -1565,7 +1623,7 @@ public class AnalysisActivity extends Activity {
                 "Puede cerrar esta ventana, desbloquear el trazado, corregir un punto y volver a calcular."
         );
         intro.setTextSize(13f);
-        intro.setTextColor(0xFF4A4652);
+        intro.setTextColor(getColor(R.color.text_primary));
         intro.setPadding(
                 0,
                 0,
@@ -1577,7 +1635,7 @@ public class AnalysisActivity extends Activity {
         TextView evidenceNotice = new TextView(this);
         evidenceNotice.setText(resultsSafetyNotice());
         evidenceNotice.setTextSize(12.5f);
-        evidenceNotice.setTextColor(0xFF5A4615);
+        evidenceNotice.setTextColor(getColor(R.color.warning_text));
         evidenceNotice.setGravity(Gravity.CENTER);
         evidenceNotice.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         evidenceNotice.setBackgroundResource(R.drawable.button_soft_mint_centered);
@@ -1615,7 +1673,7 @@ public class AnalysisActivity extends Activity {
             );
 
             row.setTextSize(13.5f);
-            row.setTextColor(0xFF292631);
+            row.setTextColor(getColor(R.color.text_primary));
             row.setGravity(Gravity.CENTER);
             row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
 
@@ -1656,7 +1714,7 @@ public class AnalysisActivity extends Activity {
         if (!linearDefinitions.isEmpty()) {
             TextView linearTitle = new TextView(this);
             linearTitle.setText(linearSectionTitle());
-            linearTitle.setTextColor(0xFF5B3FA4);
+            linearTitle.setTextColor(getColor(R.color.brand_purple));
             linearTitle.setTextSize(15f);
             linearTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
             linearTitle.setPadding(0, dp(8), 0, dp(8));
@@ -1667,7 +1725,7 @@ public class AnalysisActivity extends Activity {
                 warning.setText(
                         "Para obtener resultados en mm primero calibre la radiografía con una referencia de longitud conocida."
                 );
-                warning.setTextColor(0xFF7A4F00);
+                warning.setTextColor(getColor(R.color.warning_text));
                 warning.setTextSize(14f);
                 warning.setBackgroundResource(R.drawable.button_soft_mint);
                 warning.setPadding(dp(14), dp(12), dp(14), dp(12));
@@ -1681,7 +1739,7 @@ public class AnalysisActivity extends Activity {
                         " · " +
                         String.format(Locale.US, "%.5f mm/píxel", mmPerPixel)
                 );
-                calibration.setTextColor(0xFF2C7E86);
+                calibration.setTextColor(getColor(R.color.brand_teal));
                 calibration.setTextSize(13f);
                 calibration.setPadding(0, 0, 0, dp(8));
                 container.addView(calibration);
@@ -1701,7 +1759,7 @@ public class AnalysisActivity extends Activity {
                             linearDiagnosis(def, value)
                     );
                     row.setTextSize(13.5f);
-                    row.setTextColor(0xFF292631);
+                    row.setTextColor(getColor(R.color.text_primary));
                     row.setGravity(Gravity.CENTER);
                     row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
                     row.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
@@ -1731,15 +1789,15 @@ public class AnalysisActivity extends Activity {
 
         TextView saveAnnotated =
                 createDialogButton(
-                        "GUARDAR RADIOGRAFÍA CON PUNTOS",
+                        getString(R.string.export_annotated),
                         R.drawable.button_soft_mint,
-                        0xFF15383D
+                        getColor(R.color.mint_text)
                 );
 
         saveAnnotated.setOnClickListener(v -> {
             Bitmap annotated =
                     measurementView
-                            .renderAnnotatedBitmap();
+                            .renderAnnotatedBitmap(definitions, linearDefinitions);
 
             if (annotated == null) {
                 Toast.makeText(
@@ -1765,7 +1823,7 @@ public class AnalysisActivity extends Activity {
 
         TextView saveReport =
                 createDialogButton(
-                        "GUARDAR INFORME COMO IMAGEN",
+                        getString(R.string.export_report_image),
                         R.drawable.card_steiner,
                         Color.WHITE
                 );
@@ -1795,6 +1853,33 @@ public class AnalysisActivity extends Activity {
         });
 
         container.addView(saveReport);
+
+        TextView savePdf =
+                createDialogButton(
+                        getString(R.string.export_pdf),
+                        R.drawable.button_soft_purple,
+                        getColor(R.color.brand_purple)
+                );
+
+        savePdf.setOnClickListener(v -> {
+            Bitmap report = buildReportBitmap();
+
+            if (report == null) {
+                Toast.makeText(
+                        this,
+                        "No se pudo preparar el informe PDF.",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            startSavePdf(
+                    report,
+                    safeFileName(studyName + "_informe.pdf")
+            );
+        });
+
+        container.addView(savePdf);
 
         new AlertDialog.Builder(this)
                 .setTitle("Resultados · " + modeTitle())
@@ -2063,7 +2148,7 @@ public class AnalysisActivity extends Activity {
         );
 
         summary.setTextSize(13.5f);
-        summary.setTextColor(0xFF5B3FA4);
+        summary.setTextColor(getColor(R.color.brand_purple));
         summary.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         summary.setGravity(Gravity.CENTER);
         summary.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
@@ -2089,7 +2174,7 @@ public class AnalysisActivity extends Activity {
                 "las diferencias derecha/izquierda son orientativas y una asimetría relevante debe confirmarse clínicamente o con imagen apropiada."
         );
         note.setTextSize(12.5f);
-        note.setTextColor(0xFF4A4652);
+        note.setTextColor(getColor(R.color.text_primary));
         note.setGravity(Gravity.CENTER);
         note.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         note.setBackgroundResource(R.drawable.button_soft_mint_centered);
@@ -2107,7 +2192,7 @@ public class AnalysisActivity extends Activity {
         TextView title = new TextView(this);
         title.setText("Comparación derecha / izquierda");
         title.setTextSize(16f);
-        title.setTextColor(0xFF5B3FA4);
+        title.setTextColor(getColor(R.color.brand_purple));
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setPadding(0, dp(8), 0, dp(6));
         container.addView(title);
@@ -2174,7 +2259,7 @@ public class AnalysisActivity extends Activity {
                 String.format(Locale.US, "D %.2f mm · I %.2f mm\n%s", right, left, conclusion)
         );
         row.setTextSize(13f);
-        row.setTextColor(0xFF3D3946);
+        row.setTextColor(getColor(R.color.text_primary));
         row.setGravity(Gravity.CENTER);
         row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         row.setBackgroundResource(R.drawable.button_soft_mint);
@@ -2253,299 +2338,206 @@ public class AnalysisActivity extends Activity {
     }
 
     private Bitmap buildReportBitmap() {
-        int width = 1400;
-        int margin = 70;
-        int titleHeight = 390;
-        int rowHeight = 320;
-        int footer = 125;
+        final int width = 1400;
+        final int margin = 70;
+        final int rowHeight = 270;
+        final int footerHeight = 155;
 
         int linearCount =
-                (!linearDefinitions.isEmpty() &&
-                 !Double.isNaN(mmPerPixel) &&
-                 mmPerPixel > 0)
+                (!linearDefinitions.isEmpty()
+                        && !Double.isNaN(mmPerPixel)
+                        && mmPerPixel > 0)
                         ? linearDefinitions.size()
                         : 0;
 
+        Bitmap annotated =
+                measurementView.renderAnnotatedBitmap(
+                        definitions,
+                        linearDefinitions
+                );
+
+        int imageHeight = 0;
+        if (annotated != null && annotated.getWidth() > 0 && annotated.getHeight() > 0) {
+            float scale = Math.min(
+                    (float) (width - (margin * 2)) / annotated.getWidth(),
+                    620f / annotated.getHeight()
+            );
+            imageHeight = Math.max(220, Math.round(annotated.getHeight() * scale));
+        }
+
+        int headerHeight = 370;
+        int imageSectionHeight = imageHeight > 0 ? imageHeight + 85 : 0;
         int height =
-                titleHeight +
+                headerHeight +
+                imageSectionHeight +
                 ((definitions.size() + linearCount) * rowHeight) +
-                (linearCount > 0 ? 70 : 0) +
-                footer;
+                (linearCount > 0 ? 60 : 0) +
+                footerHeight;
 
         Bitmap bitmap =
                 Bitmap.createBitmap(
                         width,
-                        height,
+                        Math.max(height, 900),
                         Bitmap.Config.ARGB_8888
                 );
 
-        Canvas canvas =
-                new Canvas(bitmap);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.rgb(247, 245, 251));
 
-        canvas.drawColor(
-                Color.rgb(
-                        247,
-                        245,
-                        251
-                )
-        );
-
-        Paint titlePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        titlePaint.setColor(
-                Color.rgb(
-                        91,
-                        63,
-                        164
-                )
-        );
-
-        titlePaint.setTypeface(
-                Typeface.create(
-                        Typeface.DEFAULT,
-                        Typeface.BOLD
-                )
-        );
-
+        Paint titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        titlePaint.setColor(Color.rgb(91, 63, 164));
+        titlePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         titlePaint.setTextSize(58f);
 
-        Paint subtitlePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        subtitlePaint.setColor(
-                Color.rgb(
-                        44,
-                        126,
-                        134
-                )
-        );
-
+        Paint subtitlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        subtitlePaint.setColor(Color.rgb(44, 126, 134));
         subtitlePaint.setTextSize(30f);
 
-        Paint infoPaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        infoPaint.setColor(
-                Color.rgb(
-                        65,
-                        61,
-                        72
-                )
-        );
-
+        Paint infoPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        infoPaint.setColor(Color.rgb(65, 61, 72));
         infoPaint.setTextSize(27f);
 
-        Paint namePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        namePaint.setColor(
-                Color.rgb(
-                        91,
-                        63,
-                        164
-                )
-        );
-
-        namePaint.setTypeface(
-                Typeface.create(
-                        Typeface.DEFAULT,
-                        Typeface.BOLD
-                )
-        );
-
+        Paint namePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        namePaint.setColor(Color.rgb(91, 63, 164));
+        namePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         namePaint.setTextSize(34f);
 
-        Paint valuePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
+        Paint valuePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        valuePaint.setColor(Color.rgb(25, 25, 30));
+        valuePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        valuePaint.setTextSize(32f);
 
-        valuePaint.setColor(
-                Color.rgb(
-                        25,
-                        25,
-                        30
-                )
-        );
+        Paint detailPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        detailPaint.setColor(Color.rgb(65, 61, 72));
+        detailPaint.setTextSize(26f);
 
-        valuePaint.setTypeface(
-                Typeface.create(
-                        Typeface.DEFAULT,
-                        Typeface.BOLD
-                )
-        );
+        Paint cardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        cardPaint.setColor(Color.WHITE);
 
-        valuePaint.setTextSize(34f);
-
-        Paint detailPaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        detailPaint.setColor(
-                Color.rgb(
-                        65,
-                        61,
-                        72
-                )
-        );
-
-        detailPaint.setTextSize(27f);
-
-        Paint cardPaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        cardPaint.setColor(
-                Color.WHITE
-        );
-
-        Paint strokePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        strokePaint.setColor(
-                Color.rgb(
-                        205,
-                        194,
-                        231
-                )
-        );
-
-        strokePaint.setStyle(
-                Paint.Style.STROKE
-        );
-
+        Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        strokePaint.setColor(Color.rgb(205, 194, 231));
+        strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setStrokeWidth(3f);
 
-        canvas.drawText(
-                "YomCeph",
-                margin,
-                72,
-                titlePaint
-        );
+        android.graphics.drawable.Drawable logo =
+                getDrawable(R.drawable.ic_yomceph_mark);
+        if (logo != null) {
+            logo.setBounds(margin, 35, margin + 130, 165);
+            logo.draw(canvas);
+        }
+
+        int titleX = margin + 155;
+        canvas.drawText("YomCeph", titleX, 88, titlePaint);
+        canvas.drawText("Informe · " + modeTitle(), titleX, 132, subtitlePaint);
 
         canvas.drawText(
-                "Informe · " + modeTitle(),
+                "Estudio: " + (studyName.trim().isEmpty() ? "Sin nombre" : studyName),
                 margin,
-                120,
-                subtitlePaint
-        );
-
-        canvas.drawText(
-                "Estudio: " +
-                studyName,
-                margin,
-                165,
+                190,
                 infoPaint
         );
 
-        canvas.drawText(
+        String patientLine =
                 "Paciente: " +
-                (
-                        patientName.trim().isEmpty()
-                                ? "Sin nombre"
-                                : patientName
-                ) +
-                (
-                        patientAge.trim().isEmpty()
-                                ? ""
-                                : " · " +
-                                patientAge +
-                                " años"
-                ) +
-                (
-                        patientSex.trim().isEmpty()
-                                ? ""
-                                : " · " + patientSex
-                ),
-                margin,
-                205,
-                infoPaint
-        );
+                (patientName.trim().isEmpty() ? "Sin nombre" : patientName) +
+                (patientAge.trim().isEmpty() ? "" : " · " + patientAge + " años") +
+                (patientSex.trim().isEmpty() ? "" : " · " + patientSex);
 
-        if (!linearDefinitions.isEmpty() &&
-                !Double.isNaN(mmPerPixel) &&
-                mmPerPixel > 0) {
+        canvas.drawText(patientLine, margin, 230, infoPaint);
+
+        String dateText =
+                "Fecha: " +
+                DateFormat.getDateTimeInstance(
+                        DateFormat.MEDIUM,
+                        DateFormat.SHORT
+                ).format(new Date());
+        canvas.drawText(dateText, margin, 270, infoPaint);
+
+        if (!linearDefinitions.isEmpty()
+                && !Double.isNaN(mmPerPixel)
+                && mmPerPixel > 0) {
             canvas.drawText(
                     "Calibración: " +
                     calibrationLabel +
                     " · " +
                     String.format(Locale.US, "%.5f mm/píxel", mmPerPixel),
                     margin,
-                    235,
+                    310,
                     infoPaint
             );
         }
 
-        Paint safetyPaint =
-                new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint safetyPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         safetyPaint.setColor(Color.rgb(95, 73, 25));
-        safetyPaint.setTextSize(23f);
+        safetyPaint.setTextSize(22f);
 
         drawWrappedText(
                 canvas,
-                resultsSafetyNotice(),
+                "USO EDUCATIVO · YomCeph no es un dispositivo médico y sus resultados no sustituyen una valoración profesional.",
                 margin,
-                285,
+                350,
                 width - margin,
                 safetyPaint,
-                30f
+                28f
         );
 
-        int y = titleHeight;
+        int y = headerHeight;
+
+        if (annotated != null && imageHeight > 0) {
+            float left = margin;
+            float top = y + 15;
+            float right = width - margin;
+            float bottom = top + imageHeight + 40;
+
+            RectF imageCard = new RectF(left, top, right, bottom);
+            canvas.drawRoundRect(imageCard, 28f, 28f, cardPaint);
+            canvas.drawRoundRect(imageCard, 28f, 28f, strokePaint);
+
+            int availableWidth = width - (margin * 2) - 40;
+            float scale = Math.min(
+                    (float) availableWidth / annotated.getWidth(),
+                    (float) imageHeight / annotated.getHeight()
+            );
+            int drawW = Math.max(1, Math.round(annotated.getWidth() * scale));
+            int drawH = Math.max(1, Math.round(annotated.getHeight() * scale));
+            int imageLeft = (width - drawW) / 2;
+            int imageTop = Math.round(top) + 20;
+
+            Paint imagePaint = new Paint(
+                    Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG
+            );
+
+            canvas.drawBitmap(
+                    annotated,
+                    null,
+                    new Rect(
+                            imageLeft,
+                            imageTop,
+                            imageLeft + drawW,
+                            imageTop + drawH
+                    ),
+                    imagePaint
+            );
+
+            y += imageSectionHeight;
+            annotated.recycle();
+            annotated = null;
+        }
 
         for (MeasurementDefinition def : definitions) {
-            Double value =
-                    measurementView.calculate(def);
-
+            Double value = measurementView.calculate(def);
             if (value == null) continue;
 
             float left = margin;
             float top = y;
             float right = width - margin;
-            float bottom =
-                    y + rowHeight - 18;
+            float bottom = y + rowHeight - 18;
 
-            android.graphics.RectF rect =
-                    new android.graphics.RectF(
-                            left,
-                            top,
-                            right,
-                            bottom
-                    );
+            RectF rect = new RectF(left, top, right, bottom);
+            canvas.drawRoundRect(rect, 30f, 30f, cardPaint);
+            canvas.drawRoundRect(rect, 30f, 30f, strokePaint);
 
-            canvas.drawRoundRect(
-                    rect,
-                    30f,
-                    30f,
-                    cardPaint
-            );
-
-            canvas.drawRoundRect(
-                    rect,
-                    30f,
-                    30f,
-                    strokePaint
-            );
-
-            canvas.drawText(
-                    def.name,
-                    left + 30,
-                    top + 46,
-                    namePaint
-            );
+            canvas.drawText(def.name, left + 30, top + 48, namePaint);
 
             String valueLine =
                     String.format(
@@ -2555,31 +2547,25 @@ public class AnalysisActivity extends Activity {
                             def.normText
                     );
 
-            canvas.drawText(
-                    valueLine,
-                    left + 30,
-                    top + 91,
-                    valuePaint
-            );
+            canvas.drawText(valueLine, left + 30, top + 94, valuePaint);
 
             drawWrappedText(
                     canvas,
                     def.diagnosis(value),
                     left + 30,
-                    top + 132,
+                    top + 138,
                     right - 30,
                     detailPaint,
-                    34f
+                    32f
             );
 
             y += rowHeight;
         }
 
-        if (!linearDefinitions.isEmpty() &&
-                !Double.isNaN(mmPerPixel) &&
-                mmPerPixel > 0) {
-
-            y += 50;
+        if (!linearDefinitions.isEmpty()
+                && !Double.isNaN(mmPerPixel)
+                && mmPerPixel > 0) {
+            y += 45;
 
             for (LinearMeasurementDefinition def : linearDefinitions) {
                 Double value = calculateLinear(def);
@@ -2590,34 +2576,11 @@ public class AnalysisActivity extends Activity {
                 float right = width - margin;
                 float bottom = y + rowHeight - 18;
 
-                android.graphics.RectF rect =
-                        new android.graphics.RectF(
-                                left,
-                                top,
-                                right,
-                                bottom
-                        );
+                RectF rect = new RectF(left, top, right, bottom);
+                canvas.drawRoundRect(rect, 30f, 30f, cardPaint);
+                canvas.drawRoundRect(rect, 30f, 30f, strokePaint);
 
-                canvas.drawRoundRect(
-                        rect,
-                        30f,
-                        30f,
-                        cardPaint
-                );
-
-                canvas.drawRoundRect(
-                        rect,
-                        30f,
-                        30f,
-                        strokePaint
-                );
-
-                canvas.drawText(
-                        def.name,
-                        left + 30,
-                        top + 46,
-                        namePaint
-                );
+                canvas.drawText(def.name, left + 30, top + 48, namePaint);
 
                 String valueLine =
                         String.format(
@@ -2627,47 +2590,31 @@ public class AnalysisActivity extends Activity {
                                 linearNormText(def, value)
                         );
 
-                canvas.drawText(
-                        valueLine,
-                        left + 30,
-                        top + 91,
-                        valuePaint
-                );
+                canvas.drawText(valueLine, left + 30, top + 94, valuePaint);
 
                 drawWrappedText(
                         canvas,
                         linearDiagnosis(def, value),
                         left + 30,
-                        top + 132,
+                        top + 138,
                         right - 30,
                         detailPaint,
-                        34f
+                        32f
                 );
 
                 y += rowHeight;
             }
         }
 
-        Paint footerPaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        footerPaint.setColor(
-                Color.rgb(
-                        100,
-                        91,
-                        115
-                )
-        );
-
-        footerPaint.setTextSize(24f);
+        Paint footerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        footerPaint.setColor(Color.rgb(100, 91, 115));
+        footerPaint.setTextSize(23f);
 
         drawWrappedText(
                 canvas,
                 "Referencia educativa: interpretar junto con historia clínica y exploración. Una medida cefalométrica aislada no equivale a un diagnóstico.",
                 margin,
-                height - 78,
+                bitmap.getHeight() - 88,
                 width - margin,
                 footerPaint,
                 28f
@@ -2762,6 +2709,147 @@ public class AnalysisActivity extends Activity {
                 intent,
                 requestCode
         );
+    }
+
+    private void startSavePdf(
+            Bitmap reportBitmap,
+            String suggestedName
+    ) {
+        pendingPdfBitmap = reportBitmap;
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/pdf");
+        intent.putExtra(Intent.EXTRA_TITLE, suggestedName);
+        startActivityForResult(intent, REQ_SAVE_PDF);
+    }
+
+    private void writePendingPdf(Uri uri) {
+        if (pendingPdfBitmap == null || uri == null) return;
+
+        PdfDocument document = new PdfDocument();
+
+        try (
+                OutputStream out =
+                        getContentResolver().openOutputStream(uri)
+        ) {
+            if (out == null) {
+                throw new IOException("No se pudo abrir el archivo PDF.");
+            }
+
+            final int pageWidth = 1240;
+            final int pageHeight = 1754;
+            final int margin = 50;
+            final int contentWidth = pageWidth - (margin * 2);
+            final int contentHeight = pageHeight - (margin * 2) - 36;
+
+            float scale =
+                    (float) contentWidth / pendingPdfBitmap.getWidth();
+
+            int sourceHeightPerPage =
+                    Math.max(
+                            1,
+                            (int) Math.floor(contentHeight / scale)
+                    );
+
+            int sourceTop = 0;
+            int pageNumber = 1;
+
+            Paint bitmapPaint =
+                    new Paint(
+                            Paint.ANTI_ALIAS_FLAG |
+                            Paint.FILTER_BITMAP_FLAG
+                    );
+
+            Paint pageNumberPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            pageNumberPaint.setColor(Color.DKGRAY);
+            pageNumberPaint.setTextSize(22f);
+
+            while (sourceTop < pendingPdfBitmap.getHeight()) {
+                int sourceBottom =
+                        Math.min(
+                                pendingPdfBitmap.getHeight(),
+                                sourceTop + sourceHeightPerPage
+                        );
+
+                PdfDocument.PageInfo pageInfo =
+                        new PdfDocument.PageInfo.Builder(
+                                pageWidth,
+                                pageHeight,
+                                pageNumber
+                        ).create();
+
+                PdfDocument.Page page =
+                        document.startPage(pageInfo);
+
+                Canvas pageCanvas = page.getCanvas();
+                pageCanvas.drawColor(Color.WHITE);
+
+                Rect src = new Rect(
+                        0,
+                        sourceTop,
+                        pendingPdfBitmap.getWidth(),
+                        sourceBottom
+                );
+
+                int drawHeight =
+                        Math.round(
+                                (sourceBottom - sourceTop) * scale
+                        );
+
+                Rect dst = new Rect(
+                        margin,
+                        margin,
+                        margin + contentWidth,
+                        margin + drawHeight
+                );
+
+                pageCanvas.drawBitmap(
+                        pendingPdfBitmap,
+                        src,
+                        dst,
+                        bitmapPaint
+                );
+
+                pageCanvas.drawText(
+                        "YomCeph · Uso educativo · Página " + pageNumber,
+                        margin,
+                        pageHeight - 22,
+                        pageNumberPaint
+                );
+
+                document.finishPage(page);
+
+                sourceTop = sourceBottom;
+                pageNumber++;
+            }
+
+            document.writeTo(out);
+            out.flush();
+
+            Toast.makeText(
+                    this,
+                    "Informe PDF guardado correctamente.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } catch (Exception e) {
+            Toast.makeText(
+                    this,
+                    "No se pudo guardar el informe PDF.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } finally {
+            document.close();
+
+            if (pendingPdfBitmap != null
+                    && !pendingPdfBitmap.isRecycled()) {
+                pendingPdfBitmap.recycle();
+            }
+
+            pendingPdfBitmap = null;
+        }
     }
 
     private void writePendingBitmap(
@@ -2863,6 +2951,21 @@ public class AnalysisActivity extends Activity {
                 resultCode,
                 data
         );
+
+        if (requestCode == REQ_SAVE_PDF) {
+            if (resultCode == RESULT_OK
+                    && data != null
+                    && data.getData() != null) {
+                writePendingPdf(data.getData());
+            } else {
+                if (pendingPdfBitmap != null
+                        && !pendingPdfBitmap.isRecycled()) {
+                    pendingPdfBitmap.recycle();
+                }
+                pendingPdfBitmap = null;
+            }
+            return;
+        }
 
         if (requestCode == REQ_SAVE_ANNOTATED
                 || requestCode == REQ_SAVE_REPORT) {

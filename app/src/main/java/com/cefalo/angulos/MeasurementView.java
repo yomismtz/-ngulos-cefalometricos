@@ -1006,6 +1006,100 @@ public class MeasurementView extends View {
         return output;
     }
 
+    public Bitmap renderAnnotatedBitmap(
+            List<MeasurementDefinition> angularDefinitions,
+            List<LinearMeasurementDefinition> linearDefinitions
+    ) {
+        Bitmap output = renderAnnotatedBitmap();
+        if (output == null || bitmap == null) return output;
+
+        float exportScale = (float) output.getWidth() / Math.max(1, bitmap.getWidth());
+        Canvas canvas = new Canvas(output);
+
+        Paint angularLine = new Paint(Paint.ANTI_ALIAS_FLAG);
+        angularLine.setColor(Color.argb(210, 157, 124, 218));
+        angularLine.setStrokeWidth(Math.max(4f, 6f * exportScale));
+        angularLine.setStyle(Paint.Style.STROKE);
+
+        Paint linearLine = new Paint(Paint.ANTI_ALIAS_FLAG);
+        linearLine.setColor(Color.argb(220, 34, 191, 199));
+        linearLine.setStrokeWidth(Math.max(4f, 6f * exportScale));
+        linearLine.setStyle(Paint.Style.STROKE);
+
+        if (angularDefinitions != null) {
+            for (MeasurementDefinition def : angularDefinitions) {
+                if (def == null || def.pointLabels == null) continue;
+
+                if (def.type == MeasurementDefinition.Type.THREE_POINTS
+                        && def.pointLabels.length >= 3) {
+                    drawExportLine(canvas, def.pointLabels[0], def.pointLabels[1], exportScale, angularLine);
+                    drawExportLine(canvas, def.pointLabels[1], def.pointLabels[2], exportScale, angularLine);
+                } else if (def.type == MeasurementDefinition.Type.SIGNED_ANB
+                        && def.pointLabels.length >= 4) {
+                    drawExportLine(canvas, def.pointLabels[0], def.pointLabels[1], exportScale, angularLine);
+                    drawExportLine(canvas, def.pointLabels[1], def.pointLabels[2], exportScale, angularLine);
+                    drawExportLine(canvas, def.pointLabels[1], def.pointLabels[3], exportScale, angularLine);
+                } else if (def.pointLabels.length >= 4) {
+                    drawExportLine(canvas, def.pointLabels[0], def.pointLabels[1], exportScale, angularLine);
+                    drawExportLine(canvas, def.pointLabels[2], def.pointLabels[3], exportScale, angularLine);
+                }
+            }
+        }
+
+        if (linearDefinitions != null) {
+            for (LinearMeasurementDefinition def : linearDefinitions) {
+                if (def == null || def.pointLabels == null || def.pointLabels.length < 2) continue;
+
+                drawExportLine(canvas, def.pointLabels[0], def.pointLabels[1], exportScale, linearLine);
+
+                if (def.pointLabels.length >= 3
+                        && def.type != LinearMeasurementDefinition.Type.DISTANCE) {
+                    PointF a = getPoint(def.pointLabels[0]);
+                    PointF b = getPoint(def.pointLabels[1]);
+                    PointF p = getPoint(def.pointLabels[2]);
+                    if (a == null || b == null || p == null) continue;
+
+                    float dx = b.x - a.x;
+                    float dy = b.y - a.y;
+                    float len2 = dx * dx + dy * dy;
+                    if (len2 <= 0f) continue;
+
+                    float t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2;
+                    PointF projection = new PointF(a.x + t * dx, a.y + t * dy);
+                    canvas.drawLine(
+                            p.x * exportScale,
+                            p.y * exportScale,
+                            projection.x * exportScale,
+                            projection.y * exportScale,
+                            linearLine
+                    );
+                }
+            }
+        }
+
+        return output;
+    }
+
+    private void drawExportLine(
+            Canvas canvas,
+            String firstLabel,
+            String secondLabel,
+            float exportScale,
+            Paint paint
+    ) {
+        PointF first = getPoint(firstLabel);
+        PointF second = getPoint(secondLabel);
+        if (first == null || second == null) return;
+
+        canvas.drawLine(
+                first.x * exportScale,
+                first.y * exportScale,
+                second.x * exportScale,
+                second.y * exportScale,
+                paint
+        );
+    }
+
     public Double calculate(MeasurementDefinition definition) {
         if (definition == null) return null;
 

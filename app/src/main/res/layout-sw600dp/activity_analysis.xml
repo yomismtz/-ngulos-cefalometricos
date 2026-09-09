@@ -8,7 +8,7 @@
     android:padding="8dp">
 
     <ScrollView
-        android:layout_width="330dp"
+        android:layout_width="320dp"
         android:layout_height="match_parent"
         android:fillViewport="true"
         android:scrollbars="none">

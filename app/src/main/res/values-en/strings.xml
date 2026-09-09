@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">YomCeph</string>
+    <string name="app_slogan">Trace. Measure. Learn.</string>
+    <string name="analysis_steiner">STEINER ANALYSIS</string>
+    <string name="analysis_vertebral">CERVICAL / ROCABADO ANALYSIS</string>
+    <string name="analysis_powell">POWELL ANALYSIS</string>
+    <string name="analysis_tweed">TWEED ANALYSIS</string>
+    <string name="analysis_levandoski">LEVANDOSKI PANORAMIC ANALYSIS</string>
+    <string name="analysis_airway">AIRWAY ANALYSIS</string>
+    <string name="my_analyses">MY ANALYSES</string>
+    <string name="back_arrow">←</string>
+    <string name="analysis_title_placeholder">Analysis</string>
+    <string name="open_image">IMAGE</string>
+    <string name="study_placeholder">Unnamed study · Unnamed patient</string>
+    <string name="linear_uncalibrated">Linear measures: not calibrated</string>
+    <string name="calibrate">CALIBRATE</string>
+    <string name="point_selected">Selected point</string>
+    <string name="previous">PREVIOUS</string>
+    <string name="where_is">WHERE IS IT?</string>
+    <string name="next">NEXT</string>
+    <string name="instruction_placeholder">Instruction</string>
+    <string name="undo_previous">UNDO\nPREVIOUS POINT</string>
+    <string name="delete_all_points">DELETE ALL\nPOINTS</string>
+    <string name="center_image">CENTER</string>
+    <string name="data_save">DATA / SAVE</string>
+    <string name="lock_trace">LOCK POINT</string>
+    <string name="calculate_analysis">CALCULATE ANALYSIS</string>
+    <string name="landmarks_bar">POINTS</string>
+    <string name="cd_yomceph_icon">YomCeph icon</string>
+    <string name="cd_tooth_ruler">Tooth with ruler</string>
+    <string name="info_privacy">INFORMATION AND PRIVACY</string>
+    <string name="educational_disclaimer_title">Educational use</string>
+    <string name="educational_disclaimer">YomCeph is an educational tool. It is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. For medical or dental advice, diagnosis, or treatment, consult a qualified healthcare professional.</string>
+    <string name="understood">UNDERSTOOD</string>
+    <string name="more_info">MORE INFORMATION</string>
+    <string name="theme_dark">🌙 DARK MODE</string>
+    <string name="theme_light">☀ LIGHT MODE</string>
+    <string name="autosave_ready">Autosave ready</string>
+    <string name="autosave_saving">Saving automatically…</string>
+    <string name="autosave_saved">✓ Saved automatically</string>
+    <string name="export_pdf">SAVE REPORT AS PDF</string>
+    <string name="export_report_image">SAVE REPORT AS IMAGE</string>
+    <string name="export_annotated">SAVE RADIOGRAPH WITH POINTS AND LINES</string>
+    <string name="educational_footer">Educational use · Does not replace professional assessment</string>
+    <string name="back_accessibility">Back</string>
+</resources>

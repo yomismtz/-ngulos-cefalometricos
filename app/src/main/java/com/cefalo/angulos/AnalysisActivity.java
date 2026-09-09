@@ -22,6 +22,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -45,9 +47,12 @@ public class AnalysisActivity extends Activity {
     private TextView txtStudyInfo;
     private TextView btnCalculate;
     private TextView btnLock;
+    private TextView btnCalibrate;
+    private TextView txtCalibration;
     private LinearLayout pointChips;
 
     private List<MeasurementDefinition> definitions;
+    private List<LinearMeasurementDefinition> linearDefinitions = new ArrayList<>();
     private List<String> landmarks;
 
     private String mode;
@@ -56,6 +61,8 @@ public class AnalysisActivity extends Activity {
     private String studyName = "";
     private String patientName = "";
     private String patientAge = "";
+    private double mmPerPixel = Double.NaN;
+    private String calibrationLabel = "";
 
     private SavedStudyStore.StudyData restoredStudy;
     private boolean restoring = false;
@@ -83,6 +90,8 @@ public class AnalysisActivity extends Activity {
             studyName = safe(restoredStudy.studyName);
             patientName = safe(restoredStudy.patientName);
             patientAge = safe(restoredStudy.patientAge);
+            mmPerPixel = restoredStudy.mmPerPixel;
+            calibrationLabel = safe(restoredStudy.calibrationLabel);
         } else {
             if (savedInstanceState != null) {
                 mode = savedInstanceState.getString("MODE");
@@ -90,6 +99,8 @@ public class AnalysisActivity extends Activity {
                 studyName = safe(savedInstanceState.getString("STUDY_NAME"));
                 patientName = safe(savedInstanceState.getString("PATIENT_NAME"));
                 patientAge = safe(savedInstanceState.getString("PATIENT_AGE"));
+                mmPerPixel = savedInstanceState.getDouble("MM_PER_PIXEL", Double.NaN);
+                calibrationLabel = safe(savedInstanceState.getString("CALIBRATION_LABEL"));
             }
 
             if (mode == null) {
@@ -109,7 +120,11 @@ public class AnalysisActivity extends Activity {
                 ? MeasurementCatalog.vertebral()
                 : MeasurementCatalog.steiner();
 
-        landmarks = buildLandmarkList(definitions);
+        linearDefinitions = vertebral
+                ? LinearMeasurementCatalog.rocabado()
+                : new ArrayList<>();
+
+        landmarks = buildLandmarkList(definitions, linearDefinitions);
 
         TextView txtTitle = findViewById(R.id.txtTitle);
         txtTitle.setText(
@@ -124,6 +139,8 @@ public class AnalysisActivity extends Activity {
         txtStudyInfo = findViewById(R.id.txtStudyInfo);
         btnCalculate = findViewById(R.id.btnCalculate);
         btnLock = findViewById(R.id.btnLock);
+        btnCalibrate = findViewById(R.id.btnCalibrate);
+        txtCalibration = findViewById(R.id.txtCalibration);
         pointChips = findViewById(R.id.pointChips);
 
         measurementView.setLandmarks(landmarks);
@@ -186,6 +203,8 @@ public class AnalysisActivity extends Activity {
         findViewById(R.id.btnAssisted)
                 .setOnClickListener(v -> showAssistedDetectionInfo());
 
+        btnCalibrate.setOnClickListener(v -> startCalibrationFlow());
+
         btnLock.setOnClickListener(v -> toggleLock());
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
@@ -195,8 +214,14 @@ public class AnalysisActivity extends Activity {
                 "Puede cambiar de punto con la lista, Anterior o Siguiente."
         );
 
+        if (!vertebral) {
+            btnCalibrate.setVisibility(android.view.View.GONE);
+            txtCalibration.setVisibility(android.view.View.GONE);
+        }
+
         refreshPointChips();
         updateStudyInfo();
+        updateCalibrationStatus();
 
         if (restoredStudy != null) {
             restoreStudy(restoredStudy);
@@ -225,6 +250,8 @@ public class AnalysisActivity extends Activity {
         outState.putString("STUDY_NAME", studyName);
         outState.putString("PATIENT_NAME", patientName);
         outState.putString("PATIENT_AGE", patientAge);
+        outState.putDouble("MM_PER_PIXEL", mmPerPixel);
+        outState.putString("CALIBRATION_LABEL", calibrationLabel);
     }
 
     private String safe(String value) {
@@ -232,11 +259,18 @@ public class AnalysisActivity extends Activity {
     }
 
     private List<String> buildLandmarkList(
-            List<MeasurementDefinition> defs
+            List<MeasurementDefinition> defs,
+            List<LinearMeasurementDefinition> linearDefs
     ) {
         Set<String> ordered = new LinkedHashSet<>();
 
         for (MeasurementDefinition def : defs) {
+            for (String label : def.pointLabels) {
+                ordered.add(label);
+            }
+        }
+
+        for (LinearMeasurementDefinition def : linearDefs) {
             for (String label : def.pointLabels) {
                 ordered.add(label);
             }
@@ -270,9 +304,12 @@ public class AnalysisActivity extends Activity {
                     mapSavedPoints(study)
             );
             measurementView.setLocked(study.locked);
+            mmPerPixel = study.mmPerPixel;
+            calibrationLabel = safe(study.calibrationLabel);
 
             updateLockButton();
             updateStudyInfo();
+            updateCalibrationStatus();
 
             updateProgress(
                     measurementView.getPlacedCount(),
@@ -853,6 +890,8 @@ public class AnalysisActivity extends Activity {
         study.patientAge = patientAge;
         study.locked =
                 measurementView.isLocked();
+        study.mmPerPixel = mmPerPixel;
+        study.calibrationLabel = calibrationLabel;
 
         study.labels =
                 new ArrayList<>(landmarks);
@@ -873,6 +912,209 @@ public class AnalysisActivity extends Activity {
                     Toast.LENGTH_LONG
             ).show();
         }
+    }
+
+    private void updateCalibrationStatus() {
+        if (txtCalibration == null) return;
+
+        if (Double.isNaN(mmPerPixel) || mmPerPixel <= 0) {
+            txtCalibration.setText("Medidas lineales: sin calibrar");
+            btnCalibrate.setText("📏 CALIBRAR mm/cm");
+            return;
+        }
+
+        txtCalibration.setText(
+                "Calibrado: " +
+                calibrationLabel +
+                " · " +
+                String.format(Locale.US, "%.5f mm/píxel", mmPerPixel)
+        );
+        btnCalibrate.setText("📏 RECALIBRAR");
+    }
+
+    private void startCalibrationFlow() {
+        if (!measurementView.hasBitmap()) {
+            Toast.makeText(
+                    this,
+                    "Primero abra una radiografía.",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Calibrar medidas lineales")
+                .setMessage(
+                        "Use una regla, calibrador o marcador de longitud conocida que sea visible en la radiografía. " +
+                        "Puede estar horizontal, vertical o diagonal. Marque sus dos extremos y luego indique cuánto mide.\n\n" +
+                        "La calibración se guarda con este estudio. Para reducir error de magnificación, la referencia debe corresponder a la misma radiografía y, de ser posible, al mismo plano del objeto medido."
+                )
+                .setNegativeButton("Cancelar", null)
+                .setPositiveButton(
+                        "Marcar referencia",
+                        (dialog, which) -> {
+                            Toast.makeText(
+                                    this,
+                                    "Toque el primer extremo y después el segundo.",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            measurementView.startCalibration(
+                                    (first, second, pixelDistance) ->
+                                            showCalibrationLengthDialog(pixelDistance)
+                            );
+                        }
+                )
+                .show();
+    }
+
+    private void showCalibrationLengthDialog(double pixelDistance) {
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(dp(22), dp(8), dp(22), dp(4));
+
+        TextView info = new TextView(this);
+        info.setText(
+                "Distancia marcada en la imagen: " +
+                String.format(Locale.US, "%.1f píxeles", pixelDistance)
+        );
+        info.setTextColor(0xFF4A4652);
+        info.setTextSize(14f);
+        form.addView(info);
+
+        TextView label = formLabel("Longitud real de esa referencia");
+
+        EditText length = new EditText(this);
+        length.setSingleLine(true);
+        length.setHint("Ej. 10");
+        length.setInputType(
+                InputType.TYPE_CLASS_NUMBER |
+                InputType.TYPE_NUMBER_FLAG_DECIMAL
+        );
+
+        Spinner unit = new Spinner(this);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                new String[]{"mm", "cm"}
+        );
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+        unit.setAdapter(adapter);
+
+        form.addView(label);
+        form.addView(length);
+        form.addView(unit);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Longitud de calibración")
+                .setView(form)
+                .setNegativeButton("Cancelar", null)
+                .setPositiveButton("Guardar calibración", null)
+                .create();
+
+        dialog.setOnShowListener(unused ->
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                        .setOnClickListener(v -> {
+                            String raw = length.getText().toString().trim();
+
+                            if (raw.isEmpty()) {
+                                length.setError("Ingrese una longitud.");
+                                return;
+                            }
+
+                            double value;
+
+                            try {
+                                value = Double.parseDouble(
+                                        raw.replace(',', '.')
+                                );
+                            } catch (Exception e) {
+                                length.setError("Longitud no válida.");
+                                return;
+                            }
+
+                            if (value <= 0 || pixelDistance <= 0) {
+                                length.setError("La longitud debe ser mayor que cero.");
+                                return;
+                            }
+
+                            String selectedUnit =
+                                    String.valueOf(unit.getSelectedItem());
+
+                            double realMm =
+                                    "cm".equals(selectedUnit)
+                                            ? value * 10.0
+                                            : value;
+
+                            mmPerPixel =
+                                    realMm / pixelDistance;
+
+                            calibrationLabel =
+                                    String.format(
+                                            Locale.US,
+                                            "%.2f %s",
+                                            value,
+                                            selectedUnit
+                                    );
+
+                            updateCalibrationStatus();
+                            saveStudy(true);
+
+                            Toast.makeText(
+                                    this,
+                                    "Calibración guardada.",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            dialog.dismiss();
+                        })
+        );
+
+        dialog.show();
+    }
+
+    private Double calculateLinear(
+            LinearMeasurementDefinition def
+    ) {
+        if (def == null
+                || Double.isNaN(mmPerPixel)
+                || mmPerPixel <= 0) {
+            return null;
+        }
+
+        if (def.type == LinearMeasurementDefinition.Type.DISTANCE) {
+            PointF a = measurementView.getPoint(def.pointLabels[0]);
+            PointF b = measurementView.getPoint(def.pointLabels[1]);
+
+            if (a == null || b == null) return null;
+
+            return Math.hypot(
+                    b.x - a.x,
+                    b.y - a.y
+            ) * mmPerPixel;
+        }
+
+        PointF a = measurementView.getPoint(def.pointLabels[0]);
+        PointF b = measurementView.getPoint(def.pointLabels[1]);
+        PointF p = measurementView.getPoint(def.pointLabels[2]);
+
+        if (a == null || b == null || p == null) return null;
+
+        double dx = b.x - a.x;
+        double dy = b.y - a.y;
+        double length = Math.hypot(dx, dy);
+
+        if (length == 0) return null;
+
+        double signedPixels =
+                (
+                        dx * (p.y - a.y) -
+                        dy * (p.x - a.x)
+                ) / length;
+
+        return signedPixels * mmPerPixel;
     }
 
     private void calculateFullAnalysis() {
@@ -1743,8 +1985,11 @@ public class AnalysisActivity extends Activity {
 
             patientName = "";
             patientAge = "";
+            mmPerPixel = Double.NaN;
+            calibrationLabel = "";
 
             updateStudyInfo();
+            updateCalibrationStatus();
             showStudyDetailsDialog(true);
 
         } catch (Exception e) {

@@ -3,7 +3,7 @@ name: Build Android APK and Bundle
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, feature-autosave-export-dark-accessibility ]
 
 permissions:
   contents: read

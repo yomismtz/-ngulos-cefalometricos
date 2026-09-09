@@ -467,7 +467,7 @@ public class AnalysisActivity extends Activity {
                     (placed ? "  ✓" : "  —")
             );
 
-            chip.setTextSize(13f);
+            chip.setTextSize(11.5f);
             chip.setTypeface(
                     Typeface.DEFAULT,
                     Typeface.BOLD
@@ -1287,7 +1287,7 @@ public class AnalysisActivity extends Activity {
                 )
         );
         heading.setTextColor(0xFF5B3FA4);
-        heading.setTextSize(17f);
+        heading.setTextSize(15f);
         heading.setTypeface(
                 Typeface.DEFAULT,
                 Typeface.BOLD
@@ -1305,7 +1305,7 @@ public class AnalysisActivity extends Activity {
                 "Resultados calculados con los mismos puntos anatómicos. " +
                 "Puede cerrar esta ventana, desbloquear el trazado, corregir un punto y volver a calcular."
         );
-        intro.setTextSize(14f);
+        intro.setTextSize(13f);
         intro.setTextColor(0xFF4A4652);
         intro.setPadding(
                 0,
@@ -1337,7 +1337,7 @@ public class AnalysisActivity extends Activity {
                     def.diagnosis(value)
             );
 
-            row.setTextSize(15f);
+            row.setTextSize(13.5f);
             row.setTextColor(0xFF292631);
 
             row.setTypeface(
@@ -1378,7 +1378,7 @@ public class AnalysisActivity extends Activity {
             TextView linearTitle = new TextView(this);
             linearTitle.setText(linearSectionTitle());
             linearTitle.setTextColor(0xFF5B3FA4);
-            linearTitle.setTextSize(17f);
+            linearTitle.setTextSize(15f);
             linearTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
             linearTitle.setPadding(0, dp(8), 0, dp(8));
             container.addView(linearTitle);
@@ -1421,7 +1421,7 @@ public class AnalysisActivity extends Activity {
                             "\n" +
                             linearDiagnosis(def, value)
                     );
-                    row.setTextSize(15f);
+                    row.setTextSize(13.5f);
                     row.setTextColor(0xFF292631);
                     row.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
                     row.setBackgroundResource(R.drawable.card_white);
@@ -1841,7 +1841,7 @@ public class AnalysisActivity extends Activity {
                 Typeface.BOLD
         );
 
-        button.setTextSize(15f);
+        button.setTextSize(13f);
         button.setTextColor(textColor);
 
         button.setBackgroundResource(

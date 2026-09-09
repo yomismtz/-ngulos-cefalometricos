@@ -29,8 +29,19 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Lint and build installable debug APK
-        run: gradle --no-daemon :app:lintDebug :app:assembleDebug
+      - name: Run Android lint
+        run: gradle --no-daemon :app:lintDebug
+
+      - name: Print lint summary
+        if: always()
+        run: |
+          REPORT="app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt"
+          if [ -f "$REPORT" ]; then
+            sed -n '1,260p' "$REPORT"
+          fi
+
+      - name: Build installable debug APK
+        run: gradle --no-daemon :app:assembleDebug
 
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk YomCeph-v1.11.apk

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static com.cefalo.angulos.MeasurementDefinition.Type.THREE_POINTS;
 import static com.cefalo.angulos.MeasurementDefinition.Type.TWO_LINES;
+import static com.cefalo.angulos.MeasurementDefinition.Type.SIGNED_ANB;
 
 public final class MeasurementCatalog {
     private MeasurementCatalog() {}
@@ -104,8 +105,8 @@ public final class MeasurementCatalog {
 
         list.add(m(
                 "ANB",
-                THREE_POINTS,
-                p("A","N","B"),
+                SIGNED_ANB,
+                p("S","N","A","B"),
                 0,4,
                 "2° ± 2°",
                 "Marque A, N y B. N es el vértice.",

@@ -20,6 +20,7 @@
             android:layout_height="48dp"
             android:gravity="center"
             android:text="@string/back_arrow"
+            android:contentDescription="@string/back_accessibility"
             android:textSize="24sp"
             android:textColor="@color/brand_purple"
             android:background="@drawable/button_soft_purple_centered"

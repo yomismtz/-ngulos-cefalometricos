@@ -1789,7 +1789,7 @@ public class AnalysisActivity extends AppCompatActivity {
 
         TextView saveAnnotated =
                 createDialogButton(
-                        "GUARDAR RADIOGRAFÍA CON PUNTOS",
+                        getString(R.string.export_annotated),
                         R.drawable.button_soft_mint,
                         0xFF15383D
                 );
@@ -1797,7 +1797,7 @@ public class AnalysisActivity extends AppCompatActivity {
         saveAnnotated.setOnClickListener(v -> {
             Bitmap annotated =
                     measurementView
-                            .renderAnnotatedBitmap();
+                            .renderAnnotatedBitmap(definitions, linearDefinitions);
 
             if (annotated == null) {
                 Toast.makeText(
@@ -1823,7 +1823,7 @@ public class AnalysisActivity extends AppCompatActivity {
 
         TextView saveReport =
                 createDialogButton(
-                        "GUARDAR INFORME COMO IMAGEN",
+                        getString(R.string.export_report_image),
                         R.drawable.card_steiner,
                         Color.WHITE
                 );
@@ -1853,6 +1853,33 @@ public class AnalysisActivity extends AppCompatActivity {
         });
 
         container.addView(saveReport);
+
+        TextView savePdf =
+                createDialogButton(
+                        getString(R.string.export_pdf),
+                        R.drawable.button_soft_purple,
+                        getColor(R.color.brand_purple)
+                );
+
+        savePdf.setOnClickListener(v -> {
+            Bitmap report = buildReportBitmap();
+
+            if (report == null) {
+                Toast.makeText(
+                        this,
+                        "No se pudo preparar el informe PDF.",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            startSavePdf(
+                    report,
+                    safeFileName(studyName + "_informe.pdf")
+            );
+        });
+
+        container.addView(savePdf);
 
         new AlertDialog.Builder(this)
                 .setTitle("Resultados · " + modeTitle())
@@ -2311,299 +2338,206 @@ public class AnalysisActivity extends AppCompatActivity {
     }
 
     private Bitmap buildReportBitmap() {
-        int width = 1400;
-        int margin = 70;
-        int titleHeight = 390;
-        int rowHeight = 320;
-        int footer = 125;
+        final int width = 1400;
+        final int margin = 70;
+        final int rowHeight = 270;
+        final int footerHeight = 155;
 
         int linearCount =
-                (!linearDefinitions.isEmpty() &&
-                 !Double.isNaN(mmPerPixel) &&
-                 mmPerPixel > 0)
+                (!linearDefinitions.isEmpty()
+                        && !Double.isNaN(mmPerPixel)
+                        && mmPerPixel > 0)
                         ? linearDefinitions.size()
                         : 0;
 
+        Bitmap annotated =
+                measurementView.renderAnnotatedBitmap(
+                        definitions,
+                        linearDefinitions
+                );
+
+        int imageHeight = 0;
+        if (annotated != null && annotated.getWidth() > 0 && annotated.getHeight() > 0) {
+            float scale = Math.min(
+                    (float) (width - (margin * 2)) / annotated.getWidth(),
+                    620f / annotated.getHeight()
+            );
+            imageHeight = Math.max(220, Math.round(annotated.getHeight() * scale));
+        }
+
+        int headerHeight = 370;
+        int imageSectionHeight = imageHeight > 0 ? imageHeight + 85 : 0;
         int height =
-                titleHeight +
+                headerHeight +
+                imageSectionHeight +
                 ((definitions.size() + linearCount) * rowHeight) +
-                (linearCount > 0 ? 70 : 0) +
-                footer;
+                (linearCount > 0 ? 60 : 0) +
+                footerHeight;
 
         Bitmap bitmap =
                 Bitmap.createBitmap(
                         width,
-                        height,
+                        Math.max(height, 900),
                         Bitmap.Config.ARGB_8888
                 );
 
-        Canvas canvas =
-                new Canvas(bitmap);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.rgb(247, 245, 251));
 
-        canvas.drawColor(
-                Color.rgb(
-                        247,
-                        245,
-                        251
-                )
-        );
-
-        Paint titlePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        titlePaint.setColor(
-                Color.rgb(
-                        91,
-                        63,
-                        164
-                )
-        );
-
-        titlePaint.setTypeface(
-                Typeface.create(
-                        Typeface.DEFAULT,
-                        Typeface.BOLD
-                )
-        );
-
+        Paint titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        titlePaint.setColor(Color.rgb(91, 63, 164));
+        titlePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         titlePaint.setTextSize(58f);
 
-        Paint subtitlePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        subtitlePaint.setColor(
-                Color.rgb(
-                        44,
-                        126,
-                        134
-                )
-        );
-
+        Paint subtitlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        subtitlePaint.setColor(Color.rgb(44, 126, 134));
         subtitlePaint.setTextSize(30f);
 
-        Paint infoPaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        infoPaint.setColor(
-                Color.rgb(
-                        65,
-                        61,
-                        72
-                )
-        );
-
+        Paint infoPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        infoPaint.setColor(Color.rgb(65, 61, 72));
         infoPaint.setTextSize(27f);
 
-        Paint namePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        namePaint.setColor(
-                Color.rgb(
-                        91,
-                        63,
-                        164
-                )
-        );
-
-        namePaint.setTypeface(
-                Typeface.create(
-                        Typeface.DEFAULT,
-                        Typeface.BOLD
-                )
-        );
-
+        Paint namePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        namePaint.setColor(Color.rgb(91, 63, 164));
+        namePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         namePaint.setTextSize(34f);
 
-        Paint valuePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
+        Paint valuePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        valuePaint.setColor(Color.rgb(25, 25, 30));
+        valuePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        valuePaint.setTextSize(32f);
 
-        valuePaint.setColor(
-                Color.rgb(
-                        25,
-                        25,
-                        30
-                )
-        );
+        Paint detailPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        detailPaint.setColor(Color.rgb(65, 61, 72));
+        detailPaint.setTextSize(26f);
 
-        valuePaint.setTypeface(
-                Typeface.create(
-                        Typeface.DEFAULT,
-                        Typeface.BOLD
-                )
-        );
+        Paint cardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        cardPaint.setColor(Color.WHITE);
 
-        valuePaint.setTextSize(34f);
-
-        Paint detailPaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        detailPaint.setColor(
-                Color.rgb(
-                        65,
-                        61,
-                        72
-                )
-        );
-
-        detailPaint.setTextSize(27f);
-
-        Paint cardPaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        cardPaint.setColor(
-                Color.WHITE
-        );
-
-        Paint strokePaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        strokePaint.setColor(
-                Color.rgb(
-                        205,
-                        194,
-                        231
-                )
-        );
-
-        strokePaint.setStyle(
-                Paint.Style.STROKE
-        );
-
+        Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        strokePaint.setColor(Color.rgb(205, 194, 231));
+        strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setStrokeWidth(3f);
 
-        canvas.drawText(
-                "YomCeph",
-                margin,
-                72,
-                titlePaint
-        );
+        android.graphics.drawable.Drawable logo =
+                getDrawable(R.drawable.ic_yomceph_mark);
+        if (logo != null) {
+            logo.setBounds(margin, 35, margin + 130, 165);
+            logo.draw(canvas);
+        }
+
+        int titleX = margin + 155;
+        canvas.drawText("YomCeph", titleX, 88, titlePaint);
+        canvas.drawText("Informe · " + modeTitle(), titleX, 132, subtitlePaint);
 
         canvas.drawText(
-                "Informe · " + modeTitle(),
+                "Estudio: " + (studyName.trim().isEmpty() ? "Sin nombre" : studyName),
                 margin,
-                120,
-                subtitlePaint
-        );
-
-        canvas.drawText(
-                "Estudio: " +
-                studyName,
-                margin,
-                165,
+                190,
                 infoPaint
         );
 
-        canvas.drawText(
+        String patientLine =
                 "Paciente: " +
-                (
-                        patientName.trim().isEmpty()
-                                ? "Sin nombre"
-                                : patientName
-                ) +
-                (
-                        patientAge.trim().isEmpty()
-                                ? ""
-                                : " · " +
-                                patientAge +
-                                " años"
-                ) +
-                (
-                        patientSex.trim().isEmpty()
-                                ? ""
-                                : " · " + patientSex
-                ),
-                margin,
-                205,
-                infoPaint
-        );
+                (patientName.trim().isEmpty() ? "Sin nombre" : patientName) +
+                (patientAge.trim().isEmpty() ? "" : " · " + patientAge + " años") +
+                (patientSex.trim().isEmpty() ? "" : " · " + patientSex);
 
-        if (!linearDefinitions.isEmpty() &&
-                !Double.isNaN(mmPerPixel) &&
-                mmPerPixel > 0) {
+        canvas.drawText(patientLine, margin, 230, infoPaint);
+
+        String dateText =
+                "Fecha: " +
+                DateFormat.getDateTimeInstance(
+                        DateFormat.MEDIUM,
+                        DateFormat.SHORT
+                ).format(new Date());
+        canvas.drawText(dateText, margin, 270, infoPaint);
+
+        if (!linearDefinitions.isEmpty()
+                && !Double.isNaN(mmPerPixel)
+                && mmPerPixel > 0) {
             canvas.drawText(
                     "Calibración: " +
                     calibrationLabel +
                     " · " +
                     String.format(Locale.US, "%.5f mm/píxel", mmPerPixel),
                     margin,
-                    235,
+                    310,
                     infoPaint
             );
         }
 
-        Paint safetyPaint =
-                new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint safetyPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         safetyPaint.setColor(Color.rgb(95, 73, 25));
-        safetyPaint.setTextSize(23f);
+        safetyPaint.setTextSize(22f);
 
         drawWrappedText(
                 canvas,
-                resultsSafetyNotice(),
+                "USO EDUCATIVO · YomCeph no es un dispositivo médico y sus resultados no sustituyen una valoración profesional.",
                 margin,
-                285,
+                350,
                 width - margin,
                 safetyPaint,
-                30f
+                28f
         );
 
-        int y = titleHeight;
+        int y = headerHeight;
+
+        if (annotated != null && imageHeight > 0) {
+            float left = margin;
+            float top = y + 15;
+            float right = width - margin;
+            float bottom = top + imageHeight + 40;
+
+            RectF imageCard = new RectF(left, top, right, bottom);
+            canvas.drawRoundRect(imageCard, 28f, 28f, cardPaint);
+            canvas.drawRoundRect(imageCard, 28f, 28f, strokePaint);
+
+            int availableWidth = width - (margin * 2) - 40;
+            float scale = Math.min(
+                    (float) availableWidth / annotated.getWidth(),
+                    (float) imageHeight / annotated.getHeight()
+            );
+            int drawW = Math.max(1, Math.round(annotated.getWidth() * scale));
+            int drawH = Math.max(1, Math.round(annotated.getHeight() * scale));
+            int imageLeft = (width - drawW) / 2;
+            int imageTop = Math.round(top) + 20;
+
+            Paint imagePaint = new Paint(
+                    Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG
+            );
+
+            canvas.drawBitmap(
+                    annotated,
+                    null,
+                    new Rect(
+                            imageLeft,
+                            imageTop,
+                            imageLeft + drawW,
+                            imageTop + drawH
+                    ),
+                    imagePaint
+            );
+
+            y += imageSectionHeight;
+            annotated.recycle();
+            annotated = null;
+        }
 
         for (MeasurementDefinition def : definitions) {
-            Double value =
-                    measurementView.calculate(def);
-
+            Double value = measurementView.calculate(def);
             if (value == null) continue;
 
             float left = margin;
             float top = y;
             float right = width - margin;
-            float bottom =
-                    y + rowHeight - 18;
+            float bottom = y + rowHeight - 18;
 
-            android.graphics.RectF rect =
-                    new android.graphics.RectF(
-                            left,
-                            top,
-                            right,
-                            bottom
-                    );
+            RectF rect = new RectF(left, top, right, bottom);
+            canvas.drawRoundRect(rect, 30f, 30f, cardPaint);
+            canvas.drawRoundRect(rect, 30f, 30f, strokePaint);
 
-            canvas.drawRoundRect(
-                    rect,
-                    30f,
-                    30f,
-                    cardPaint
-            );
-
-            canvas.drawRoundRect(
-                    rect,
-                    30f,
-                    30f,
-                    strokePaint
-            );
-
-            canvas.drawText(
-                    def.name,
-                    left + 30,
-                    top + 46,
-                    namePaint
-            );
+            canvas.drawText(def.name, left + 30, top + 48, namePaint);
 
             String valueLine =
                     String.format(
@@ -2613,31 +2547,25 @@ public class AnalysisActivity extends AppCompatActivity {
                             def.normText
                     );
 
-            canvas.drawText(
-                    valueLine,
-                    left + 30,
-                    top + 91,
-                    valuePaint
-            );
+            canvas.drawText(valueLine, left + 30, top + 94, valuePaint);
 
             drawWrappedText(
                     canvas,
                     def.diagnosis(value),
                     left + 30,
-                    top + 132,
+                    top + 138,
                     right - 30,
                     detailPaint,
-                    34f
+                    32f
             );
 
             y += rowHeight;
         }
 
-        if (!linearDefinitions.isEmpty() &&
-                !Double.isNaN(mmPerPixel) &&
-                mmPerPixel > 0) {
-
-            y += 50;
+        if (!linearDefinitions.isEmpty()
+                && !Double.isNaN(mmPerPixel)
+                && mmPerPixel > 0) {
+            y += 45;
 
             for (LinearMeasurementDefinition def : linearDefinitions) {
                 Double value = calculateLinear(def);
@@ -2648,34 +2576,11 @@ public class AnalysisActivity extends AppCompatActivity {
                 float right = width - margin;
                 float bottom = y + rowHeight - 18;
 
-                android.graphics.RectF rect =
-                        new android.graphics.RectF(
-                                left,
-                                top,
-                                right,
-                                bottom
-                        );
+                RectF rect = new RectF(left, top, right, bottom);
+                canvas.drawRoundRect(rect, 30f, 30f, cardPaint);
+                canvas.drawRoundRect(rect, 30f, 30f, strokePaint);
 
-                canvas.drawRoundRect(
-                        rect,
-                        30f,
-                        30f,
-                        cardPaint
-                );
-
-                canvas.drawRoundRect(
-                        rect,
-                        30f,
-                        30f,
-                        strokePaint
-                );
-
-                canvas.drawText(
-                        def.name,
-                        left + 30,
-                        top + 46,
-                        namePaint
-                );
+                canvas.drawText(def.name, left + 30, top + 48, namePaint);
 
                 String valueLine =
                         String.format(
@@ -2685,47 +2590,31 @@ public class AnalysisActivity extends AppCompatActivity {
                                 linearNormText(def, value)
                         );
 
-                canvas.drawText(
-                        valueLine,
-                        left + 30,
-                        top + 91,
-                        valuePaint
-                );
+                canvas.drawText(valueLine, left + 30, top + 94, valuePaint);
 
                 drawWrappedText(
                         canvas,
                         linearDiagnosis(def, value),
                         left + 30,
-                        top + 132,
+                        top + 138,
                         right - 30,
                         detailPaint,
-                        34f
+                        32f
                 );
 
                 y += rowHeight;
             }
         }
 
-        Paint footerPaint =
-                new Paint(
-                        Paint.ANTI_ALIAS_FLAG
-                );
-
-        footerPaint.setColor(
-                Color.rgb(
-                        100,
-                        91,
-                        115
-                )
-        );
-
-        footerPaint.setTextSize(24f);
+        Paint footerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        footerPaint.setColor(Color.rgb(100, 91, 115));
+        footerPaint.setTextSize(23f);
 
         drawWrappedText(
                 canvas,
                 "Referencia educativa: interpretar junto con historia clínica y exploración. Una medida cefalométrica aislada no equivale a un diagnóstico.",
                 margin,
-                height - 78,
+                bitmap.getHeight() - 88,
                 width - margin,
                 footerPaint,
                 28f
@@ -2820,6 +2709,147 @@ public class AnalysisActivity extends AppCompatActivity {
                 intent,
                 requestCode
         );
+    }
+
+    private void startSavePdf(
+            Bitmap reportBitmap,
+            String suggestedName
+    ) {
+        pendingPdfBitmap = reportBitmap;
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/pdf");
+        intent.putExtra(Intent.EXTRA_TITLE, suggestedName);
+        startActivityForResult(intent, REQ_SAVE_PDF);
+    }
+
+    private void writePendingPdf(Uri uri) {
+        if (pendingPdfBitmap == null || uri == null) return;
+
+        PdfDocument document = new PdfDocument();
+
+        try (
+                OutputStream out =
+                        getContentResolver().openOutputStream(uri)
+        ) {
+            if (out == null) {
+                throw new IOException("No se pudo abrir el archivo PDF.");
+            }
+
+            final int pageWidth = 1240;
+            final int pageHeight = 1754;
+            final int margin = 50;
+            final int contentWidth = pageWidth - (margin * 2);
+            final int contentHeight = pageHeight - (margin * 2) - 36;
+
+            float scale =
+                    (float) contentWidth / pendingPdfBitmap.getWidth();
+
+            int sourceHeightPerPage =
+                    Math.max(
+                            1,
+                            (int) Math.floor(contentHeight / scale)
+                    );
+
+            int sourceTop = 0;
+            int pageNumber = 1;
+
+            Paint bitmapPaint =
+                    new Paint(
+                            Paint.ANTI_ALIAS_FLAG |
+                            Paint.FILTER_BITMAP_FLAG
+                    );
+
+            Paint pageNumberPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            pageNumberPaint.setColor(Color.DKGRAY);
+            pageNumberPaint.setTextSize(22f);
+
+            while (sourceTop < pendingPdfBitmap.getHeight()) {
+                int sourceBottom =
+                        Math.min(
+                                pendingPdfBitmap.getHeight(),
+                                sourceTop + sourceHeightPerPage
+                        );
+
+                PdfDocument.PageInfo pageInfo =
+                        new PdfDocument.PageInfo.Builder(
+                                pageWidth,
+                                pageHeight,
+                                pageNumber
+                        ).create();
+
+                PdfDocument.Page page =
+                        document.startPage(pageInfo);
+
+                Canvas pageCanvas = page.getCanvas();
+                pageCanvas.drawColor(Color.WHITE);
+
+                Rect src = new Rect(
+                        0,
+                        sourceTop,
+                        pendingPdfBitmap.getWidth(),
+                        sourceBottom
+                );
+
+                int drawHeight =
+                        Math.round(
+                                (sourceBottom - sourceTop) * scale
+                        );
+
+                Rect dst = new Rect(
+                        margin,
+                        margin,
+                        margin + contentWidth,
+                        margin + drawHeight
+                );
+
+                pageCanvas.drawBitmap(
+                        pendingPdfBitmap,
+                        src,
+                        dst,
+                        bitmapPaint
+                );
+
+                pageCanvas.drawText(
+                        "YomCeph · Uso educativo · Página " + pageNumber,
+                        margin,
+                        pageHeight - 22,
+                        pageNumberPaint
+                );
+
+                document.finishPage(page);
+
+                sourceTop = sourceBottom;
+                pageNumber++;
+            }
+
+            document.writeTo(out);
+            out.flush();
+
+            Toast.makeText(
+                    this,
+                    "Informe PDF guardado correctamente.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } catch (Exception e) {
+            Toast.makeText(
+                    this,
+                    "No se pudo guardar el informe PDF.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } finally {
+            document.close();
+
+            if (pendingPdfBitmap != null
+                    && !pendingPdfBitmap.isRecycled()) {
+                pendingPdfBitmap.recycle();
+            }
+
+            pendingPdfBitmap = null;
+        }
     }
 
     private void writePendingBitmap(
@@ -2921,6 +2951,21 @@ public class AnalysisActivity extends AppCompatActivity {
                 resultCode,
                 data
         );
+
+        if (requestCode == REQ_SAVE_PDF) {
+            if (resultCode == RESULT_OK
+                    && data != null
+                    && data.getData() != null) {
+                writePendingPdf(data.getData());
+            } else {
+                if (pendingPdfBitmap != null
+                        && !pendingPdfBitmap.isRecycled()) {
+                    pendingPdfBitmap.recycle();
+                }
+                pendingPdfBitmap = null;
+            }
+            return;
+        }
 
         if (requestCode == REQ_SAVE_ANNOTATED
                 || requestCode == REQ_SAVE_REPORT) {

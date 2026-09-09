@@ -52,7 +52,6 @@ public class MeasurementView extends View {
     private boolean twoFingerTracking = false;
 
     private int selectedIndex = 0;
-    private int draggingPoint = -1;
     private float downX, downY;
     private float lastPanX, lastPanY;
     private boolean moved = false;
@@ -119,6 +118,7 @@ public class MeasurementView extends View {
                                 detector.getFocusY()
                         );
 
+                        constrainImageToViewport();
                         updateInverse();
                         invalidate();
                         return true;
@@ -604,7 +604,6 @@ public class MeasurementView extends View {
         if (event.getPointerCount() >= 2) {
             magnifierActive = false;
             handleTwoFingerPan(event);
-            draggingPoint = -1;
             return true;
         } else {
             twoFingerTracking = false;
@@ -624,23 +623,6 @@ public class MeasurementView extends View {
                     magnifierActive = true;
                 }
 
-                // Solo puede arrastrarse el punto que el estudiante seleccionó.
-                // Así, colocar un punto muy cerca de otro no mueve ni borra el anterior.
-                draggingPoint =
-                        !locked
-                        && selectedIndex >= 0
-                        && selectedIndex < points.size()
-                        && points.get(selectedIndex) != null
-                        && !isPointLocked(selectedIndex)
-                        && isTouchNearPoint(
-                                selectedIndex,
-                                downX,
-                                downY,
-                                dp(30)
-                        )
-                                ? selectedIndex
-                                : -1;
-
                 invalidate();
                 return true;
 
@@ -652,31 +634,23 @@ public class MeasurementView extends View {
                     moved = true;
                 }
 
-                PointF movePoint = screenToImage(x, y);
-
-                if (!locked
-                        && draggingPoint >= 0
-                        && !isPointLocked(draggingPoint)
-                        && insideImage(movePoint)) {
-
-                    points.set(draggingPoint, movePoint);
-                    selectedIndex = draggingPoint;
-                    magnifierImagePoint = movePoint;
-                    magnifierActive = true;
-
-                } else if (moved && !scaleDetector.isInProgress()) {
-                    // Un dedo arrastra la radiografía libremente en X/Y.
-                    // Un toque corto sigue colocando el punto seleccionado.
+                if (moved && !scaleDetector.isInProgress()) {
+                    // Arrastrar con un dedo siempre desplaza la radiografía.
+                    // Nunca se selecciona ni se mueve un punto tocándolo sobre la imagen.
                     float dx = x - lastPanX;
                     float dy = y - lastPanY;
 
                     matrix.postTranslate(dx, dy);
+                    constrainImageToViewport();
                     updateInverse();
-
                     magnifierActive = false;
-                } else if (insideImage(movePoint)) {
-                    magnifierImagePoint = movePoint;
-                    magnifierActive = true;
+                } else {
+                    PointF movePoint = screenToImage(x, y);
+
+                    if (insideImage(movePoint)) {
+                        magnifierImagePoint = movePoint;
+                        magnifierActive = true;
+                    }
                 }
 
                 lastPanX = x;
@@ -688,27 +662,25 @@ public class MeasurementView extends View {
             case MotionEvent.ACTION_UP:
                 PointF upPoint = screenToImage(event.getX(), event.getY());
 
-                if (!locked) {
-                    if (draggingPoint >= 0) {
-                        draggingPoint = -1;
-                        notifyProgress();
+                if (!locked
+                        && !moved
+                        && insideImage(upPoint)
+                        && selectedIndex >= 0
+                        && selectedIndex < points.size()
+                        && !isPointLocked(selectedIndex)) {
 
-                    } else if (!moved
-                            && insideImage(upPoint)
-                            && selectedIndex >= 0
-                            && selectedIndex < points.size()
-                            && !isPointLocked(selectedIndex)) {
+                    // La edición de un punto solo afecta al punto seleccionado
+                    // desde su recuadro/chip. Tocar otro punto en la radiografía
+                    // nunca cambia la selección.
+                    points.set(selectedIndex, upPoint);
+                    performClick();
 
-                        points.set(selectedIndex, upPoint);
-                        performClick();
-
-                        int nextMissing = nextMissingIndex(selectedIndex);
-                        if (nextMissing >= 0) {
-                            selectedIndex = nextMissing;
-                        }
-
-                        notifyProgress();
+                    int nextMissing = nextMissingIndex(selectedIndex);
+                    if (nextMissing >= 0) {
+                        selectedIndex = nextMissing;
                     }
+
+                    notifyProgress();
                 }
 
                 magnifierActive = false;
@@ -716,7 +688,6 @@ public class MeasurementView extends View {
                 return true;
 
             case MotionEvent.ACTION_CANCEL:
-                draggingPoint = -1;
                 magnifierActive = false;
                 invalidate();
                 return true;
@@ -738,6 +709,8 @@ public class MeasurementView extends View {
             case MotionEvent.ACTION_DOWN:
                 downX = event.getX();
                 downY = event.getY();
+                lastPanX = downX;
+                lastPanY = downY;
                 moved = false;
 
                 PointF initial = screenToImage(downX, downY);
@@ -750,15 +723,32 @@ public class MeasurementView extends View {
                 return true;
 
             case MotionEvent.ACTION_MOVE:
-                if (Math.hypot(event.getX() - downX, event.getY() - downY) > dp(6)) {
+                float x = event.getX();
+                float y = event.getY();
+
+                if (Math.hypot(x - downX, y - downY) > dp(6)) {
                     moved = true;
                 }
 
-                PointF movePoint = screenToImage(event.getX(), event.getY());
-                if (insideImage(movePoint)) {
-                    magnifierImagePoint = movePoint;
-                    magnifierActive = true;
+                if (moved && !scaleDetector.isInProgress()) {
+                    float dx = x - lastPanX;
+                    float dy = y - lastPanY;
+
+                    matrix.postTranslate(dx, dy);
+                    constrainImageToViewport();
+                    updateInverse();
+                    magnifierActive = false;
+                } else {
+                    PointF movePoint = screenToImage(x, y);
+
+                    if (insideImage(movePoint)) {
+                        magnifierImagePoint = movePoint;
+                        magnifierActive = true;
+                    }
                 }
+
+                lastPanX = x;
+                lastPanY = y;
 
                 invalidate();
                 return true;
@@ -831,7 +821,13 @@ public class MeasurementView extends View {
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE
                 && !scaleDetector.isInProgress()) {
-            matrix.postTranslate(cx - lastTwoFingerX, cy - lastTwoFingerY);
+
+            matrix.postTranslate(
+                    cx - lastTwoFingerX,
+                    cy - lastTwoFingerY
+            );
+
+            constrainImageToViewport();
             updateInverse();
             invalidate();
         }
@@ -840,23 +836,44 @@ public class MeasurementView extends View {
         lastTwoFingerY = cy;
     }
 
-    private boolean isTouchNearPoint(
-            int index,
-            float sx,
-            float sy,
-            float radiusPx
-    ) {
-        if (index < 0 || index >= points.size()) return false;
+    private void constrainImageToViewport() {
+        if (bitmap == null || getWidth() <= 0 || getHeight() <= 0) return;
 
-        PointF point = points.get(index);
-        if (point == null) return false;
+        RectF rect = new RectF(
+                0f,
+                0f,
+                bitmap.getWidth(),
+                bitmap.getHeight()
+        );
 
-        PointF p = imageToScreen(point);
+        matrix.mapRect(rect);
 
-        return Math.hypot(
-                sx - p.x,
-                sy - p.y
-        ) <= radiusPx;
+        float dx = 0f;
+        float dy = 0f;
+
+        if (rect.width() <= getWidth()) {
+            dx = getWidth() / 2f - rect.centerX();
+        } else {
+            if (rect.left > 0f) {
+                dx = -rect.left;
+            } else if (rect.right < getWidth()) {
+                dx = getWidth() - rect.right;
+            }
+        }
+
+        if (rect.height() <= getHeight()) {
+            dy = getHeight() / 2f - rect.centerY();
+        } else {
+            if (rect.top > 0f) {
+                dy = -rect.top;
+            } else if (rect.bottom < getHeight()) {
+                dy = getHeight() - rect.bottom;
+            }
+        }
+
+        if (dx != 0f || dy != 0f) {
+            matrix.postTranslate(dx, dy);
+        }
     }
 
     private int firstMissingIndex() {

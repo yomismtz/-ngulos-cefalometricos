@@ -53,12 +53,14 @@ public class LinearMeasurementDefinition {
     public String diagnosis(double valueMm) {
         if (interpretation == Interpretation.HYOID_TRIANGLE) {
             if (valueMm > 0.01) {
-                return "Triángulo hioideo positivo: H se encuentra por debajo del plano RGn-C3.";
+                return "H está por debajo de la línea C3-RGn (triángulo hioideo positivo). Es una descripción cefalométrica y no un diagnóstico respiratorio.";
             }
+
             if (valueMm < -0.01) {
-                return "Triángulo hioideo negativo: H se encuentra por encima del plano RGn-C3.";
+                return "H está por encima de la línea C3-RGn (triángulo hioideo negativo). Es una descripción cefalométrica y no un diagnóstico respiratorio.";
             }
-            return "H se encuentra sobre el plano RGn-C3.";
+
+            return "H se encuentra prácticamente sobre la línea C3-RGn. Interpretar junto con el resto del trazado.";
         }
 
         if (interpretation == Interpretation.COMPARATIVE) {
@@ -66,16 +68,25 @@ public class LinearMeasurementDefinition {
         }
 
         if (interpretation == Interpretation.CERVICAL_DEPTH) {
-            if (valueMm < 0) {
-                return "Cifótica: el valor se expresa en cifra negativa.";
+            if (valueMm < 2.0) {
+                return "Profundidad <2 mm: patrón cifótico según la referencia de Penning/Rocabado; requiere correlación clínica.";
             }
+
             if (valueMm < 8.0) {
-                return "Rectificación de la lordosis cervical.";
+                return "Profundidad de 2 a <8 mm: rectificación de la curvatura cervical según la referencia empleada.";
             }
-            if (valueMm > 12.0) {
-                return "Lordótica.";
+
+            if (valueMm <= 12.0) {
+                return "Profundidad de 8 a 12 mm: dentro del intervalo de referencia empleado.";
             }
-            return "Profundidad cervical dentro de la norma.";
+
+            return "Profundidad >12 mm: curvatura lordótica aumentada según la referencia empleada; correlacionar clínicamente.";
+        }
+
+        if (Double.isNaN(normalMin) || Double.isNaN(normalMax)) {
+            return normalDiagnosis == null || normalDiagnosis.trim().isEmpty()
+                    ? "Medida descriptiva; no se aplica clasificación automática."
+                    : normalDiagnosis;
         }
 
         if (valueMm < normalMin) return lowDiagnosis;

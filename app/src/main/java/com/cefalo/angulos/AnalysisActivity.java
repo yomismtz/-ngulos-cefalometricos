@@ -576,19 +576,19 @@ public class AnalysisActivity extends AppCompatActivity {
                 chip.setBackgroundResource(
                         R.drawable.chip_selected
                 );
-                chip.setTextColor(0xFF5B3FA4);
+                chip.setTextColor(getColor(R.color.brand_purple));
 
             } else if (placed) {
                 chip.setBackgroundResource(
                         R.drawable.button_soft_mint
                 );
-                chip.setTextColor(0xFF15383D);
+                chip.setTextColor(getColor(R.color.mint_text));
 
             } else {
                 chip.setBackgroundResource(
                         R.drawable.button_soft_purple
                 );
-                chip.setTextColor(0xFF5B3FA4);
+                chip.setTextColor(getColor(R.color.brand_purple));
             }
 
             ViewGroup.MarginLayoutParams lp =
@@ -727,7 +727,7 @@ public class AnalysisActivity extends AppCompatActivity {
         );
 
         description.setTextSize(15f);
-        description.setTextColor(0xFF3D3946);
+        description.setTextColor(getColor(R.color.text_primary));
         description.setPadding(
                 0,
                 dp(8),
@@ -790,7 +790,7 @@ public class AnalysisActivity extends AppCompatActivity {
             btnLock.setBackgroundResource(
                     R.drawable.button_soft_purple_centered
             );
-            btnLock.setTextColor(0xFF5B3FA4);
+            btnLock.setTextColor(getColor(R.color.brand_purple));
             return;
         }
 
@@ -801,14 +801,14 @@ public class AnalysisActivity extends AppCompatActivity {
             btnLock.setBackgroundResource(
                     R.drawable.button_soft_mint_centered
             );
-            btnLock.setTextColor(0xFF15383D);
+            btnLock.setTextColor(getColor(R.color.mint_text));
 
         } else {
             btnLock.setText("BLOQ. PUNTO");
             btnLock.setBackgroundResource(
                     R.drawable.button_soft_purple_centered
             );
-            btnLock.setTextColor(0xFF5B3FA4);
+            btnLock.setTextColor(getColor(R.color.brand_purple));
         }
     }
 
@@ -1048,7 +1048,7 @@ public class AnalysisActivity extends AppCompatActivity {
     private TextView formLabel(String text) {
         TextView label = new TextView(this);
         label.setText(text);
-        label.setTextColor(0xFF5B3FA4);
+        label.setTextColor(getColor(R.color.brand_purple));
         label.setTypeface(
                 Typeface.DEFAULT,
                 Typeface.BOLD
@@ -1209,28 +1209,28 @@ public class AnalysisActivity extends AppCompatActivity {
         TextView step = new TextView(this);
         step.setText("1. Localice una referencia de longitud conocida en la radiografía.");
         step.setTextSize(14f);
-        step.setTextColor(0xFF3D3946);
+        step.setTextColor(getColor(R.color.text_primary));
         step.setPadding(0, 0, 0, dp(8));
         content.addView(step);
 
         TextView step2 = new TextView(this);
         step2.setText("2. Toque un extremo y después el otro. Puede ser horizontal, vertical o diagonal.");
         step2.setTextSize(14f);
-        step2.setTextColor(0xFF3D3946);
+        step2.setTextColor(getColor(R.color.text_primary));
         step2.setPadding(0, 0, 0, dp(8));
         content.addView(step2);
 
         TextView step3 = new TextView(this);
         step3.setText("3. Después escribirá cuánto mide realmente en mm o cm.");
         step3.setTextSize(14f);
-        step3.setTextColor(0xFF3D3946);
+        step3.setTextColor(getColor(R.color.text_primary));
         step3.setPadding(0, 0, 0, dp(8));
         content.addView(step3);
 
         TextView note = new TextView(this);
         note.setText(calibrationInstructions());
         note.setTextSize(12.5f);
-        note.setTextColor(0xFF2C7E86);
+        note.setTextColor(getColor(R.color.brand_teal));
         note.setBackgroundResource(R.drawable.button_soft_mint);
         note.setPadding(dp(12), dp(10), dp(12), dp(10));
         content.addView(note);
@@ -1289,7 +1289,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 "Referencia marcada: " +
                 String.format(Locale.US, "%.1f píxeles", pixelDistance)
         );
-        info.setTextColor(0xFF5B3FA4);
+        info.setTextColor(getColor(R.color.brand_purple));
         info.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         info.setTextSize(14f);
         info.setGravity(Gravity.CENTER);
@@ -1300,7 +1300,7 @@ public class AnalysisActivity extends AppCompatActivity {
         help.setText(
                 "Escriba la longitud REAL de la regla, calibrador o marcador que acaba de señalar."
         );
-        help.setTextColor(0xFF4A4652);
+        help.setTextColor(getColor(R.color.text_primary));
         help.setTextSize(13f);
         help.setGravity(Gravity.CENTER);
         help.setPadding(0, 0, 0, dp(8));
@@ -1603,7 +1603,7 @@ public class AnalysisActivity extends AppCompatActivity {
                                 : " · " + patientSex
                 )
         );
-        heading.setTextColor(0xFF5B3FA4);
+        heading.setTextColor(getColor(R.color.brand_purple));
         heading.setTextSize(15f);
         heading.setTypeface(
                 Typeface.DEFAULT,
@@ -1623,7 +1623,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 "Puede cerrar esta ventana, desbloquear el trazado, corregir un punto y volver a calcular."
         );
         intro.setTextSize(13f);
-        intro.setTextColor(0xFF4A4652);
+        intro.setTextColor(getColor(R.color.text_primary));
         intro.setPadding(
                 0,
                 0,
@@ -1635,7 +1635,7 @@ public class AnalysisActivity extends AppCompatActivity {
         TextView evidenceNotice = new TextView(this);
         evidenceNotice.setText(resultsSafetyNotice());
         evidenceNotice.setTextSize(12.5f);
-        evidenceNotice.setTextColor(0xFF5A4615);
+        evidenceNotice.setTextColor(getColor(R.color.warning_text));
         evidenceNotice.setGravity(Gravity.CENTER);
         evidenceNotice.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         evidenceNotice.setBackgroundResource(R.drawable.button_soft_mint_centered);
@@ -1673,7 +1673,7 @@ public class AnalysisActivity extends AppCompatActivity {
             );
 
             row.setTextSize(13.5f);
-            row.setTextColor(0xFF292631);
+            row.setTextColor(getColor(R.color.text_primary));
             row.setGravity(Gravity.CENTER);
             row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
 
@@ -1714,7 +1714,7 @@ public class AnalysisActivity extends AppCompatActivity {
         if (!linearDefinitions.isEmpty()) {
             TextView linearTitle = new TextView(this);
             linearTitle.setText(linearSectionTitle());
-            linearTitle.setTextColor(0xFF5B3FA4);
+            linearTitle.setTextColor(getColor(R.color.brand_purple));
             linearTitle.setTextSize(15f);
             linearTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
             linearTitle.setPadding(0, dp(8), 0, dp(8));
@@ -1725,7 +1725,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 warning.setText(
                         "Para obtener resultados en mm primero calibre la radiografía con una referencia de longitud conocida."
                 );
-                warning.setTextColor(0xFF7A4F00);
+                warning.setTextColor(getColor(R.color.warning_text));
                 warning.setTextSize(14f);
                 warning.setBackgroundResource(R.drawable.button_soft_mint);
                 warning.setPadding(dp(14), dp(12), dp(14), dp(12));
@@ -1739,7 +1739,7 @@ public class AnalysisActivity extends AppCompatActivity {
                         " · " +
                         String.format(Locale.US, "%.5f mm/píxel", mmPerPixel)
                 );
-                calibration.setTextColor(0xFF2C7E86);
+                calibration.setTextColor(getColor(R.color.brand_teal));
                 calibration.setTextSize(13f);
                 calibration.setPadding(0, 0, 0, dp(8));
                 container.addView(calibration);
@@ -1759,7 +1759,7 @@ public class AnalysisActivity extends AppCompatActivity {
                             linearDiagnosis(def, value)
                     );
                     row.setTextSize(13.5f);
-                    row.setTextColor(0xFF292631);
+                    row.setTextColor(getColor(R.color.text_primary));
                     row.setGravity(Gravity.CENTER);
                     row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
                     row.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
@@ -1791,7 +1791,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 createDialogButton(
                         getString(R.string.export_annotated),
                         R.drawable.button_soft_mint,
-                        0xFF15383D
+                        getColor(R.color.mint_text)
                 );
 
         saveAnnotated.setOnClickListener(v -> {
@@ -2148,7 +2148,7 @@ public class AnalysisActivity extends AppCompatActivity {
         );
 
         summary.setTextSize(13.5f);
-        summary.setTextColor(0xFF5B3FA4);
+        summary.setTextColor(getColor(R.color.brand_purple));
         summary.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         summary.setGravity(Gravity.CENTER);
         summary.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
@@ -2174,7 +2174,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 "las diferencias derecha/izquierda son orientativas y una asimetría relevante debe confirmarse clínicamente o con imagen apropiada."
         );
         note.setTextSize(12.5f);
-        note.setTextColor(0xFF4A4652);
+        note.setTextColor(getColor(R.color.text_primary));
         note.setGravity(Gravity.CENTER);
         note.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         note.setBackgroundResource(R.drawable.button_soft_mint_centered);
@@ -2192,7 +2192,7 @@ public class AnalysisActivity extends AppCompatActivity {
         TextView title = new TextView(this);
         title.setText("Comparación derecha / izquierda");
         title.setTextSize(16f);
-        title.setTextColor(0xFF5B3FA4);
+        title.setTextColor(getColor(R.color.brand_purple));
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setPadding(0, dp(8), 0, dp(6));
         container.addView(title);
@@ -2259,7 +2259,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 String.format(Locale.US, "D %.2f mm · I %.2f mm\n%s", right, left, conclusion)
         );
         row.setTextSize(13f);
-        row.setTextColor(0xFF3D3946);
+        row.setTextColor(getColor(R.color.text_primary));
         row.setGravity(Gravity.CENTER);
         row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         row.setBackgroundResource(R.drawable.button_soft_mint);

@@ -44,11 +44,11 @@ jobs:
         run: gradle --no-daemon :app:assembleDebug
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk YomCeph-v1.14.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk YomCeph-v1.15.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: YomCeph-APK
-          path: YomCeph-v1.14.apk
+          path: YomCeph-v1.15.apk
           if-no-files-found: error

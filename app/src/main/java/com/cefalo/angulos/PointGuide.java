@@ -43,6 +43,42 @@ public final class PointGuide {
         GUIDE.put("C2 post-sup.", "C2 post-sup.: margen posterosuperior del ápice del proceso odontoides de la segunda vértebra cervical, usado para la tangente cervical.");
         GUIDE.put("C7 post-inf.", "C7 post-inf.: punto posteroinferior del cuerpo de la séptima vértebra cervical, usado para la tangente cervical.");
         GUIDE.put("Profundidad cervical", "Profundidad cervical: marque el punto de máxima profundidad de la curvatura cervical respecto a la tangente C2-C7.");
+        GUIDE.put("G'", "Glabela de tejidos blandos: punto más prominente de la frente en el perfil.");
+        GUIDE.put("N'", "Nasion de tejidos blandos: punto de mayor concavidad en la raíz nasal.");
+        GUIDE.put("Pr", "Pronasale: punto más anterior y prominente de la punta de la nariz.");
+        GUIDE.put("Pg'", "Pogonion de tejidos blandos: punto más anterior del mentón.");
+        GUIDE.put("Me'", "Mentón de tejidos blandos: punto más inferior de la región mentoniana.");
+        GUIDE.put("C", "Punto cervical: punto más profundo de la concavidad entre la región submandibular y el cuello.");
+        GUIDE.put("Ba", "Basion (Ba): punto medio en el borde anterior del foramen magno.");
+        GUIDE.put("AD1", "AD1: punto más cercano del tejido adenoideo sobre la línea ENP-Ba.");
+        GUIDE.put("AD2", "AD2: punto más cercano del tejido adenoideo sobre una línea desde ENP perpendicular a S-Ba.");
+        GUIDE.put("Uptp", "Uptp: punto de referencia superior utilizado en la medición AD3 de la tabla proporcionada.");
+        GUIDE.put("Adenoides", "Adenoides: punto del tejido adenoideo usado para la medición AD3.");
+        GUIDE.put("Faringe sup ant.", "Faringe superior anterior: punto sobre el contorno posterior del paladar blando.");
+        GUIDE.put("Faringe sup post.", "Faringe superior posterior: punto más cercano de la pared faríngea posterior.");
+        GUIDE.put("Faringe inf ant.", "Faringe inferior anterior: intersección del borde posterior de la lengua con el borde inferior mandibular.");
+        GUIDE.put("Faringe inf post.", "Faringe inferior posterior: punto más cercano de la pared faríngea posterior.");
+        GUIDE.put("LM sup.", "Levandoski: punto superior de la línea media maxilar, sobre el septum nasal.");
+        GUIDE.put("LM inf.", "Levandoski: punto inferior de la línea media maxilar, sobre la referencia central inferior.");
+        GUIDE.put("LM mandibular", "Levandoski: punto de la línea media mandibular para compararlo con la línea media maxilar.");
+        GUIDE.put("Cd der.", "Condylion derecho: punto más superior del cóndilo mandibular derecho.");
+        GUIDE.put("Cd izq.", "Condylion izquierdo: punto más superior del cóndilo mandibular izquierdo.");
+        GUIDE.put("Go der.", "Gonion derecho: punto del ángulo mandibular derecho.");
+        GUIDE.put("Go izq.", "Gonion izquierdo: punto del ángulo mandibular izquierdo.");
+        GUIDE.put("Kr der.", "Koronion derecho: punto más superior de la apófisis coronoides derecha.");
+        GUIDE.put("Kr izq.", "Koronion izquierdo: punto más superior de la apófisis coronoides izquierda.");
+        GUIDE.put("IC max der.", "Punto del incisivo central maxilar del lado derecho usado en la línea comparativa de Levandoski.");
+        GUIDE.put("IC max izq.", "Punto del incisivo central maxilar del lado izquierdo usado en la línea comparativa de Levandoski.");
+        GUIDE.put("IC mand der.", "Punto del incisivo central mandibular del lado derecho usado en la línea comparativa de Levandoski.");
+        GUIDE.put("IC mand izq.", "Punto del incisivo central mandibular del lado izquierdo usado en la línea comparativa de Levandoski.");
+        GUIDE.put("Cuerpo Md der.", "Punto de referencia del cuerpo mandibular derecho para medir su distancia a la línea media.");
+        GUIDE.put("Cuerpo Md izq.", "Punto de referencia del cuerpo mandibular izquierdo para medir su distancia a la línea media.");
+        GUIDE.put("M2 distal der.", "Punto distal del segundo molar derecho para medir la distancia a la línea media.");
+        GUIDE.put("M2 distal izq.", "Punto distal del segundo molar izquierdo para medir la distancia a la línea media.");
+        GUIDE.put("Rama ant der.", "Punto del borde anterior de la rama mandibular derecha, usado para medir su ancho.");
+        GUIDE.put("Rama post der.", "Punto del borde posterior de la rama mandibular derecha, usado para medir su ancho.");
+        GUIDE.put("Rama ant izq.", "Punto del borde anterior de la rama mandibular izquierda, usado para medir su ancho.");
+        GUIDE.put("Rama post izq.", "Punto del borde posterior de la rama mandibular izquierda, usado para medir su ancho.");
     }
 
     private PointGuide() {}

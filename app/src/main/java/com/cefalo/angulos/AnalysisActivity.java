@@ -2545,6 +2545,7 @@ public class AnalysisActivity extends Activity {
 
             patientName = "";
             patientAge = "";
+            patientSex = "";
             mmPerPixel = Double.NaN;
             calibrationLabel = "";
 

@@ -49,8 +49,24 @@ public final class SavedStudyStore {
     }
 
     public static String suggestedStudyName(Context context) {
-        int next = list(context).size() + 1;
-        return "Estudio " + next;
+        int max = 0;
+
+        for (StudyData study : list(context)) {
+            if (study == null || study.studyName == null) continue;
+
+            String name = study.studyName.trim();
+            if (!name.toLowerCase().startsWith("estudio ")) continue;
+
+            try {
+                int value = Integer.parseInt(
+                        name.substring("Estudio ".length()).trim()
+                );
+                if (value > max) max = value;
+            } catch (Exception ignored) {
+            }
+        }
+
+        return "Estudio " + (max + 1);
     }
 
     public static void save(Context context, StudyData study) {

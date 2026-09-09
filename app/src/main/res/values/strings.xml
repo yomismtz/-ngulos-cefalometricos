@@ -38,4 +38,14 @@
     <string name="educational_disclaimer">YomCeph es una herramienta educativa. No es un dispositivo médico y no diagnostica, trata, cura ni previene ninguna afección médica. Para asesoramiento, diagnóstico o tratamiento, consulte a un profesional sanitario cualificado.</string>
     <string name="understood">ENTENDIDO</string>
     <string name="more_info">MÁS INFORMACIÓN</string>
+
+    <string name="theme_dark">🌙 MODO OSCURO</string>
+    <string name="theme_light">☀ MODO CLARO</string>
+    <string name="autosave_ready">Autoguardado listo</string>
+    <string name="autosave_saving">Guardando automáticamente…</string>
+    <string name="autosave_saved">✓ Guardado automáticamente</string>
+    <string name="export_pdf">GUARDAR INFORME EN PDF</string>
+    <string name="export_report_image">GUARDAR INFORME COMO IMAGEN</string>
+    <string name="export_annotated">GUARDAR RADIOGRAFÍA CON PUNTOS Y LÍNEAS</string>
+    <string name="educational_footer">Uso educativo · No sustituye valoración profesional</string>
 </resources>

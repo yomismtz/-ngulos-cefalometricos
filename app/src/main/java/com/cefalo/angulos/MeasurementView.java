@@ -305,6 +305,60 @@ public class MeasurementView extends View {
         matrix.invert(inverse);
     }
 
+    public Bitmap renderAnnotatedBitmap() {
+        if (bitmap == null) return null;
+
+        int maxDimension = 2400;
+        float exportScale = Math.min(1f,
+                (float) maxDimension / Math.max(bitmap.getWidth(), bitmap.getHeight()));
+
+        int outW = Math.max(1, Math.round(bitmap.getWidth() * exportScale));
+        int outH = Math.max(1, Math.round(bitmap.getHeight() * exportScale));
+
+        Bitmap output = Bitmap.createBitmap(outW, outH, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        Paint exportImagePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+        android.graphics.Rect src = new android.graphics.Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        android.graphics.RectF dst = new android.graphics.RectF(0, 0, outW, outH);
+        canvas.drawBitmap(bitmap, src, dst, exportImagePaint);
+
+        Paint exportHalo = new Paint(Paint.ANTI_ALIAS_FLAG);
+        exportHalo.setColor(Color.WHITE);
+        exportHalo.setStyle(Paint.Style.FILL);
+
+        Paint exportPoint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        exportPoint.setColor(Color.rgb(34, 191, 199));
+        exportPoint.setStyle(Paint.Style.FILL);
+
+        Paint exportText = new Paint(Paint.ANTI_ALIAS_FLAG);
+        exportText.setColor(Color.rgb(225, 255, 248));
+        exportText.setTextSize(Math.max(24f, 32f * exportScale));
+        exportText.setFakeBoldText(true);
+        exportText.setShadowLayer(4f, 1f, 1f, Color.BLACK);
+
+        float outerRadius = Math.max(9f, 13f * exportScale);
+        float innerRadius = Math.max(6f, 9f * exportScale);
+        float labelOffset = Math.max(11f, 15f * exportScale);
+
+        for (int i = 0; i < points.size(); i++) {
+            PointF p = points.get(i);
+            float x = p.x * exportScale;
+            float y = p.y * exportScale;
+
+            canvas.drawCircle(x, y, outerRadius, exportHalo);
+            canvas.drawCircle(x, y, innerRadius, exportPoint);
+
+            String label = i < landmarkLabels.size()
+                    ? landmarkLabels.get(i)
+                    : String.valueOf(i + 1);
+
+            canvas.drawText(label, x + labelOffset, y - labelOffset, exportText);
+        }
+
+        return output;
+    }
+
     public Double calculate(MeasurementDefinition definition) {
         if (definition == null) return null;
 

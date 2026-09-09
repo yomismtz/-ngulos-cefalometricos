@@ -116,10 +116,6 @@ public final class LinearMeasurementCatalog {
     public static List<LinearMeasurementDefinition> levandoski() {
         List<LinearMeasurementDefinition> list = new ArrayList<>();
 
-        list.add(m("Desviación línea media mandibular", PERPENDICULAR_ABS, COMPARATIVE,
-                p("LM sup.", "LM inf.", "LM mandibular"), Double.NaN, Double.NaN,
-                "Comparación con línea media maxilar", "", "Comparativa; sin norma estándar", ""));
-
         list.add(m("Cóndilo a incisivo central maxilar derecho", DISTANCE, COMPARATIVE,
                 p("Cd der.", "IC max der."), Double.NaN, Double.NaN,
                 "Comparar D/I", "", "Comparar con lado izquierdo", ""));

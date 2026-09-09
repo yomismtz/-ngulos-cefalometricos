@@ -2061,9 +2061,7 @@ public class AnalysisActivity extends Activity {
         );
 
         canvas.drawText(
-                "VERTEBRAL".equals(mode)
-                        ? "Informe de análisis vertebral / craneocervical"
-                        : "Informe de análisis de Steiner",
+                "Informe · " + modeTitle(),
                 margin,
                 120,
                 subtitlePaint
@@ -2235,7 +2233,7 @@ public class AnalysisActivity extends Activity {
                                 Locale.US,
                                 "%.2f mm   ·   Norma: %s",
                                 value,
-                                def.normText
+                                linearNormText(def, value)
                         );
 
                 canvas.drawText(
@@ -2247,7 +2245,7 @@ public class AnalysisActivity extends Activity {
 
                 drawWrappedText(
                         canvas,
-                        def.diagnosis(value),
+                        linearDiagnosis(def, value),
                         left + 30,
                         top + 132,
                         right - 30,

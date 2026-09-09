@@ -1353,6 +1353,8 @@ public class AnalysisActivity extends Activity {
 
             row.setTextSize(13.5f);
             row.setTextColor(0xFF292631);
+            row.setGravity(Gravity.CENTER);
+            row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
 
             row.setTypeface(
                     Typeface.DEFAULT,
@@ -1437,6 +1439,8 @@ public class AnalysisActivity extends Activity {
                     );
                     row.setTextSize(13.5f);
                     row.setTextColor(0xFF292631);
+                    row.setGravity(Gravity.CENTER);
+                    row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
                     row.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
                     row.setBackgroundResource(R.drawable.card_white);
                     row.setPadding(dp(14), dp(12), dp(14), dp(12));

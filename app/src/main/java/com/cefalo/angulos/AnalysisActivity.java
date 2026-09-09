@@ -597,8 +597,8 @@ public class AnalysisActivity extends Activity {
         box.addView(
                 image,
                 new LinearLayout.LayoutParams(
-                        dp(110),
-                        dp(86)
+                        dp(96),
+                        dp(74)
                 )
         );
 
@@ -627,18 +627,24 @@ public class AnalysisActivity extends Activity {
 
         box.addView(description);
 
-        new AlertDialog.Builder(this)
+        ScrollView guideScroll = new ScrollView(this);
+        guideScroll.setFillViewport(true);
+        guideScroll.addView(box);
+
+        AlertDialog guideDialog = new AlertDialog.Builder(this)
                 .setTitle(
                         "¿Dónde está " +
                         label +
                         "?"
                 )
-                .setView(box)
+                .setView(guideScroll)
                 .setPositiveButton(
                         "Entendido",
                         null
                 )
-                .show();
+                .create();
+
+        guideDialog.show();
     }
 
     private void showAssistedDetectionInfo() {

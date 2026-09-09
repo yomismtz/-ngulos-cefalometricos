@@ -6,7 +6,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -18,7 +21,7 @@ import java.util.List;
 public class MeasurementView extends View {
 
     public interface ProgressListener {
-        void onProgress(int placed, int total, String nextLabel);
+        void onProgress(int placed, int total, String currentLabel);
     }
 
     private Bitmap bitmap;
@@ -27,8 +30,10 @@ public class MeasurementView extends View {
 
     private final Paint imagePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Paint pointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint selectedPointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint haloPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint magnifierBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final Matrix matrix = new Matrix();
     private final Matrix inverse = new Matrix();
@@ -37,9 +42,15 @@ public class MeasurementView extends View {
     private final ScaleGestureDetector scaleDetector;
     private float lastTwoFingerX, lastTwoFingerY;
     private boolean twoFingerTracking = false;
+
+    private int selectedIndex = 0;
     private int draggingPoint = -1;
     private float downX, downY;
     private boolean moved = false;
+    private boolean locked = false;
+
+    private boolean magnifierActive = false;
+    private PointF magnifierImagePoint;
 
     private ProgressListener progressListener;
 
@@ -50,6 +61,9 @@ public class MeasurementView extends View {
         pointPaint.setColor(Color.rgb(34, 191, 199));
         pointPaint.setStyle(Paint.Style.FILL);
 
+        selectedPointPaint.setColor(Color.rgb(154, 111, 232));
+        selectedPointPaint.setStyle(Paint.Style.FILL);
+
         haloPaint.setColor(Color.WHITE);
         haloPaint.setStyle(Paint.Style.FILL);
 
@@ -58,16 +72,28 @@ public class MeasurementView extends View {
         textPaint.setFakeBoldText(true);
         textPaint.setShadowLayer(5f, 1f, 1f, Color.BLACK);
 
+        magnifierBorderPaint.setColor(Color.rgb(185, 243, 230));
+        magnifierBorderPaint.setStyle(Paint.Style.STROKE);
+        magnifierBorderPaint.setStrokeWidth(dp(4));
+
         scaleDetector = new ScaleGestureDetector(context,
                 new ScaleGestureDetector.SimpleOnScaleGestureListener() {
                     @Override
                     public boolean onScale(ScaleGestureDetector detector) {
                         if (bitmap == null) return false;
+
                         float factor = detector.getScaleFactor();
                         float newZoom = Math.max(1f, Math.min(8f, zoom * factor));
                         factor = newZoom / zoom;
                         zoom = newZoom;
-                        matrix.postScale(factor, factor, detector.getFocusX(), detector.getFocusY());
+
+                        matrix.postScale(
+                                factor,
+                                factor,
+                                detector.getFocusX(),
+                                detector.getFocusY()
+                        );
+
                         updateInverse();
                         invalidate();
                         return true;
@@ -76,23 +102,59 @@ public class MeasurementView extends View {
     }
 
     public void setProgressListener(ProgressListener listener) {
-        this.progressListener = listener;
+        progressListener = listener;
         notifyProgress();
     }
 
     public void setLandmarks(List<String> labels) {
         landmarkLabels.clear();
         landmarkLabels.addAll(labels);
+
         points.clear();
+        for (int i = 0; i < landmarkLabels.size(); i++) {
+            points.add(null);
+        }
+
+        selectedIndex = landmarkLabels.isEmpty() ? -1 : 0;
         notifyProgress();
         invalidate();
     }
 
+    public void setPoints(List<PointF> savedPoints) {
+        for (int i = 0; i < points.size(); i++) {
+            PointF source = savedPoints != null && i < savedPoints.size()
+                    ? savedPoints.get(i)
+                    : null;
+
+            points.set(i, source == null ? null : new PointF(source.x, source.y));
+        }
+
+        int missing = firstMissingIndex();
+        if (missing >= 0) {
+            selectedIndex = missing;
+        } else if (!points.isEmpty()) {
+            selectedIndex = Math.max(0, Math.min(selectedIndex, points.size() - 1));
+        }
+
+        notifyProgress();
+        invalidate();
+    }
+
+    public List<PointF> getPointsSnapshot() {
+        List<PointF> copy = new ArrayList<>();
+        for (PointF p : points) {
+            copy.add(p == null ? null : new PointF(p.x, p.y));
+        }
+        return copy;
+    }
+
+    public List<String> getLandmarkLabels() {
+        return new ArrayList<>(landmarkLabels);
+    }
+
     public void setBitmap(Bitmap b) {
         bitmap = b;
-        points.clear();
         fitImage();
-        notifyProgress();
         invalidate();
     }
 
@@ -101,39 +163,109 @@ public class MeasurementView extends View {
     }
 
     public boolean isComplete() {
-        return !landmarkLabels.isEmpty() && points.size() == landmarkLabels.size();
+        return !points.isEmpty() && getPlacedCount() == points.size();
     }
 
     public int getPlacedCount() {
-        return points.size();
+        int count = 0;
+        for (PointF p : points) {
+            if (p != null) count++;
+        }
+        return count;
     }
 
     public int getTotalCount() {
         return landmarkLabels.size();
     }
 
+    public int getSelectedIndex() {
+        return selectedIndex;
+    }
+
+    public String getCurrentLabel() {
+        if (selectedIndex < 0 || selectedIndex >= landmarkLabels.size()) return null;
+        return landmarkLabels.get(selectedIndex);
+    }
+
     public String getNextLabel() {
-        if (points.size() >= landmarkLabels.size()) return null;
-        return landmarkLabels.get(points.size());
+        return getCurrentLabel();
+    }
+
+    public boolean hasPointAt(int index) {
+        return index >= 0 && index < points.size() && points.get(index) != null;
     }
 
     public PointF getPoint(String label) {
         int index = landmarkLabels.indexOf(label);
         if (index < 0 || index >= points.size()) return null;
+
         PointF p = points.get(index);
-        return new PointF(p.x, p.y);
+        return p == null ? null : new PointF(p.x, p.y);
+    }
+
+    public void setSelectedIndex(int index, boolean centerIfPlaced) {
+        if (landmarkLabels.isEmpty()) return;
+
+        selectedIndex = Math.max(0, Math.min(index, landmarkLabels.size() - 1));
+
+        if (centerIfPlaced && hasPointAt(selectedIndex)) {
+            centerOnPoint(points.get(selectedIndex));
+        }
+
+        notifyProgress();
+        invalidate();
+    }
+
+    public void selectPrevious() {
+        if (landmarkLabels.isEmpty()) return;
+        int next = selectedIndex <= 0 ? landmarkLabels.size() - 1 : selectedIndex - 1;
+        setSelectedIndex(next, true);
+    }
+
+    public void selectNext() {
+        if (landmarkLabels.isEmpty()) return;
+        int next = selectedIndex >= landmarkLabels.size() - 1 ? 0 : selectedIndex + 1;
+        setSelectedIndex(next, true);
+    }
+
+    public void setLocked(boolean value) {
+        locked = value;
+        magnifierActive = false;
+        invalidate();
+    }
+
+    public boolean isLocked() {
+        return locked;
     }
 
     public void undo() {
-        if (!points.isEmpty()) {
-            points.remove(points.size() - 1);
-            notifyProgress();
-            invalidate();
+        if (locked) return;
+
+        if (selectedIndex >= 0 && selectedIndex < points.size()
+                && points.get(selectedIndex) != null) {
+            points.set(selectedIndex, null);
+        } else {
+            for (int i = points.size() - 1; i >= 0; i--) {
+                if (points.get(i) != null) {
+                    points.set(i, null);
+                    selectedIndex = i;
+                    break;
+                }
+            }
         }
+
+        notifyProgress();
+        invalidate();
     }
 
     public void resetMeasurement() {
-        points.clear();
+        if (locked) return;
+
+        for (int i = 0; i < points.size(); i++) {
+            points.set(i, null);
+        }
+
+        selectedIndex = landmarkLabels.isEmpty() ? -1 : 0;
         notifyProgress();
         invalidate();
     }
@@ -153,9 +285,21 @@ public class MeasurementView extends View {
         matrix.reset();
         matrix.setScale(scale, scale);
         matrix.postTranslate(dx, dy);
+
         zoom = 1f;
         updateInverse();
         invalidate();
+    }
+
+    private void centerOnPoint(PointF point) {
+        if (point == null || bitmap == null) return;
+
+        PointF screen = imageToScreen(point);
+        float dx = getWidth() / 2f - screen.x;
+        float dy = getHeight() / 2f - screen.y;
+
+        matrix.postTranslate(dx, dy);
+        updateInverse();
     }
 
     @Override
@@ -177,19 +321,83 @@ public class MeasurementView extends View {
 
         canvas.drawBitmap(bitmap, matrix, imagePaint);
         drawPoints(canvas);
+
+        if (magnifierActive && magnifierImagePoint != null) {
+            drawMagnifier(canvas);
+        }
     }
 
     private void drawPoints(Canvas canvas) {
         for (int i = 0; i < points.size(); i++) {
-            PointF s = imageToScreen(points.get(i));
+            PointF point = points.get(i);
+            if (point == null) continue;
 
-            canvas.drawCircle(s.x, s.y, 12f, haloPaint);
-            canvas.drawCircle(s.x, s.y, 8f, pointPaint);
+            PointF s = imageToScreen(point);
 
-            String label = i < landmarkLabels.size() ? landmarkLabels.get(i) : String.valueOf(i + 1);
-            textPaint.setTextSize(25f);
-            canvas.drawText(label, s.x + 14f, s.y - 14f, textPaint);
+            canvas.drawCircle(s.x, s.y, dp(12), haloPaint);
+            canvas.drawCircle(
+                    s.x,
+                    s.y,
+                    dp(i == selectedIndex ? 9 : 8),
+                    i == selectedIndex ? selectedPointPaint : pointPaint
+            );
+
+            String label = i < landmarkLabels.size()
+                    ? landmarkLabels.get(i)
+                    : String.valueOf(i + 1);
+
+            textPaint.setTextSize(dp(14));
+            canvas.drawText(label, s.x + dp(12), s.y - dp(10), textPaint);
         }
+    }
+
+    private void drawMagnifier(Canvas canvas) {
+        if (bitmap == null || magnifierImagePoint == null) return;
+
+        float radius = dp(64);
+        float cx = getWidth() - radius - dp(16);
+        float cy = radius + dp(16);
+
+        float[] values = new float[9];
+        matrix.getValues(values);
+        float currentScale = (float) Math.sqrt(
+                values[Matrix.MSCALE_X] * values[Matrix.MSCALE_X] +
+                values[Matrix.MSKEW_Y] * values[Matrix.MSKEW_Y]
+        );
+
+        if (currentScale <= 0f) currentScale = 1f;
+
+        float magnification = 3.2f;
+        float sourceHalf = radius / (currentScale * magnification);
+
+        int left = Math.max(0, Math.round(magnifierImagePoint.x - sourceHalf));
+        int top = Math.max(0, Math.round(magnifierImagePoint.y - sourceHalf));
+        int right = Math.min(bitmap.getWidth(), Math.round(magnifierImagePoint.x + sourceHalf));
+        int bottom = Math.min(bitmap.getHeight(), Math.round(magnifierImagePoint.y + sourceHalf));
+
+        if (right <= left || bottom <= top) return;
+
+        Rect src = new Rect(left, top, right, bottom);
+        RectF dst = new RectF(cx - radius, cy - radius, cx + radius, cy + radius);
+
+        canvas.save();
+
+        Path clip = new Path();
+        clip.addCircle(cx, cy, radius, Path.Direction.CW);
+        canvas.clipPath(clip);
+        canvas.drawColor(Color.BLACK);
+        canvas.drawBitmap(bitmap, src, dst, imagePaint);
+
+        canvas.restore();
+
+        canvas.drawCircle(cx, cy, radius, magnifierBorderPaint);
+
+        Paint cross = new Paint(Paint.ANTI_ALIAS_FLAG);
+        cross.setColor(Color.rgb(154, 111, 232));
+        cross.setStrokeWidth(dp(2));
+
+        canvas.drawLine(cx - dp(12), cy, cx + dp(12), cy, cross);
+        canvas.drawLine(cx, cy - dp(12), cx, cy + dp(12), cross);
     }
 
     @Override
@@ -199,6 +407,7 @@ public class MeasurementView extends View {
         scaleDetector.onTouchEvent(event);
 
         if (event.getPointerCount() >= 2) {
+            magnifierActive = false;
             handleTwoFingerPan(event);
             draggingPoint = -1;
             return true;
@@ -211,36 +420,69 @@ public class MeasurementView extends View {
                 downX = event.getX();
                 downY = event.getY();
                 moved = false;
-                draggingPoint = findNearbyPoint(downX, downY, 36f);
+
+                PointF initial = screenToImage(downX, downY);
+                if (insideImage(initial)) {
+                    magnifierImagePoint = initial;
+                    magnifierActive = true;
+                }
+
+                draggingPoint = locked
+                        ? -1
+                        : findNearbyPoint(downX, downY, dp(34));
+
+                invalidate();
                 return true;
 
             case MotionEvent.ACTION_MOVE:
-                if (Math.hypot(event.getX() - downX, event.getY() - downY) > 8) {
+                if (Math.hypot(event.getX() - downX, event.getY() - downY) > dp(6)) {
                     moved = true;
                 }
 
-                if (draggingPoint >= 0) {
-                    PointF p = screenToImage(event.getX(), event.getY());
-                    if (insideImage(p)) {
-                        points.set(draggingPoint, p);
-                        invalidate();
-                    }
+                PointF movePoint = screenToImage(event.getX(), event.getY());
+                if (insideImage(movePoint)) {
+                    magnifierImagePoint = movePoint;
+                    magnifierActive = true;
                 }
+
+                if (!locked && draggingPoint >= 0 && insideImage(movePoint)) {
+                    points.set(draggingPoint, movePoint);
+                    selectedIndex = draggingPoint;
+                }
+
+                invalidate();
                 return true;
 
             case MotionEvent.ACTION_UP:
-                if (draggingPoint >= 0) {
-                    draggingPoint = -1;
-                    return true;
+                PointF upPoint = screenToImage(event.getX(), event.getY());
+
+                if (!locked) {
+                    if (draggingPoint >= 0) {
+                        draggingPoint = -1;
+                        notifyProgress();
+                    } else if (!moved && insideImage(upPoint)
+                            && selectedIndex >= 0
+                            && selectedIndex < points.size()) {
+
+                        points.set(selectedIndex, upPoint);
+
+                        int nextMissing = nextMissingIndex(selectedIndex);
+                        if (nextMissing >= 0) {
+                            selectedIndex = nextMissing;
+                        }
+
+                        notifyProgress();
+                    }
                 }
 
-                if (!moved && points.size() < landmarkLabels.size()) {
-                    addPoint(event.getX(), event.getY());
-                }
+                magnifierActive = false;
+                invalidate();
                 return true;
 
             case MotionEvent.ACTION_CANCEL:
                 draggingPoint = -1;
+                magnifierActive = false;
+                invalidate();
                 return true;
         }
 
@@ -258,7 +500,8 @@ public class MeasurementView extends View {
             return;
         }
 
-        if (event.getActionMasked() == MotionEvent.ACTION_MOVE && !scaleDetector.isInProgress()) {
+        if (event.getActionMasked() == MotionEvent.ACTION_MOVE
+                && !scaleDetector.isInProgress()) {
             matrix.postTranslate(cx - lastTwoFingerX, cy - lastTwoFingerY);
             updateInverse();
             invalidate();
@@ -268,20 +511,36 @@ public class MeasurementView extends View {
         lastTwoFingerY = cy;
     }
 
-    private void addPoint(float sx, float sy) {
-        PointF p = screenToImage(sx, sy);
-        if (!insideImage(p)) return;
-
-        points.add(p);
-        notifyProgress();
-        invalidate();
-    }
-
     private int findNearbyPoint(float sx, float sy, float radiusPx) {
         for (int i = 0; i < points.size(); i++) {
-            PointF p = imageToScreen(points.get(i));
-            if (Math.hypot(sx - p.x, sy - p.y) <= radiusPx) return i;
+            PointF point = points.get(i);
+            if (point == null) continue;
+
+            PointF p = imageToScreen(point);
+            if (Math.hypot(sx - p.x, sy - p.y) <= radiusPx) {
+                return i;
+            }
         }
+
+        return -1;
+    }
+
+    private int firstMissingIndex() {
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i) == null) return i;
+        }
+        return -1;
+    }
+
+    private int nextMissingIndex(int after) {
+        for (int i = after + 1; i < points.size(); i++) {
+            if (points.get(i) == null) return i;
+        }
+
+        for (int i = 0; i <= after && i < points.size(); i++) {
+            if (points.get(i) == null) return i;
+        }
+
         return -1;
     }
 
@@ -298,19 +557,29 @@ public class MeasurementView extends View {
     }
 
     private boolean insideImage(PointF p) {
-        return p.x >= 0 && p.y >= 0 && p.x <= bitmap.getWidth() && p.y <= bitmap.getHeight();
+        return p != null
+                && p.x >= 0
+                && p.y >= 0
+                && p.x <= bitmap.getWidth()
+                && p.y <= bitmap.getHeight();
     }
 
     private void updateInverse() {
         matrix.invert(inverse);
     }
 
+    private float dp(float value) {
+        return value * getResources().getDisplayMetrics().density;
+    }
+
     public Bitmap renderAnnotatedBitmap() {
         if (bitmap == null) return null;
 
         int maxDimension = 2400;
-        float exportScale = Math.min(1f,
-                (float) maxDimension / Math.max(bitmap.getWidth(), bitmap.getHeight()));
+        float exportScale = Math.min(
+                1f,
+                (float) maxDimension / Math.max(bitmap.getWidth(), bitmap.getHeight())
+        );
 
         int outW = Math.max(1, Math.round(bitmap.getWidth() * exportScale));
         int outH = Math.max(1, Math.round(bitmap.getHeight() * exportScale));
@@ -319,8 +588,8 @@ public class MeasurementView extends View {
         Canvas canvas = new Canvas(output);
 
         Paint exportImagePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
-        android.graphics.Rect src = new android.graphics.Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        android.graphics.RectF dst = new android.graphics.RectF(0, 0, outW, outH);
+        Rect src = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        RectF dst = new RectF(0, 0, outW, outH);
         canvas.drawBitmap(bitmap, src, dst, exportImagePaint);
 
         Paint exportHalo = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -343,6 +612,8 @@ public class MeasurementView extends View {
 
         for (int i = 0; i < points.size(); i++) {
             PointF p = points.get(i);
+            if (p == null) continue;
+
             float x = p.x * exportScale;
             float y = p.y * exportScale;
 
@@ -353,7 +624,12 @@ public class MeasurementView extends View {
                     ? landmarkLabels.get(i)
                     : String.valueOf(i + 1);
 
-            canvas.drawText(label, x + labelOffset, y - labelOffset, exportText);
+            canvas.drawText(
+                    label,
+                    x + labelOffset,
+                    y - labelOffset,
+                    exportText
+            );
         }
 
         return output;
@@ -366,6 +642,7 @@ public class MeasurementView extends View {
             PointF a = getPoint(definition.pointLabels[0]);
             PointF b = getPoint(definition.pointLabels[1]);
             PointF c = getPoint(definition.pointLabels[2]);
+
             if (a == null || b == null || c == null) return null;
             return angleAtVertex(a, b, c);
         }
@@ -382,6 +659,7 @@ public class MeasurementView extends View {
         if (definition.chooseSupplementClosestToNorm) {
             double supplement = 180.0 - raw;
             double center = (definition.normalMin + definition.normalMax) / 2.0;
+
             if (Math.abs(supplement - center) < Math.abs(raw - center)) {
                 return supplement;
             }
@@ -391,14 +669,29 @@ public class MeasurementView extends View {
     }
 
     private double angleAtVertex(PointF a, PointF b, PointF c) {
-        return angleFromComponents(a.x - b.x, a.y - b.y, c.x - b.x, c.y - b.y);
+        return angleFromComponents(
+                a.x - b.x,
+                a.y - b.y,
+                c.x - b.x,
+                c.y - b.y
+        );
     }
 
     private double angleBetweenVectors(PointF a, PointF b, PointF c, PointF d) {
-        return angleFromComponents(b.x - a.x, b.y - a.y, d.x - c.x, d.y - c.y);
+        return angleFromComponents(
+                b.x - a.x,
+                b.y - a.y,
+                d.x - c.x,
+                d.y - c.y
+        );
     }
 
-    private double angleFromComponents(double v1x, double v1y, double v2x, double v2y) {
+    private double angleFromComponents(
+            double v1x,
+            double v1y,
+            double v2x,
+            double v2y
+    ) {
         double m1 = Math.hypot(v1x, v1y);
         double m2 = Math.hypot(v2x, v2y);
 
@@ -412,7 +705,11 @@ public class MeasurementView extends View {
 
     private void notifyProgress() {
         if (progressListener != null) {
-            progressListener.onProgress(points.size(), landmarkLabels.size(), getNextLabel());
+            progressListener.onProgress(
+                    getPlacedCount(),
+                    landmarkLabels.size(),
+                    getCurrentLabel()
+            );
         }
     }
 }

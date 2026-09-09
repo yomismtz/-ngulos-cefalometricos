@@ -594,7 +594,7 @@ public class AnalysisActivity extends AppCompatActivity {
             ViewGroup.MarginLayoutParams lp =
                     new ViewGroup.MarginLayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
-                            dp(40)
+                            dp(48)
                     );
 
             lp.setMargins(0, 0, 0, 0);

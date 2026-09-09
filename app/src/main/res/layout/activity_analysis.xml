@@ -36,7 +36,8 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:maxLines="2"
-            android:gravity="center" />
+            android:gravity="center"
+            android:textAlignment="center" />
 
         <TextView
             android:id="@+id/btnOpen"
@@ -58,11 +59,12 @@
         android:text="@string/study_placeholder"
         android:textColor="#2C7E86"
         android:textStyle="bold"
-        android:textSize="13sp"
+        android:textSize="12sp"
         android:gravity="center"
+        android:textAlignment="center"
         android:paddingLeft="12dp"
         android:paddingRight="12dp"
-        android:paddingTop="7dp"
+        android:paddingTop="6dp"
         android:paddingBottom="2dp" />
 
     <LinearLayout
@@ -71,14 +73,13 @@
         android:orientation="vertical"
         android:paddingLeft="12dp"
         android:paddingRight="12dp"
-        android:paddingTop="6dp">
+        android:paddingTop="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="4dp">
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/txtCalibration"
@@ -89,12 +90,12 @@
                 android:text="@string/linear_uncalibrated"
                 android:textSize="11sp"
                 android:textColor="#2C7E86"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp" />
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp" />
 
             <TextView
                 android:id="@+id/btnCalibrate"
-                android:layout_width="128dp"
+                android:layout_width="118dp"
                 android:layout_height="48dp"
                 android:gravity="center"
                 android:text="@string/calibrate"
@@ -112,30 +113,33 @@
             android:layout_height="wrap_content"
             android:text="@string/point_selected"
             android:textStyle="bold"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textColor="#5B3FA4"
-            android:background="@drawable/card_white"
-            android:padding="10dp" />
+            android:gravity="center"
+            android:textAlignment="center"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp" />
 
-        <HorizontalScrollView
+        <TextView
+            android:id="@+id/txtInstruction"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:scrollbars="none"
-            android:layout_marginTop="6dp">
-
-            <LinearLayout
-                android:id="@+id/pointChips"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:gravity="center_vertical" />
-        </HorizontalScrollView>
+            android:layout_height="wrap_content"
+            android:minHeight="76dp"
+            android:background="@drawable/card_point_help"
+            android:text="@string/instruction_placeholder"
+            android:textSize="12sp"
+            android:textColor="#3D3946"
+            android:gravity="center_vertical"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:orientation="horizontal"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="6dp">
 
             <TextView
                 android:id="@+id/btnPrevious"
@@ -143,31 +147,15 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:includeFontPadding="false"
-                android:padding="0dp"
                 android:textAlignment="center"
+                android:includeFontPadding="false"
                 android:text="@string/previous"
                 android:textStyle="bold"
+                android:textSize="11sp"
                 android:textColor="#5B3FA4"
                 android:background="@drawable/button_soft_purple_centered"
                 android:clickable="true"
                 android:focusable="true"
-                android:layout_marginRight="4dp" />
-
-            <TextView
-                android:id="@+id/btnPointHelp"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1.25"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:text="@string/where_is"
-                android:textStyle="bold"
-                android:textColor="#15383D"
-                android:background="@drawable/button_soft_mint_centered"
-                android:clickable="true"
-                android:focusable="true"
-                android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp" />
 
             <TextView
@@ -177,42 +165,26 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textAlignment="center"
+                android:includeFontPadding="false"
                 android:text="@string/next"
                 android:textStyle="bold"
+                android:textSize="11sp"
                 android:textColor="#5B3FA4"
                 android:background="@drawable/button_soft_purple_centered"
                 android:clickable="true"
                 android:focusable="true"
                 android:layout_marginLeft="4dp" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/txtInstruction"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/instruction_placeholder"
-            android:textSize="11sp"
-            android:textColor="#3D3946"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp" />
-        
-        
-
     </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="18dp" />
 
     <com.cefalo.angulos.MeasurementView
         android:id="@+id/measurementView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginLeft="14dp"
-        android:layout_marginRight="14dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/panel_dark" />
 
@@ -223,25 +195,24 @@
         android:padding="8dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginBottom="10dp"
         android:background="@drawable/card_white"
         android:elevation="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="54dp"
+            android:layout_height="52dp"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/btnUndo"
                 android:layout_width="0dp"
-                android:layout_height="54dp"
+                android:layout_height="52dp"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textAlignment="center"
                 android:text="@string/undo_previous"
                 android:textStyle="bold"
-                android:textSize="11sp"
+                android:textSize="10.5sp"
                 android:textColor="#5B3FA4"
                 android:background="@drawable/button_soft_purple_centered"
                 android:clickable="true"
@@ -251,13 +222,13 @@
             <TextView
                 android:id="@+id/btnReset"
                 android:layout_width="0dp"
-                android:layout_height="54dp"
+                android:layout_height="52dp"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textAlignment="center"
                 android:text="@string/delete_all_points"
                 android:textStyle="bold"
-                android:textSize="11sp"
+                android:textSize="10.5sp"
                 android:textColor="#5B3FA4"
                 android:background="@drawable/button_soft_purple_centered"
                 android:clickable="true"
@@ -269,7 +240,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:orientation="horizontal"
-            android:layout_marginTop="7dp">
+            android:layout_marginTop="6dp">
 
             <TextView
                 android:id="@+id/btnFit"
@@ -279,6 +250,7 @@
                 android:gravity="center"
                 android:text="@string/center_image"
                 android:textStyle="bold"
+                android:textSize="10.5sp"
                 android:textColor="#15383D"
                 android:background="@drawable/button_soft_mint_centered"
                 android:clickable="true"
@@ -289,14 +261,13 @@
                 android:id="@+id/btnSaveStudy"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_weight="1.2"
+                android:layout_weight="1.25"
                 android:gravity="center"
-                android:includeFontPadding="false"
-                android:padding="0dp"
                 android:textAlignment="center"
+                android:includeFontPadding="false"
                 android:text="@string/data_save"
                 android:textStyle="bold"
-                android:textSize="11sp"
+                android:textSize="10.5sp"
                 android:textColor="#15383D"
                 android:background="@drawable/button_soft_mint_centered"
                 android:clickable="true"
@@ -308,12 +279,12 @@
                 android:id="@+id/btnLock"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_weight="1.25"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:textAlignment="center"
                 android:text="@string/lock_trace"
                 android:textStyle="bold"
-                android:textSize="11sp"
+                android:textSize="10.5sp"
                 android:textColor="#5B3FA4"
                 android:background="@drawable/button_soft_purple_centered"
                 android:clickable="true"
@@ -324,17 +295,53 @@
         <TextView
             android:id="@+id/btnCalculate"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="50dp"
             android:gravity="center"
             android:textAlignment="center"
             android:text="@string/calculate_analysis"
             android:textStyle="bold"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textColor="#FFFFFF"
             android:background="@drawable/button_primary_centered"
             android:includeFontPadding="false"
             android:padding="0dp"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:layout_marginTop="6dp" />
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="6dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/card_points_bar">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/landmarks_bar"
+            android:textStyle="bold"
+            android:textSize="10sp"
+            android:textColor="#5B3FA4"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:includeFontPadding="false"
+            android:paddingBottom="4dp" />
+
+        <com.cefalo.angulos.LandmarkFlowLayout
+            android:id="@+id/pointChips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp" />
+    </LinearLayout>
+
 </LinearLayout>

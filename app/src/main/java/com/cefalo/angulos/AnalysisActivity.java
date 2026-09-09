@@ -1358,6 +1358,18 @@ public class AnalysisActivity extends Activity {
             return;
         }
 
+        if (definitions.isEmpty()
+                && !linearDefinitions.isEmpty()
+                && (Double.isNaN(mmPerPixel) || mmPerPixel <= 0)) {
+            Toast.makeText(
+                    this,
+                    "Este análisis necesita calibración para obtener medidas en mm.",
+                    Toast.LENGTH_LONG
+            ).show();
+            startCalibrationFlow();
+            return;
+        }
+
         if (!measurementView.isComplete()) {
             String next =
                     measurementView.getCurrentLabel();

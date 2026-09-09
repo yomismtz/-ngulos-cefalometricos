@@ -2888,4 +2888,6 @@ public class AnalysisActivity extends Activity {
         } catch (Exception e) {
             return bitmap;
         }
-    }}
+    }
+}
+

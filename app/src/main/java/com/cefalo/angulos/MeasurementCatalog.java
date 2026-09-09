@@ -402,12 +402,13 @@ public final class MeasurementCatalog {
                 "Ba-S-NA",
                 THREE_POINTS,
                 p("Ba","S","N"),
-                122,130,
-                "≈126° ± 4° · referencia poblacional",
+                Double.NaN,
+                Double.NaN,
+                "Tabla docente aportada: 126° · sin umbral diagnóstico automático",
                 "Marque Ba, S y N. S es el vértice.",
-                "Ángulo por debajo de la referencia poblacional; no diagnostica desarrollo ni obstrucción de vía aérea por sí solo.",
-                "Dentro del rango de referencia poblacional.",
-                "Ángulo por encima de la referencia poblacional; no diagnostica desarrollo ni obstrucción de vía aérea por sí solo.",
+                "",
+                "Medida del ángulo de la base craneal. La literatura muestra variación por edad, sexo y población; no permite clasificar por sí sola «buen» o «mal desarrollo» ni diagnosticar vía aérea.",
+                "",
                 false
         ));
 
@@ -415,12 +416,13 @@ public final class MeasurementCatalog {
                 "Ba-S-ENP",
                 THREE_POINTS,
                 p("Ba","S","ENP"),
-                58,68,
-                "≈63° ± 5° · depende de población/patrón esquelético",
+                Double.NaN,
+                Double.NaN,
+                "Tabla docente aportada: 63° · sin umbral diagnóstico automático",
                 "Marque Ba, S y ENP. S es el vértice.",
-                "Ángulo por debajo de la referencia; no equivale a una vía aérea inadecuada.",
-                "Dentro del rango de referencia aproximado.",
-                "Ángulo por encima de la referencia; no equivale a una vía aérea adecuada.",
+                "",
+                "Medida estructural cefalométrica. No se encontró evidencia suficiente para convertir 63° en un umbral diagnóstico de vía aérea adecuada/inadecuada; se muestra solo como referencia docente.",
+                "",
                 false
         ));
 

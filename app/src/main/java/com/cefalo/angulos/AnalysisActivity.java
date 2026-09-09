@@ -197,8 +197,8 @@ public class AnalysisActivity extends Activity {
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
-                "Toque para colocar el punto. Arrastre con un dedo para mover la radiografía y use dos dedos para acercar o alejar. " +
-                "Si un punto ya quedó correcto, selecciónelo y pulse BLOQ. PUNTO para protegerlo."
+                "Toque para colocar el punto seleccionado. Arrastre con un dedo para desplazarse por la radiografía y use dos dedos para hacer zoom. " +
+                "Para corregir un punto ya colocado, selecciónelo primero en su recuadro superior y después toque su nueva posición."
         );
 
         if (linearDefinitions.isEmpty()) {
@@ -469,7 +469,7 @@ public class AnalysisActivity extends Activity {
                 currentLabel +
                 " · Dónde colocarlo:\n" +
                 PointGuide.description(currentLabel) +
-                "\nToque para marcar. Arrastre con un dedo para mover la imagen. Mantenga sobre el punto seleccionado para corregirlo con la lupa."
+                "\nToque para marcar. Arrastre con un dedo para mover la imagen. Para corregir un punto existente, selecciónelo en su recuadro y toque la nueva posición; tocar directamente otro punto no lo selecciona."
         );
     }
 
@@ -628,7 +628,7 @@ public class AnalysisActivity extends Activity {
                 measurementView.hasPointAt(
                         landmarks.indexOf(label)
                 )
-                        ? "\n\n✓ Ya está colocado. Puede seleccionarlo y tocar otra posición o arrastrarlo para corregirlo."
+                        ? "\n\n✓ Ya está colocado. Para corregirlo, seleccione su recuadro y toque la nueva posición en la radiografía."
                         : "\n\n— Todavía no está colocado.";
 
         description.setText(

@@ -68,12 +68,12 @@ public class LinearMeasurementDefinition {
         }
 
         if (interpretation == Interpretation.CERVICAL_DEPTH) {
-            if (valueMm < 2.0) {
-                return "Profundidad <2 mm: patrón cifótico según la referencia de Penning/Rocabado; requiere correlación clínica.";
+            if (valueMm < 0.0) {
+                return "Valor negativo: curvatura cifótica según la referencia de Penning/Rocabado; requiere correlación clínica.";
             }
 
             if (valueMm < 8.0) {
-                return "Profundidad de 2 a <8 mm: rectificación de la curvatura cervical según la referencia empleada.";
+                return "Profundidad de 0 a <8 mm: rectificación de la curvatura cervical según la referencia empleada.";
             }
 
             if (valueMm <= 12.0) {

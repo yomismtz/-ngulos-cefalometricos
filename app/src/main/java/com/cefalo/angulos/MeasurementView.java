@@ -66,7 +66,7 @@ public class MeasurementView extends View {
 
     public MeasurementView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        setClickable(true);
 
         pointPaint.setColor(Color.rgb(34, 191, 199));
         pointPaint.setStyle(Paint.Style.FILL);
@@ -135,8 +135,14 @@ public class MeasurementView extends View {
     }
 
     public void cancelCalibration() {
+        clearCalibrationOverlay();
+    }
+
+    public void clearCalibrationOverlay() {
         calibrationMode = false;
         calibrationListener = null;
+        calibrationPoint1 = null;
+        calibrationPoint2 = null;
         magnifierActive = false;
         invalidate();
     }
@@ -193,6 +199,7 @@ public class MeasurementView extends View {
 
     public void setBitmap(Bitmap b) {
         bitmap = b;
+        clearCalibrationOverlay();
         fitImage();
         invalidate();
     }
@@ -543,6 +550,7 @@ public class MeasurementView extends View {
                             && selectedIndex < points.size()) {
 
                         points.set(selectedIndex, upPoint);
+                        performClick();
 
                         int nextMissing = nextMissingIndex(selectedIndex);
                         if (nextMissing >= 0) {
@@ -609,6 +617,8 @@ public class MeasurementView extends View {
                 PointF upPoint = screenToImage(event.getX(), event.getY());
 
                 if (!moved && insideImage(upPoint)) {
+                    performClick();
+
                     if (calibrationPoint1 == null) {
                         calibrationPoint1 = upPoint;
                     } else {
@@ -649,6 +659,12 @@ public class MeasurementView extends View {
                 return true;
         }
 
+        return true;
+    }
+
+    @Override
+    public boolean performClick() {
+        super.performClick();
         return true;
     }
 

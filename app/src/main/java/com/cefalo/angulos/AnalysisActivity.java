@@ -14,13 +14,14 @@ import android.graphics.Typeface;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.text.InputType;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -41,9 +42,9 @@ public class AnalysisActivity extends Activity {
     private MeasurementView measurementView;
     private TextView txtProgress;
     private TextView txtInstruction;
+    private TextView txtStudyInfo;
     private TextView btnCalculate;
     private TextView btnLock;
-    private TextView txtStudyMeta;
     private LinearLayout pointChips;
 
     private List<MeasurementDefinition> definitions;
@@ -55,25 +56,49 @@ public class AnalysisActivity extends Activity {
     private String studyName = "";
     private String patientName = "";
     private String patientAge = "";
+
     private SavedStudyStore.StudyData restoredStudy;
     private boolean restoring = false;
-
     private Bitmap pendingSaveBitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        studyId = getIntent().getStringExtra("STUDY_ID");
+        if (savedInstanceState != null) {
+            studyId = savedInstanceState.getString("STUDY_ID");
+        }
+
+        if (studyId == null) {
+            studyId = getIntent().getStringExtra("STUDY_ID");
+        }
+
         if (studyId != null) {
             restoredStudy = SavedStudyStore.load(this, studyId);
         }
 
         if (restoredStudy != null) {
             mode = restoredStudy.mode;
+            imageUriString = restoredStudy.imageUri;
+            studyName = safe(restoredStudy.studyName);
+            patientName = safe(restoredStudy.patientName);
+            patientAge = safe(restoredStudy.patientAge);
         } else {
-            mode = getIntent().getStringExtra("MODE");
-            if (mode == null) mode = "STEINER";
+            if (savedInstanceState != null) {
+                mode = savedInstanceState.getString("MODE");
+                imageUriString = savedInstanceState.getString("IMAGE_URI");
+                studyName = safe(savedInstanceState.getString("STUDY_NAME"));
+                patientName = safe(savedInstanceState.getString("PATIENT_NAME"));
+                patientAge = safe(savedInstanceState.getString("PATIENT_AGE"));
+            }
+
+            if (mode == null) {
+                mode = getIntent().getStringExtra("MODE");
+            }
+
+            if (mode == null) {
+                mode = "STEINER";
+            }
         }
 
         setContentView(R.layout.activity_analysis);
@@ -87,16 +112,18 @@ public class AnalysisActivity extends Activity {
         landmarks = buildLandmarkList(definitions);
 
         TextView txtTitle = findViewById(R.id.txtTitle);
-        txtTitle.setText(vertebral
-                ? "Análisis vertebral"
-                : "Análisis de Steiner");
+        txtTitle.setText(
+                vertebral
+                        ? "Análisis vertebral"
+                        : "Análisis de Steiner"
+        );
 
         measurementView = findViewById(R.id.measurementView);
         txtProgress = findViewById(R.id.txtProgress);
         txtInstruction = findViewById(R.id.txtInstruction);
+        txtStudyInfo = findViewById(R.id.txtStudyInfo);
         btnCalculate = findViewById(R.id.btnCalculate);
         btnLock = findViewById(R.id.btnLock);
-        txtStudyMeta = findViewById(R.id.txtStudyMeta);
         pointChips = findViewById(R.id.pointChips);
 
         measurementView.setLandmarks(landmarks);
@@ -104,39 +131,72 @@ public class AnalysisActivity extends Activity {
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnOpen).setOnClickListener(v -> openImage());
-        findViewById(R.id.btnUndo).setOnClickListener(v -> measurementView.undo());
-        findViewById(R.id.btnReset).setOnClickListener(v -> {
+
+        findViewById(R.id.btnUndo).setOnClickListener(v -> {
             if (measurementView.isLocked()) {
-                Toast.makeText(this, "Desbloquee el trazado para borrar puntos.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                        this,
+                        "Desbloquee el trazado para deshacer un punto.",
+                        Toast.LENGTH_SHORT
+                ).show();
                 return;
             }
+            measurementView.undo();
+        });
+
+        findViewById(R.id.btnReset).setOnClickListener(v -> {
+            if (measurementView.isLocked()) {
+                Toast.makeText(
+                        this,
+                        "Desbloquee el trazado para borrar todos los puntos.",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
             new AlertDialog.Builder(this)
-                    .setTitle("Borrar puntos")
-                    .setMessage("¿Desea borrar todos los puntos de este análisis?")
+                    .setTitle("Borrar todos los puntos")
+                    .setMessage(
+                            "Esto eliminará todos los puntos colocados en esta radiografía. ¿Desea continuar?"
+                    )
                     .setNegativeButton("Cancelar", null)
-                    .setPositiveButton("Borrar", (dialog, which) -> measurementView.resetMeasurement())
+                    .setPositiveButton(
+                            "Borrar todos",
+                            (dialog, which) ->
+                                    measurementView.resetMeasurement()
+                    )
                     .show();
         });
-        findViewById(R.id.btnFit).setOnClickListener(v -> measurementView.fitImage());
 
-        findViewById(R.id.btnPrevious).setOnClickListener(v -> measurementView.selectPrevious());
-        findViewById(R.id.btnNext).setOnClickListener(v -> measurementView.selectNext());
-        findViewById(R.id.btnPointHelp).setOnClickListener(v -> showCurrentPointGuide());
-        findViewById(R.id.btnSaveStudy).setOnClickListener(v -> saveStudy(false));
-        findViewById(R.id.btnStudyData).setOnClickListener(v -> showStudyDataDialog(false));
-        findViewById(R.id.btnAssisted).setOnClickListener(v -> showAssistedDetectionInfo());
+        findViewById(R.id.btnFit)
+                .setOnClickListener(v -> measurementView.fitImage());
+
+        findViewById(R.id.btnPrevious)
+                .setOnClickListener(v -> measurementView.selectPrevious());
+
+        findViewById(R.id.btnNext)
+                .setOnClickListener(v -> measurementView.selectNext());
+
+        findViewById(R.id.btnPointHelp)
+                .setOnClickListener(v -> showCurrentPointGuide());
+
+        findViewById(R.id.btnSaveStudy)
+                .setOnClickListener(v -> showStudyDetailsDialog(false));
+
+        findViewById(R.id.btnAssisted)
+                .setOnClickListener(v -> showAssistedDetectionInfo());
 
         btnLock.setOnClickListener(v -> toggleLock());
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
                 "Mantenga el dedo sobre la radiografía para usar la lupa. " +
-                "Puede elegir cualquier punto en la lista, usar Anterior/Siguiente y volver a marcarlo. " +
-                "Los estudios se guardan dentro de la app."
+                "El punto seleccionado queda marcado con un aro y una mira. " +
+                "Puede cambiar de punto con la lista, Anterior o Siguiente."
         );
 
         refreshPointChips();
-        updateStudyMeta();
+        updateStudyInfo();
 
         if (restoredStudy != null) {
             restoreStudy(restoredStudy);
@@ -155,7 +215,25 @@ public class AnalysisActivity extends Activity {
         saveStudy(true);
     }
 
-    private List<String> buildLandmarkList(List<MeasurementDefinition> defs) {
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString("STUDY_ID", studyId);
+        outState.putString("MODE", mode);
+        outState.putString("IMAGE_URI", imageUriString);
+        outState.putString("STUDY_NAME", studyName);
+        outState.putString("PATIENT_NAME", patientName);
+        outState.putString("PATIENT_AGE", patientAge);
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
+    }
+
+    private List<String> buildLandmarkList(
+            List<MeasurementDefinition> defs
+    ) {
         Set<String> ordered = new LinkedHashSet<>();
 
         for (MeasurementDefinition def : defs) {
@@ -167,27 +245,34 @@ public class AnalysisActivity extends Activity {
         return new ArrayList<>(ordered);
     }
 
-    private void restoreStudy(SavedStudyStore.StudyData study) {
+    private void restoreStudy(
+            SavedStudyStore.StudyData study
+    ) {
         if (study.imageUri == null) return;
 
         restoring = true;
         imageUriString = study.imageUri;
-        studyName = safe(study.studyName);
-        patientName = safe(study.patientName);
-        patientAge = safe(study.patientAge);
-        updateStudyMeta();
 
         try {
             Uri uri = Uri.parse(imageUriString);
-            Bitmap bitmap = decodeSampledBitmap(uri, 4096);
 
-            if (bitmap == null) throw new IOException("Bitmap nulo");
+            Bitmap bitmap =
+                    decodeSampledBitmap(uri, 4096);
+
+            if (bitmap == null) {
+                throw new IOException("Bitmap nulo");
+            }
 
             bitmap = applyExifRotation(uri, bitmap);
+
             measurementView.setBitmap(bitmap);
-            measurementView.setPoints(mapSavedPoints(study));
+            measurementView.setPoints(
+                    mapSavedPoints(study)
+            );
             measurementView.setLocked(study.locked);
+
             updateLockButton();
+            updateStudyInfo();
 
             updateProgress(
                     measurementView.getPlacedCount(),
@@ -201,20 +286,32 @@ public class AnalysisActivity extends Activity {
                     "No se pudo volver a abrir la radiografía guardada.",
                     Toast.LENGTH_LONG
             ).show();
+
         } finally {
             restoring = false;
         }
     }
 
-    private List<PointF> mapSavedPoints(SavedStudyStore.StudyData study) {
+    private List<PointF> mapSavedPoints(
+            SavedStudyStore.StudyData study
+    ) {
         List<PointF> mapped = new ArrayList<>();
 
         for (String currentLabel : landmarks) {
-            int savedIndex = study.labels.indexOf(currentLabel);
+            int savedIndex =
+                    study.labels.indexOf(currentLabel);
 
-            if (savedIndex >= 0 && savedIndex < study.points.size()) {
+            if (savedIndex >= 0
+                    && savedIndex < study.points.size()) {
+
                 PointF p = study.points.get(savedIndex);
-                mapped.add(p == null ? null : new PointF(p.x, p.y));
+
+                mapped.add(
+                        p == null
+                                ? null
+                                : new PointF(p.x, p.y)
+                );
+
             } else {
                 mapped.add(null);
             }
@@ -223,33 +320,59 @@ public class AnalysisActivity extends Activity {
         return mapped;
     }
 
-    private void updateProgress(int placed, int total, String currentLabel) {
+    private void updateProgress(
+            int placed,
+            int total,
+            String currentLabel
+    ) {
         refreshPointChips();
 
         if (total == 0) {
-            txtProgress.setText("No hay puntos definidos.");
+            txtProgress.setText(
+                    "No hay puntos definidos."
+            );
             btnCalculate.setAlpha(0.45f);
             return;
         }
 
-        int selected = measurementView.getSelectedIndex();
-        boolean selectedPlaced = measurementView.hasPointAt(selected);
+        int selected =
+                measurementView.getSelectedIndex();
+
+        boolean selectedPlaced =
+                measurementView.hasPointAt(selected);
 
         if (placed >= total) {
             txtProgress.setText(
-                    "✓ Puntos completos: " + placed + " / " + total +
-                    "\nPUNTO SELECCIONADO: " + currentLabel +
-                    (measurementView.isLocked()
-                            ? "   ·   trazado bloqueado"
-                            : "   ·   toque la radiografía para corregirlo")
+                    "✓ Puntos completos: " +
+                    placed +
+                    " / " +
+                    total +
+                    "\nSeleccionado: " +
+                    currentLabel +
+                    (
+                            measurementView.isLocked()
+                                    ? "   ·   🔒 trazado bloqueado"
+                                    : "   ·   puede corregirlo"
+                    )
             );
+
             btnCalculate.setAlpha(1f);
+
         } else {
             txtProgress.setText(
-                    "Puntos: " + placed + " / " + total +
-                    "\nPUNTO SELECCIONADO: " + currentLabel +
-                    (selectedPlaced ? " ✓  ·  toque la radiografía para recolocarlo" : " —  ·  márquelo en la radiografía")
+                    "Puntos: " +
+                    placed +
+                    " / " +
+                    total +
+                    "\n" +
+                    (
+                            selectedPlaced
+                                    ? "Corregir: "
+                                    : "Marcar: "
+                    ) +
+                    currentLabel
             );
+
             btnCalculate.setAlpha(0.55f);
         }
 
@@ -259,48 +382,99 @@ public class AnalysisActivity extends Activity {
     }
 
     private void refreshPointChips() {
-        if (pointChips == null || landmarks == null) return;
+        if (pointChips == null
+                || landmarks == null
+                || measurementView == null) {
+            return;
+        }
 
         pointChips.removeAllViews();
-        int selected = measurementView == null ? -1 : measurementView.getSelectedIndex();
+
+        int selected =
+                measurementView.getSelectedIndex();
 
         for (int i = 0; i < landmarks.size(); i++) {
             final int index = i;
+
             String label = landmarks.get(i);
-            boolean placed = measurementView != null && measurementView.hasPointAt(i);
-            boolean isSelected = i == selected;
+
+            boolean placed =
+                    measurementView.hasPointAt(i);
+
+            boolean isSelected =
+                    i == selected;
 
             TextView chip = new TextView(this);
-            chip.setText(label + (placed ? "  ✓" : "  —"));
+
+            chip.setText(
+                    (isSelected ? "⌖  " : "") +
+                    label +
+                    (placed ? "  ✓" : "  —")
+            );
+
             chip.setTextSize(13f);
-            chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            chip.setTypeface(
+                    Typeface.DEFAULT,
+                    Typeface.BOLD
+            );
             chip.setGravity(Gravity.CENTER);
-            chip.setPadding(dp(12), dp(8), dp(12), dp(8));
+
+            chip.setPadding(
+                    dp(12),
+                    dp(8),
+                    dp(12),
+                    dp(8)
+            );
+
             chip.setClickable(true);
             chip.setFocusable(true);
 
             if (isSelected) {
-                chip.setBackgroundResource(R.drawable.chip_selected_outline);
+                chip.setBackgroundResource(
+                        R.drawable.chip_selected
+                );
                 chip.setTextColor(0xFF5B3FA4);
-                chip.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_pointer, 0, 0, 0);
-                chip.setCompoundDrawablePadding(dp(4));
+
             } else if (placed) {
-                chip.setBackgroundResource(R.drawable.button_soft_mint);
+                chip.setBackgroundResource(
+                        R.drawable.button_soft_mint
+                );
                 chip.setTextColor(0xFF15383D);
+
             } else {
-                chip.setBackgroundResource(R.drawable.button_soft_purple);
+                chip.setBackgroundResource(
+                        R.drawable.button_soft_purple
+                );
                 chip.setTextColor(0xFF5B3FA4);
             }
 
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    dp(42)
+            LinearLayout.LayoutParams lp =
+                    new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            dp(42)
+                    );
+
+            lp.setMargins(
+                    0,
+                    0,
+                    dp(7),
+                    0
             );
-            lp.setMargins(0, 0, dp(7), 0);
+
             chip.setLayoutParams(lp);
 
             chip.setOnClickListener(v -> {
-                measurementView.setSelectedIndex(index, true);
+                measurementView.setSelectedIndex(
+                        index,
+                        true
+                );
+            });
+
+            chip.setOnLongClickListener(v -> {
+                showPointGuide(
+                        landmarks.get(index)
+                );
+                return true;
             });
 
             pointChips.addView(chip);
@@ -308,10 +482,15 @@ public class AnalysisActivity extends Activity {
     }
 
     private void showCurrentPointGuide() {
-        String label = measurementView.getCurrentLabel();
+        String label =
+                measurementView.getCurrentLabel();
 
         if (label == null) {
-            Toast.makeText(this, "No hay un punto seleccionado.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    this,
+                    "No hay un punto seleccionado.",
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
@@ -319,14 +498,68 @@ public class AnalysisActivity extends Activity {
     }
 
     private void showPointGuide(String label) {
-        String status = measurementView.hasPointAt(landmarks.indexOf(label))
-                ? "\n\nEste punto ya está colocado. Puede arrastrarlo o tocar otra posición para reemplazarlo."
-                : "\n\nEste punto todavía no está colocado.";
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setGravity(Gravity.CENTER_HORIZONTAL);
+        box.setPadding(
+                dp(20),
+                dp(10),
+                dp(20),
+                dp(6)
+        );
+
+        ImageView image = new ImageView(this);
+        image.setImageResource(
+                R.drawable.tooth_ruler_mascot
+        );
+        image.setScaleType(
+                ImageView.ScaleType.CENTER_INSIDE
+        );
+
+        box.addView(
+                image,
+                new LinearLayout.LayoutParams(
+                        dp(110),
+                        dp(86)
+                )
+        );
+
+        TextView description = new TextView(this);
+
+        String status =
+                measurementView.hasPointAt(
+                        landmarks.indexOf(label)
+                )
+                        ? "\n\n✓ Ya está colocado. Puede seleccionarlo y tocar otra posición o arrastrarlo para corregirlo."
+                        : "\n\n— Todavía no está colocado.";
+
+        description.setText(
+                PointGuide.description(label) +
+                status
+        );
+
+        description.setTextSize(15f);
+        description.setTextColor(0xFF3D3946);
+        description.setPadding(
+                0,
+                dp(8),
+                0,
+                dp(6)
+        );
+
+        box.addView(description);
 
         new AlertDialog.Builder(this)
-                .setTitle("¿Dónde está " + label + "?")
-                .setMessage(PointGuide.description(label) + status)
-                .setPositiveButton("Entendido", null)
+                .setTitle(
+                        "¿Dónde está " +
+                        label +
+                        "?"
+                )
+                .setView(box)
+                .setPositiveButton(
+                        "Entendido",
+                        null
+                )
                 .show();
     }
 
@@ -334,45 +567,259 @@ public class AnalysisActivity extends Activity {
         new AlertDialog.Builder(this)
                 .setTitle("Detección asistida")
                 .setMessage(
-                        "La detección automática de puntos queda preparada como función futura. " +
-                        "Cuando se incorpore, la app solo propondrá la posición: cada punto tendrá que ser confirmado o corregido antes de calcular el análisis.\n\n" +
-                        "En esta versión, la ayuda disponible es la lupa de precisión y la guía anatómica de cada punto."
+                        "Esta función se mantiene como desarrollo futuro. " +
+                        "La app podrá sugerir la posición de los puntos, pero cada uno tendrá que ser confirmado o corregido manualmente antes de calcular.\n\n" +
+                        "En esta versión se usa la lupa de precisión, la mira de selección y la guía anatómica de cada punto."
                 )
-                .setPositiveButton("Entendido", null)
+                .setPositiveButton(
+                        "Entendido",
+                        null
+                )
                 .show();
     }
 
     private void toggleLock() {
-        if (!measurementView.isLocked() && !measurementView.isComplete()) {
+        if (!measurementView.isLocked()
+                && !measurementView.isComplete()) {
+
             Toast.makeText(
                     this,
                     "Complete todos los puntos antes de bloquear el trazado.",
                     Toast.LENGTH_LONG
             ).show();
+
             return;
         }
 
-        measurementView.setLocked(!measurementView.isLocked());
+        measurementView.setLocked(
+                !measurementView.isLocked()
+        );
+
         updateLockButton();
         saveStudy(true);
     }
 
     private void updateLockButton() {
         if (measurementView.isLocked()) {
-            btnLock.setText("🔒 DESBLOQUEAR");
-            btnLock.setBackgroundResource(R.drawable.button_soft_mint);
-            btnLock.setTextColor(0xFF15383D);
+            btnLock.setText(
+                    "🔒 DESBLOQUEAR"
+            );
+            btnLock.setBackgroundResource(
+                    R.drawable.button_soft_mint
+            );
+            btnLock.setTextColor(
+                    0xFF15383D
+            );
+
         } else {
-            btnLock.setText("🔓 BLOQUEAR TRAZADO");
-            btnLock.setBackgroundResource(R.drawable.button_soft_purple);
-            btnLock.setTextColor(0xFF5B3FA4);
+            btnLock.setText(
+                    "🔓 BLOQUEAR TRAZADO"
+            );
+            btnLock.setBackgroundResource(
+                    R.drawable.button_soft_purple
+            );
+            btnLock.setTextColor(
+                    0xFF5B3FA4
+            );
         }
+    }
+
+    private void updateStudyInfo() {
+        if (txtStudyInfo == null) return;
+
+        String title =
+                studyName.trim().isEmpty()
+                        ? "Estudio sin nombre"
+                        : studyName.trim();
+
+        String patient =
+                patientName.trim().isEmpty()
+                        ? "Paciente sin nombre"
+                        : patientName.trim();
+
+        String age =
+                patientAge.trim().isEmpty()
+                        ? ""
+                        : " · " +
+                        patientAge.trim() +
+                        " años";
+
+        txtStudyInfo.setText(
+                title +
+                "   ·   " +
+                patient +
+                age
+        );
+    }
+
+    private void showStudyDetailsDialog(
+            boolean firstTime
+    ) {
+        if (!measurementView.hasBitmap()
+                && !firstTime) {
+
+            Toast.makeText(
+                    this,
+                    "Abra una radiografía antes de guardar el estudio.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        if (studyName.trim().isEmpty()) {
+            studyName =
+                    SavedStudyStore.suggestedStudyName(
+                            this
+                    );
+        }
+
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(
+                dp(20),
+                dp(6),
+                dp(20),
+                dp(4)
+        );
+
+        ImageView image = new ImageView(this);
+        image.setImageResource(
+                R.drawable.yom_logo_transparent
+        );
+        image.setScaleType(
+                ImageView.ScaleType.CENTER_INSIDE
+        );
+
+        form.addView(
+                image,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(74)
+                )
+        );
+
+        TextView labelStudy =
+                formLabel("Nombre del estudio o radiografía");
+
+        EditText editStudy = new EditText(this);
+        editStudy.setSingleLine(true);
+        editStudy.setText(studyName);
+        editStudy.setHint("Ej. Radiografía 1, Estudio 1");
+
+        TextView labelPatient =
+                formLabel("Nombre del paciente");
+
+        EditText editPatient = new EditText(this);
+        editPatient.setSingleLine(true);
+        editPatient.setText(patientName);
+        editPatient.setHint("Nombre para identificar el estudio");
+
+        TextView labelAge =
+                formLabel("Edad");
+
+        EditText editAge = new EditText(this);
+        editAge.setSingleLine(true);
+        editAge.setText(patientAge);
+        editAge.setHint("Ej. 12");
+        editAge.setInputType(
+                InputType.TYPE_CLASS_NUMBER
+        );
+
+        form.addView(labelStudy);
+        form.addView(editStudy);
+        form.addView(labelPatient);
+        form.addView(editPatient);
+        form.addView(labelAge);
+        form.addView(editAge);
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                firstTime
+                                        ? "Identificar radiografía"
+                                        : "Datos del estudio"
+                        )
+                        .setView(form)
+                        .setPositiveButton(
+                                "Guardar",
+                                null
+                        )
+                        .setNegativeButton(
+                                firstTime
+                                        ? "Usar sugerencia"
+                                        : "Cancelar",
+                                null
+                        )
+                        .create();
+
+        dialog.setOnShowListener(unused -> {
+            dialog.getButton(
+                    AlertDialog.BUTTON_POSITIVE
+            ).setOnClickListener(v -> {
+                String enteredStudy =
+                        editStudy.getText()
+                                .toString()
+                                .trim();
+
+                studyName =
+                        enteredStudy.isEmpty()
+                                ? SavedStudyStore
+                                        .suggestedStudyName(this)
+                                : enteredStudy;
+
+                patientName =
+                        editPatient.getText()
+                                .toString()
+                                .trim();
+
+                patientAge =
+                        editAge.getText()
+                                .toString()
+                                .trim();
+
+                updateStudyInfo();
+                saveStudy(false);
+                dialog.dismiss();
+            });
+
+            if (firstTime) {
+                dialog.getButton(
+                        AlertDialog.BUTTON_NEGATIVE
+                ).setOnClickListener(v -> {
+                    updateStudyInfo();
+                    saveStudy(true);
+                    dialog.dismiss();
+                });
+            }
+        });
+
+        dialog.show();
+    }
+
+    private TextView formLabel(String text) {
+        TextView label = new TextView(this);
+        label.setText(text);
+        label.setTextColor(0xFF5B3FA4);
+        label.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+        label.setTextSize(14f);
+        label.setPadding(
+                0,
+                dp(10),
+                0,
+                0
+        );
+        return label;
     }
 
     private void saveStudy(boolean silent) {
         if (measurementView == null
                 || !measurementView.hasBitmap()
                 || imageUriString == null) {
+
             if (!silent) {
                 Toast.makeText(
                         this,
@@ -380,25 +827,44 @@ public class AnalysisActivity extends Activity {
                         Toast.LENGTH_SHORT
                 ).show();
             }
+
             return;
         }
 
         if (studyId == null) {
-            studyId = SavedStudyStore.newId();
+            studyId =
+                    SavedStudyStore.newId();
         }
 
-        SavedStudyStore.StudyData study = new SavedStudyStore.StudyData();
+        if (studyName.trim().isEmpty()) {
+            studyName =
+                    SavedStudyStore
+                            .suggestedStudyName(this);
+        }
+
+        SavedStudyStore.StudyData study =
+                new SavedStudyStore.StudyData();
+
         study.id = studyId;
         study.mode = mode;
         study.imageUri = imageUriString;
         study.studyName = studyName;
         study.patientName = patientName;
         study.patientAge = patientAge;
-        study.locked = measurementView.isLocked();
-        study.labels = new ArrayList<>(landmarks);
-        study.points = measurementView.getPointsSnapshot();
+        study.locked =
+                measurementView.isLocked();
 
-        SavedStudyStore.save(this, study);
+        study.labels =
+                new ArrayList<>(landmarks);
+
+        study.points =
+                measurementView
+                        .getPointsSnapshot();
+
+        SavedStudyStore.save(
+                this,
+                study
+        );
 
         if (!silent) {
             Toast.makeText(
@@ -411,17 +877,29 @@ public class AnalysisActivity extends Activity {
 
     private void calculateFullAnalysis() {
         if (!measurementView.hasBitmap()) {
-            Toast.makeText(this, "Primero abra una radiografía.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    this,
+                    "Primero abra una radiografía.",
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
         if (!measurementView.isComplete()) {
-            String next = measurementView.getCurrentLabel();
+            String next =
+                    measurementView.getCurrentLabel();
+
             Toast.makeText(
                     this,
-                    "Faltan puntos. Seleccionado: " + (next == null ? "—" : next),
+                    "Faltan puntos. Seleccionado: " +
+                    (
+                            next == null
+                                    ? "—"
+                                    : next
+                    ),
                     Toast.LENGTH_LONG
             ).show();
+
             return;
         }
 
@@ -432,11 +910,54 @@ public class AnalysisActivity extends Activity {
     private void showResultsDialog() {
         ScrollView scroll = new ScrollView(this);
 
-        LinearLayout container = new LinearLayout(this);
-        container.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout container =
+                new LinearLayout(this);
+
+        container.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
         int pad = dp(18);
-        container.setPadding(pad, pad, pad, pad);
+
+        container.setPadding(
+                pad,
+                pad,
+                pad,
+                pad
+        );
+
         scroll.addView(container);
+
+        TextView heading = new TextView(this);
+        heading.setText(
+                studyName +
+                "\n" +
+                (
+                        patientName.trim().isEmpty()
+                                ? "Paciente sin nombre"
+                                : patientName
+                ) +
+                (
+                        patientAge.trim().isEmpty()
+                                ? ""
+                                : " · " +
+                                patientAge +
+                                " años"
+                )
+        );
+        heading.setTextColor(0xFF5B3FA4);
+        heading.setTextSize(17f);
+        heading.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+        heading.setPadding(
+                0,
+                0,
+                0,
+                dp(10)
+        );
+        container.addView(heading);
 
         TextView intro = new TextView(this);
         intro.setText(
@@ -445,104 +966,207 @@ public class AnalysisActivity extends Activity {
         );
         intro.setTextSize(14f);
         intro.setTextColor(0xFF4A4652);
-        intro.setPadding(0, 0, 0, dp(12));
+        intro.setPadding(
+                0,
+                0,
+                0,
+                dp(12)
+        );
         container.addView(intro);
 
         for (MeasurementDefinition def : definitions) {
-            Double value = measurementView.calculate(def);
+            Double value =
+                    measurementView.calculate(def);
+
             if (value == null) continue;
 
             TextView row = new TextView(this);
+
             row.setText(
-                    def.name + "\n" +
-                    String.format(Locale.US, "%.1f°", value) +
-                    "   ·   Norma: " + def.normText + "\n" +
+                    def.name +
+                    "\n" +
+                    String.format(
+                            Locale.US,
+                            "%.1f°",
+                            value
+                    ) +
+                    "   ·   Norma: " +
+                    def.normText +
+                    "\n" +
                     def.diagnosis(value)
             );
+
             row.setTextSize(15f);
             row.setTextColor(0xFF292631);
-            row.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
-            row.setBackgroundResource(R.drawable.card_white);
-            row.setPadding(dp(14), dp(12), dp(14), dp(12));
 
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+            row.setTypeface(
+                    Typeface.DEFAULT,
+                    Typeface.NORMAL
             );
-            lp.setMargins(0, 0, 0, dp(10));
+
+            row.setBackgroundResource(
+                    R.drawable.card_white
+            );
+
+            row.setPadding(
+                    dp(14),
+                    dp(12),
+                    dp(14),
+                    dp(12)
+            );
+
+            LinearLayout.LayoutParams lp =
+                    new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    );
+
+            lp.setMargins(
+                    0,
+                    0,
+                    0,
+                    dp(10)
+            );
+
             row.setLayoutParams(lp);
 
             container.addView(row);
         }
 
-        TextView saveAnnotated = createDialogButton(
-                "GUARDAR RADIOGRAFÍA CON PUNTOS",
-                R.drawable.button_soft_mint,
-                0xFF15383D
-        );
+        TextView saveAnnotated =
+                createDialogButton(
+                        "GUARDAR RADIOGRAFÍA CON PUNTOS",
+                        R.drawable.button_soft_mint,
+                        0xFF15383D
+                );
+
         saveAnnotated.setOnClickListener(v -> {
-            Bitmap annotated = measurementView.renderAnnotatedBitmap();
+            Bitmap annotated =
+                    measurementView
+                            .renderAnnotatedBitmap();
+
             if (annotated == null) {
-                Toast.makeText(this, "No se pudo preparar la imagen.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                        this,
+                        "No se pudo preparar la imagen.",
+                        Toast.LENGTH_SHORT
+                ).show();
+
                 return;
             }
 
             startSaveImage(
                     annotated,
-                    safeFileName(studyName.length() == 0 ? "YomCephalometrics_radiografia" : studyName) + "_puntos.png",
+                    safeFileName(
+                            studyName +
+                            "_puntos.png"
+                    ),
                     REQ_SAVE_ANNOTATED
             );
         });
+
         container.addView(saveAnnotated);
 
-        TextView saveReport = createDialogButton(
-                "GUARDAR INFORME COMO IMAGEN",
-                R.drawable.card_steiner,
-                Color.WHITE
-        );
+        TextView saveReport =
+                createDialogButton(
+                        "GUARDAR INFORME COMO IMAGEN",
+                        R.drawable.card_steiner,
+                        Color.WHITE
+                );
+
         saveReport.setOnClickListener(v -> {
-            Bitmap report = buildReportBitmap();
+            Bitmap report =
+                    buildReportBitmap();
+
             if (report == null) {
-                Toast.makeText(this, "No se pudo preparar el informe.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                        this,
+                        "No se pudo preparar el informe.",
+                        Toast.LENGTH_SHORT
+                ).show();
+
                 return;
             }
 
             startSaveImage(
                     report,
-                    "VERTEBRAL".equals(mode)
-                            ? safeFileName(studyName.length() == 0 ? "YomCephalometrics" : studyName) + "_informe_vertebral.png"
-                            : safeFileName(studyName.length() == 0 ? "YomCephalometrics" : studyName) + "_informe_steiner.png",
+                    safeFileName(
+                            studyName +
+                            "_informe.png"
+                    ),
                     REQ_SAVE_REPORT
             );
         });
+
         container.addView(saveReport);
 
         new AlertDialog.Builder(this)
-                .setTitle("VERTEBRAL".equals(mode)
-                        ? "Resultados · Vertebral"
-                        : "Resultados · Steiner")
+                .setTitle(
+                        "VERTEBRAL".equals(mode)
+                                ? "Resultados · Vertebral"
+                                : "Resultados · Steiner"
+                )
                 .setView(scroll)
-                .setPositiveButton("Cerrar", null)
+                .setPositiveButton(
+                        "Cerrar",
+                        null
+                )
                 .show();
     }
 
-    private TextView createDialogButton(String text, int backgroundRes, int textColor) {
+    private String safeFileName(String name) {
+        return name
+                .replaceAll(
+                        "[\\\\/:*?\"<>|]",
+                        "_"
+                );
+    }
+
+    private TextView createDialogButton(
+            String text,
+            int backgroundRes,
+            int textColor
+    ) {
         TextView button = new TextView(this);
+
         button.setText(text);
         button.setGravity(Gravity.CENTER);
-        button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+
+        button.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+
         button.setTextSize(15f);
         button.setTextColor(textColor);
-        button.setBackgroundResource(backgroundRes);
-        button.setPadding(dp(14), dp(14), dp(14), dp(14));
+
+        button.setBackgroundResource(
+                backgroundRes
+        );
+
+        button.setPadding(
+                dp(14),
+                dp(14),
+                dp(14),
+                dp(14)
+        );
+
         button.setClickable(true);
         button.setFocusable(true);
 
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(54)
+        LinearLayout.LayoutParams lp =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(54)
+                );
+
+        lp.setMargins(
+                0,
+                dp(6),
+                0,
+                dp(8)
         );
-        lp.setMargins(0, dp(6), 0, dp(8));
+
         button.setLayoutParams(lp);
 
         return button;
@@ -551,48 +1175,179 @@ public class AnalysisActivity extends Activity {
     private Bitmap buildReportBitmap() {
         int width = 1400;
         int margin = 70;
-        int titleHeight = 165;
+        int titleHeight = 240;
         int rowHeight = 180;
         int footer = 70;
 
-        int height = titleHeight + (definitions.size() * rowHeight) + footer;
+        int height =
+                titleHeight +
+                (definitions.size() * rowHeight) +
+                footer;
 
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(Color.rgb(247, 245, 251));
+        Bitmap bitmap =
+                Bitmap.createBitmap(
+                        width,
+                        height,
+                        Bitmap.Config.ARGB_8888
+                );
 
-        Paint titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        titlePaint.setColor(Color.rgb(91, 63, 164));
-        titlePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        Canvas canvas =
+                new Canvas(bitmap);
+
+        canvas.drawColor(
+                Color.rgb(
+                        247,
+                        245,
+                        251
+                )
+        );
+
+        Paint titlePaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
+
+        titlePaint.setColor(
+                Color.rgb(
+                        91,
+                        63,
+                        164
+                )
+        );
+
+        titlePaint.setTypeface(
+                Typeface.create(
+                        Typeface.DEFAULT,
+                        Typeface.BOLD
+                )
+        );
+
         titlePaint.setTextSize(58f);
 
-        Paint subtitlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        subtitlePaint.setColor(Color.rgb(44, 126, 134));
+        Paint subtitlePaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
+
+        subtitlePaint.setColor(
+                Color.rgb(
+                        44,
+                        126,
+                        134
+                )
+        );
+
         subtitlePaint.setTextSize(30f);
 
-        Paint namePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        namePaint.setColor(Color.rgb(91, 63, 164));
-        namePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        Paint infoPaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
+
+        infoPaint.setColor(
+                Color.rgb(
+                        65,
+                        61,
+                        72
+                )
+        );
+
+        infoPaint.setTextSize(27f);
+
+        Paint namePaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
+
+        namePaint.setColor(
+                Color.rgb(
+                        91,
+                        63,
+                        164
+                )
+        );
+
+        namePaint.setTypeface(
+                Typeface.create(
+                        Typeface.DEFAULT,
+                        Typeface.BOLD
+                )
+        );
+
         namePaint.setTextSize(34f);
 
-        Paint valuePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        valuePaint.setColor(Color.rgb(25, 25, 30));
-        valuePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        Paint valuePaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
+
+        valuePaint.setColor(
+                Color.rgb(
+                        25,
+                        25,
+                        30
+                )
+        );
+
+        valuePaint.setTypeface(
+                Typeface.create(
+                        Typeface.DEFAULT,
+                        Typeface.BOLD
+                )
+        );
+
         valuePaint.setTextSize(34f);
 
-        Paint detailPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        detailPaint.setColor(Color.rgb(65, 61, 72));
+        Paint detailPaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
+
+        detailPaint.setColor(
+                Color.rgb(
+                        65,
+                        61,
+                        72
+                )
+        );
+
         detailPaint.setTextSize(27f);
 
-        Paint cardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        cardPaint.setColor(Color.WHITE);
+        Paint cardPaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
 
-        Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokePaint.setColor(Color.rgb(205, 194, 231));
-        strokePaint.setStyle(Paint.Style.STROKE);
+        cardPaint.setColor(
+                Color.WHITE
+        );
+
+        Paint strokePaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
+
+        strokePaint.setColor(
+                Color.rgb(
+                        205,
+                        194,
+                        231
+                )
+        );
+
+        strokePaint.setStyle(
+                Paint.Style.STROKE
+        );
+
         strokePaint.setStrokeWidth(3f);
 
-        canvas.drawText("YomCephalometrics", margin, 72, titlePaint);
+        canvas.drawText(
+                "YomCephalometrics",
+                margin,
+                72,
+                titlePaint
+        );
+
         canvas.drawText(
                 "VERTEBRAL".equals(mode)
                         ? "Informe de análisis vertebral / craneocervical"
@@ -602,39 +1357,90 @@ public class AnalysisActivity extends Activity {
                 subtitlePaint
         );
 
-        String patientLine = (studyName.length() == 0 ? "Estudio" : studyName);
-        if (patientName.length() > 0) patientLine += " · Paciente: " + patientName;
-        if (patientAge.length() > 0) patientLine += " · Edad: " + patientAge;
-        subtitlePaint.setTextSize(25f);
-        canvas.drawText(patientLine, margin, 154, subtitlePaint);
+        canvas.drawText(
+                "Estudio: " +
+                studyName,
+                margin,
+                165,
+                infoPaint
+        );
 
-        int y = titleHeight + 24;
+        canvas.drawText(
+                "Paciente: " +
+                (
+                        patientName.trim().isEmpty()
+                                ? "Sin nombre"
+                                : patientName
+                ) +
+                (
+                        patientAge.trim().isEmpty()
+                                ? ""
+                                : " · " +
+                                patientAge +
+                                " años"
+                ),
+                margin,
+                205,
+                infoPaint
+        );
+
+        int y = titleHeight;
 
         for (MeasurementDefinition def : definitions) {
-            Double value = measurementView.calculate(def);
+            Double value =
+                    measurementView.calculate(def);
+
             if (value == null) continue;
 
             float left = margin;
             float top = y;
             float right = width - margin;
-            float bottom = y + rowHeight - 18;
+            float bottom =
+                    y + rowHeight - 18;
 
             android.graphics.RectF rect =
-                    new android.graphics.RectF(left, top, right, bottom);
+                    new android.graphics.RectF(
+                            left,
+                            top,
+                            right,
+                            bottom
+                    );
 
-            canvas.drawRoundRect(rect, 30f, 30f, cardPaint);
-            canvas.drawRoundRect(rect, 30f, 30f, strokePaint);
-
-            canvas.drawText(def.name, left + 30, top + 46, namePaint);
-
-            String valueLine = String.format(
-                    Locale.US,
-                    "%.1f°   ·   Norma: %s",
-                    value,
-                    def.normText
+            canvas.drawRoundRect(
+                    rect,
+                    30f,
+                    30f,
+                    cardPaint
             );
 
-            canvas.drawText(valueLine, left + 30, top + 91, valuePaint);
+            canvas.drawRoundRect(
+                    rect,
+                    30f,
+                    30f,
+                    strokePaint
+            );
+
+            canvas.drawText(
+                    def.name,
+                    left + 30,
+                    top + 46,
+                    namePaint
+            );
+
+            String valueLine =
+                    String.format(
+                            Locale.US,
+                            "%.1f°   ·   Norma: %s",
+                            value,
+                            def.normText
+                    );
+
+            canvas.drawText(
+                    valueLine,
+                    left + 30,
+                    top + 91,
+                    valuePaint
+            );
 
             drawWrappedText(
                     canvas,
@@ -649,8 +1455,19 @@ public class AnalysisActivity extends Activity {
             y += rowHeight;
         }
 
-        Paint footerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        footerPaint.setColor(Color.rgb(100, 91, 115));
+        Paint footerPaint =
+                new Paint(
+                        Paint.ANTI_ALIAS_FLAG
+                );
+
+        footerPaint.setColor(
+                Color.rgb(
+                        100,
+                        91,
+                        115
+                )
+        );
+
         footerPaint.setTextSize(24f);
 
         canvas.drawText(
@@ -672,29 +1489,53 @@ public class AnalysisActivity extends Activity {
             Paint paint,
             float lineHeight
     ) {
-        if (text == null || text.trim().isEmpty()) return;
+        if (text == null
+                || text.trim().isEmpty()) {
+            return;
+        }
 
-        String[] words = text.split("\\s+");
-        StringBuilder line = new StringBuilder();
+        String[] words =
+                text.split("\\s+");
+
+        StringBuilder line =
+                new StringBuilder();
+
         float currentY = y;
 
         for (String word : words) {
-            String test = line.length() == 0
-                    ? word
-                    : line + " " + word;
+            String test =
+                    line.length() == 0
+                            ? word
+                            : line + " " + word;
 
             if (x + paint.measureText(test) > maxRight
                     && line.length() > 0) {
-                canvas.drawText(line.toString(), x, currentY, paint);
-                line = new StringBuilder(word);
+
+                canvas.drawText(
+                        line.toString(),
+                        x,
+                        currentY,
+                        paint
+                );
+
+                line =
+                        new StringBuilder(word);
+
                 currentY += lineHeight;
+
             } else {
-                line = new StringBuilder(test);
+                line =
+                        new StringBuilder(test);
             }
         }
 
         if (line.length() > 0) {
-            canvas.drawText(line.toString(), x, currentY, paint);
+            canvas.drawText(
+                    line.toString(),
+                    x,
+                    currentY,
+                    paint
+            );
         }
     }
 
@@ -705,32 +1546,60 @@ public class AnalysisActivity extends Activity {
     ) {
         pendingSaveBitmap = bitmap;
 
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/png");
-        intent.putExtra(Intent.EXTRA_TITLE, suggestedName);
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_CREATE_DOCUMENT
+                );
 
-        startActivityForResult(intent, requestCode);
+        intent.addCategory(
+                Intent.CATEGORY_OPENABLE
+        );
+
+        intent.setType("image/png");
+
+        intent.putExtra(
+                Intent.EXTRA_TITLE,
+                suggestedName
+        );
+
+        startActivityForResult(
+                intent,
+                requestCode
+        );
     }
 
-    private void writePendingBitmap(Uri uri) {
-        if (pendingSaveBitmap == null || uri == null) return;
+    private void writePendingBitmap(
+            Uri uri
+    ) {
+        if (pendingSaveBitmap == null
+                || uri == null) {
+            return;
+        }
 
-        try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+        try (
+                OutputStream out =
+                        getContentResolver()
+                                .openOutputStream(uri)
+        ) {
             if (out == null) {
-                throw new IOException("No se pudo abrir el archivo de salida.");
+                throw new IOException(
+                        "No se pudo abrir el archivo de salida."
+                );
             }
 
-            boolean ok = pendingSaveBitmap.compress(
-                    Bitmap.CompressFormat.PNG,
-                    100,
-                    out
-            );
+            boolean ok =
+                    pendingSaveBitmap.compress(
+                            Bitmap.CompressFormat.PNG,
+                            100,
+                            out
+                    );
 
             out.flush();
 
             if (!ok) {
-                throw new IOException("No se pudo codificar PNG.");
+                throw new IOException(
+                        "No se pudo codificar PNG."
+                );
             }
 
             Toast.makeText(
@@ -756,101 +1625,31 @@ public class AnalysisActivity extends Activity {
         }
     }
 
-    private void showStudyDataDialog(boolean firstTime) {
-        LinearLayout form = new LinearLayout(this);
-        form.setOrientation(LinearLayout.VERTICAL);
-        form.setPadding(dp(20), dp(8), dp(20), 0);
-
-        EditText studyInput = new EditText(this);
-        studyInput.setHint("Nombre del estudio (ej. Radiografía 1)");
-        studyInput.setSingleLine(true);
-        studyInput.setText(studyName);
-        form.addView(studyInput);
-
-        EditText patientInput = new EditText(this);
-        patientInput.setHint("Nombre del paciente");
-        patientInput.setSingleLine(true);
-        patientInput.setText(patientName);
-        form.addView(patientInput);
-
-        EditText ageInput = new EditText(this);
-        ageInput.setHint("Edad");
-        ageInput.setSingleLine(true);
-        ageInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-        ageInput.setText(patientAge);
-        form.addView(ageInput);
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Datos del estudio")
-                .setMessage("Estos datos sirven para identificar la radiografía en Mis análisis.")
-                .setView(form)
-                .setNegativeButton(firstTime ? "Después" : "Cancelar", null)
-                .setPositiveButton("Guardar", null)
-                .create();
-
-        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            String newStudyName = studyInput.getText().toString().trim();
-            if (newStudyName.length() == 0) {
-                studyInput.setError("Escriba un nombre para el estudio.");
-                return;
-            }
-
-            studyName = newStudyName;
-            patientName = patientInput.getText().toString().trim();
-            patientAge = ageInput.getText().toString().trim();
-
-            updateStudyMeta();
-            saveStudy(true);
-            dialog.dismiss();
-        }));
-
-        dialog.setOnDismissListener(d -> {
-            if (firstTime && studyName.length() == 0) {
-                studyName = "Estudio " + (SavedStudyStore.list(this).size() + 1);
-                updateStudyMeta();
-            }
-            saveStudy(true);
-        });
-
-        dialog.show();
-    }
-
-    private void updateStudyMeta() {
-        if (txtStudyMeta == null) return;
-
-        String title = studyName.length() == 0 ? "Estudio sin nombre" : studyName;
-        String details = "";
-
-        if (patientName.length() > 0) {
-            details += "Paciente: " + patientName;
-        }
-
-        if (patientAge.length() > 0) {
-            if (details.length() > 0) details += "   ·   ";
-            details += "Edad: " + patientAge;
-        }
-
-        txtStudyMeta.setText(details.length() == 0 ? title : title + "\n" + details);
-    }
-
-    private String safe(String value) {
-        return value == null ? "" : value;
-    }
-
-    private String safeFileName(String value) {
-        String cleaned = value.replaceAll("[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]+", "_");
-        return cleaned.length() == 0 ? "YomCephalometrics" : cleaned;
-    }
-
     private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
+        return Math.round(
+                value *
+                getResources()
+                        .getDisplayMetrics()
+                        .density
+        );
     }
 
     private void openImage() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_OPEN_DOCUMENT
+                );
+
+        intent.addCategory(
+                Intent.CATEGORY_OPENABLE
+        );
+
         intent.setType("image/*");
-        startActivityForResult(intent, REQ_IMAGE);
+
+        startActivityForResult(
+                intent,
+                REQ_IMAGE
+        );
     }
 
     @Override
@@ -859,21 +1658,33 @@ public class AnalysisActivity extends Activity {
             int resultCode,
             Intent data
     ) {
-        super.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(
+                requestCode,
+                resultCode,
+                data
+        );
 
         if (requestCode == REQ_SAVE_ANNOTATED
                 || requestCode == REQ_SAVE_REPORT) {
+
             if (resultCode == RESULT_OK
                     && data != null
                     && data.getData() != null) {
-                writePendingBitmap(data.getData());
+
+                writePendingBitmap(
+                        data.getData()
+                );
+
             } else {
                 if (pendingSaveBitmap != null
                         && !pendingSaveBitmap.isRecycled()) {
+
                     pendingSaveBitmap.recycle();
                 }
+
                 pendingSaveBitmap = null;
             }
+
             return;
         }
 
@@ -887,34 +1698,54 @@ public class AnalysisActivity extends Activity {
         Uri uri = data.getData();
 
         try {
-            getContentResolver().takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-            );
+            getContentResolver()
+                    .takePersistableUriPermission(
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    );
         } catch (Exception ignored) {
         }
 
         try {
-            Bitmap bitmap = decodeSampledBitmap(uri, 4096);
+            Bitmap bitmap =
+                    decodeSampledBitmap(
+                            uri,
+                            4096
+                    );
 
             if (bitmap == null) {
-                throw new IOException("Bitmap nulo");
+                throw new IOException(
+                        "Bitmap nulo"
+                );
             }
 
-            bitmap = applyExifRotation(uri, bitmap);
+            bitmap =
+                    applyExifRotation(
+                            uri,
+                            bitmap
+                    );
 
             measurementView.setLocked(false);
             updateLockButton();
+
             measurementView.setBitmap(bitmap);
             measurementView.resetMeasurement();
 
-            imageUriString = uri.toString();
-            if (studyId == null) studyId = SavedStudyStore.newId();
-            if (studyName.length() == 0) {
-                studyName = "Estudio " + (SavedStudyStore.list(this).size() + 1);
-            }
-            updateStudyMeta();
-            showStudyDataDialog(true);
+            imageUriString =
+                    uri.toString();
+
+            studyId =
+                    SavedStudyStore.newId();
+
+            studyName =
+                    SavedStudyStore
+                            .suggestedStudyName(this);
+
+            patientName = "";
+            patientAge = "";
+
+            updateStudyInfo();
+            showStudyDetailsDialog(true);
 
         } catch (Exception e) {
             Toast.makeText(
@@ -929,49 +1760,90 @@ public class AnalysisActivity extends Activity {
             Uri uri,
             int maxDimension
     ) throws IOException {
-        BitmapFactory.Options bounds = new BitmapFactory.Options();
+
+        BitmapFactory.Options bounds =
+                new BitmapFactory.Options();
+
         bounds.inJustDecodeBounds = true;
 
-        try (InputStream in =
-                     getContentResolver().openInputStream(uri)) {
-            BitmapFactory.decodeStream(in, null, bounds);
+        try (
+                InputStream in =
+                        getContentResolver()
+                                .openInputStream(uri)
+        ) {
+            BitmapFactory.decodeStream(
+                    in,
+                    null,
+                    bounds
+            );
         }
 
         int sample = 1;
-        int max = Math.max(bounds.outWidth, bounds.outHeight);
+
+        int max =
+                Math.max(
+                        bounds.outWidth,
+                        bounds.outHeight
+                );
 
         while (max / sample > maxDimension) {
             sample *= 2;
         }
 
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inSampleSize = sample;
-        opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        BitmapFactory.Options opts =
+                new BitmapFactory.Options();
 
-        try (InputStream in =
-                     getContentResolver().openInputStream(uri)) {
-            return BitmapFactory.decodeStream(in, null, opts);
+        opts.inSampleSize = sample;
+        opts.inPreferredConfig =
+                Bitmap.Config.ARGB_8888;
+
+        try (
+                InputStream in =
+                        getContentResolver()
+                                .openInputStream(uri)
+        ) {
+            return BitmapFactory.decodeStream(
+                    in,
+                    null,
+                    opts
+            );
         }
     }
 
-    private Bitmap applyExifRotation(Uri uri, Bitmap bitmap) {
-        try (InputStream in =
-                     getContentResolver().openInputStream(uri)) {
+    private Bitmap applyExifRotation(
+            Uri uri,
+            Bitmap bitmap
+    ) {
+        try (
+                InputStream in =
+                        getContentResolver()
+                                .openInputStream(uri)
+        ) {
+            ExifInterface exif =
+                    new ExifInterface(in);
 
-            ExifInterface exif = new ExifInterface(in);
-
-            int orientation = exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
-            );
+            int orientation =
+                    exif.getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_NORMAL
+                    );
 
             float degrees = 0f;
 
-            if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            if (orientation
+                    == ExifInterface.ORIENTATION_ROTATE_90) {
                 degrees = 90f;
-            } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
+
+            } else if (
+                    orientation
+                            == ExifInterface.ORIENTATION_ROTATE_180
+            ) {
                 degrees = 180f;
-            } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
+
+            } else if (
+                    orientation
+                            == ExifInterface.ORIENTATION_ROTATE_270
+            ) {
                 degrees = 270f;
             }
 
@@ -979,7 +1851,9 @@ public class AnalysisActivity extends Activity {
                 return bitmap;
             }
 
-            Matrix matrix = new Matrix();
+            Matrix matrix =
+                    new Matrix();
+
             matrix.postRotate(degrees);
 
             return Bitmap.createBitmap(

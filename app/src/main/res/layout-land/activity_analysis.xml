@@ -46,7 +46,8 @@
                     android:text="Análisis"
                     android:textColor="#FFFFFF"
                     android:textStyle="bold"
-                    android:textSize="17sp"
+                    android:textSize="14sp"
+                    android:maxLines="2"
                     android:gravity="center" />
 
                 <TextView

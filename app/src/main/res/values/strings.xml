@@ -28,6 +28,7 @@
     <string name="data_save">DATOS / GUARDAR</string>
     <string name="lock_trace">BLOQ. PUNTO</string>
     <string name="calculate_analysis">CALCULAR ANÁLISIS</string>
+    <string name="landmarks_bar">PUNTOS</string>
 
     <string name="cd_yomceph_icon">Icono de YomCeph</string>
     <string name="cd_tooth_ruler">Diente con regla</string>

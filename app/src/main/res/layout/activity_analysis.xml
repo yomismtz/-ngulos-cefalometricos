@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F6F8">
+    android:background="@drawable/bg_home">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,13 +11,19 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:padding="10dp"
-        android:background="#111111">
+        android:background="@drawable/header_gradient">
 
-        <Button
+        <TextView
             android:id="@+id/btnBack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="←" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="←"
+            android:textSize="24sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/button_soft_purple"
+            android:clickable="true"
+            android:focusable="true" />
 
         <TextView
             android:id="@+id/txtTitle"
@@ -30,95 +36,145 @@
             android:textSize="20sp"
             android:gravity="center" />
 
-        <Button
+        <TextView
             android:id="@+id/btnOpen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Imagen" />
+            android:layout_width="82dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="Imagen"
+            android:textStyle="bold"
+            android:textColor="#15383D"
+            android:background="@drawable/button_soft_mint"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
-    <Spinner
-        android:id="@+id/spinnerMeasurement"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp" />
-
-    <TextView
-        android:id="@+id/txtNorm"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Norma:"
-        android:textStyle="bold"
-        android:textSize="15sp"
-        android:textColor="#222222"
+        android:orientation="vertical"
         android:paddingLeft="12dp"
         android:paddingRight="12dp"
-        android:paddingTop="4dp" />
+        android:paddingTop="10dp">
 
-    <TextView
-        android:id="@+id/txtInstruction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Instrucción"
-        android:textSize="14sp"
-        android:textColor="#444444"
-        android:padding="12dp" />
+        <Spinner
+            android:id="@+id/spinnerMeasurement"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/card_white"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp" />
+
+        <TextView
+            android:id="@+id/txtNorm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Norma:"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textColor="#5B3FA4"
+            android:paddingTop="8dp"
+            android:paddingLeft="4dp" />
+
+        <TextView
+            android:id="@+id/txtInstruction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Instrucción"
+            android:textSize="14sp"
+            android:textColor="#3D3946"
+            android:background="@drawable/card_white"
+            android:padding="12dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="8dp" />
+    </LinearLayout>
 
     <com.cefalo.angulos.MeasurementView
         android:id="@+id/measurementView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#000000" />
-
-    <TextView
-        android:id="@+id/txtResult"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Resultado: —"
-        android:textStyle="bold"
-        android:textSize="19sp"
-        android:textColor="#111111"
-        android:gravity="center"
-        android:paddingTop="8dp" />
-
-    <TextView
-        android:id="@+id/txtDiagnosis"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Diagnóstico: —"
-        android:textSize="15sp"
-        android:textColor="#333333"
-        android:gravity="center"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:paddingBottom="6dp" />
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:background="@drawable/panel_dark" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="6dp">
+        android:orientation="vertical"
+        android:background="@drawable/card_white"
+        android:padding="10dp"
+        android:layout_margin="12dp"
+        android:elevation="2dp">
 
-        <Button
-            android:id="@+id/btnUndo"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/txtResult"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Deshacer" />
+            android:text="Resultado: —"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="#5B3FA4"
+            android:gravity="center" />
 
-        <Button
-            android:id="@+id/btnReset"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/txtDiagnosis"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Borrar" />
+            android:text="Diagnóstico: —"
+            android:textSize="15sp"
+            android:textColor="#226B72"
+            android:gravity="center"
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp" />
 
-        <Button
-            android:id="@+id/btnFit"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Centrar" />
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnUndo"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Deshacer"
+                android:textStyle="bold"
+                android:textColor="#5B3FA4"
+                android:background="@drawable/button_soft_purple"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginRight="4dp" />
+
+            <TextView
+                android:id="@+id/btnReset"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Borrar"
+                android:textStyle="bold"
+                android:textColor="#5B3FA4"
+                android:background="@drawable/button_soft_purple"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp" />
+
+            <TextView
+                android:id="@+id/btnFit"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Centrar"
+                android:textStyle="bold"
+                android:textColor="#15383D"
+                android:background="@drawable/button_soft_mint"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginLeft="4dp" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

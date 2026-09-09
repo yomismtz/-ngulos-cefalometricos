@@ -27,6 +27,8 @@ public final class SavedStudyStore {
         public String patientAge;
         public long updatedAt;
         public boolean locked;
+        public double mmPerPixel = Double.NaN;
+        public String calibrationLabel = "";
         public List<String> labels = new ArrayList<>();
         public List<PointF> points = new ArrayList<>();
 
@@ -66,6 +68,8 @@ public final class SavedStudyStore {
             root.put("patientAge", study.patientAge == null ? "" : study.patientAge);
             root.put("updatedAt", study.updatedAt);
             root.put("locked", study.locked);
+            root.put("mmPerPixel", study.mmPerPixel);
+            root.put("calibrationLabel", study.calibrationLabel == null ? "" : study.calibrationLabel);
 
             JSONArray labels = new JSONArray();
             for (String label : study.labels) {
@@ -124,6 +128,8 @@ public final class SavedStudyStore {
             study.patientAge = root.optString("patientAge", "");
             study.updatedAt = root.optLong("updatedAt", 0L);
             study.locked = root.optBoolean("locked", false);
+            study.mmPerPixel = root.optDouble("mmPerPixel", Double.NaN);
+            study.calibrationLabel = root.optString("calibrationLabel", "");
 
             if (study.studyName == null || study.studyName.trim().isEmpty()) {
                 study.studyName = "Estudio";

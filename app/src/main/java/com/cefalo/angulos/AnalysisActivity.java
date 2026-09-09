@@ -1820,14 +1820,23 @@ public class AnalysisActivity extends Activity {
                     "No debe interpretarse como diagnóstico de hipertrofia adenoidea, obstrucción ni apnea del sueño.";
         }
 
-        if (ref == null) {
-            if ((def.name.startsWith("Faringe superior")
-                    || def.name.startsWith("Faringe posterior"))
-                    && patientSex.trim().isEmpty()) {
-
-                return "Seleccione sexo en Datos / Guardar para mostrar la referencia de McNamara. La medida por sí sola no diagnostica obstrucción ni apnea del sueño.";
+        if (def.name.startsWith("Faringe superior")) {
+            if (value <= 5.0) {
+                return "≤5 mm: McNamara lo describió únicamente como indicador de posible compromiso de vía aérea superior. Requiere valoración clínica/otorrinolaringológica; no es un diagnóstico.";
             }
 
+            return "Mayor de 5 mm. McNamara no considera esta medida aislada suficiente para diagnosticar normalidad respiratoria; una telerradiografía 2D tampoco confirma ni excluye apnea del sueño.";
+        }
+
+        if (def.name.startsWith("Faringe posterior")) {
+            if (value > 15.0) {
+                return ">15 mm: McNamara indicó que puede sugerir posición anterior de la lengua y/o aumento tonsilar. Es una asociación cefalométrica, no un diagnóstico.";
+            }
+
+            return "≤15 mm. McNamara señaló que una medida inferior al promedio en esta región no es, por sí sola, un hallazgo diagnóstico. Correlacionar clínicamente.";
+        }
+
+        if (ref == null) {
             return "Medida obtenida; no hay una referencia aplicable con los datos actuales. No se realiza clasificación diagnóstica.";
         }
 
@@ -1835,7 +1844,7 @@ public class AnalysisActivity extends Activity {
         double max = ref.mean + ref.sd;
 
         if (value >= min && value <= max) {
-            return "Dentro de ±1 DE de la referencia cefalométrica de McNamara. Estar dentro del intervalo no descarta un trastorno respiratorio.";
+            return "Dentro de ±1 DE de la referencia disponible. Esto no descarta un trastorno respiratorio.";
         }
 
         return (
@@ -1843,8 +1852,8 @@ public class AnalysisActivity extends Activity {
                         ? "Por debajo"
                         : "Por encima"
         ) +
-                " de ±1 DE de la referencia cefalométrica de McNamara. " +
-                "Una telerradiografía lateral 2D no diagnostica obstrucción, apnea del sueño ni hipertrofia amigdalina/adenoidea.";
+                " de ±1 DE de la referencia disponible. " +
+                "Una telerradiografía lateral 2D no establece un diagnóstico respiratorio.";
     }
 
     private AirwayRef airwayReference(String name) {

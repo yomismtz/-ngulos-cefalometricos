@@ -24,6 +24,10 @@ public class MeasurementView extends View {
         void onProgress(int placed, int total, String currentLabel);
     }
 
+    public interface CalibrationListener {
+        void onCalibrationReady(PointF first, PointF second, double pixelDistance);
+    }
+
     private Bitmap bitmap;
     private final List<String> landmarkLabels = new ArrayList<>();
     private final List<PointF> points = new ArrayList<>();
@@ -35,6 +39,7 @@ public class MeasurementView extends View {
     private final Paint haloPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint magnifierBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint calibrationPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final Matrix matrix = new Matrix();
     private final Matrix inverse = new Matrix();
@@ -54,6 +59,10 @@ public class MeasurementView extends View {
     private PointF magnifierImagePoint;
 
     private ProgressListener progressListener;
+    private CalibrationListener calibrationListener;
+    private boolean calibrationMode = false;
+    private PointF calibrationPoint1;
+    private PointF calibrationPoint2;
 
     public MeasurementView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -80,6 +89,10 @@ public class MeasurementView extends View {
         magnifierBorderPaint.setColor(Color.rgb(185, 243, 230));
         magnifierBorderPaint.setStyle(Paint.Style.STROKE);
         magnifierBorderPaint.setStrokeWidth(dp(4));
+
+        calibrationPaint.setColor(Color.rgb(255, 190, 66));
+        calibrationPaint.setStyle(Paint.Style.STROKE);
+        calibrationPaint.setStrokeWidth(dp(3));
 
         scaleDetector = new ScaleGestureDetector(context,
                 new ScaleGestureDetector.SimpleOnScaleGestureListener() {
@@ -109,6 +122,27 @@ public class MeasurementView extends View {
     public void setProgressListener(ProgressListener listener) {
         progressListener = listener;
         notifyProgress();
+    }
+
+    public void startCalibration(CalibrationListener listener) {
+        if (bitmap == null) return;
+        calibrationListener = listener;
+        calibrationMode = true;
+        calibrationPoint1 = null;
+        calibrationPoint2 = null;
+        magnifierActive = false;
+        invalidate();
+    }
+
+    public void cancelCalibration() {
+        calibrationMode = false;
+        calibrationListener = null;
+        magnifierActive = false;
+        invalidate();
+    }
+
+    public boolean isCalibrationMode() {
+        return calibrationMode;
     }
 
     public void setLandmarks(List<String> labels) {
@@ -330,6 +364,7 @@ public class MeasurementView extends View {
 
         canvas.drawBitmap(bitmap, matrix, imagePaint);
         drawPoints(canvas);
+        drawCalibration(canvas);
 
         if (magnifierActive && magnifierImagePoint != null) {
             drawMagnifier(canvas);
@@ -366,6 +401,28 @@ public class MeasurementView extends View {
             textPaint.setTextSize(dp(14));
             canvas.drawText(label, s.x + dp(12), s.y - dp(10), textPaint);
         }
+    }
+
+    private void drawCalibration(Canvas canvas) {
+        if (calibrationPoint1 == null) return;
+
+        PointF a = imageToScreen(calibrationPoint1);
+
+        if (calibrationPoint2 != null) {
+            PointF b = imageToScreen(calibrationPoint2);
+            canvas.drawLine(a.x, a.y, b.x, b.y, calibrationPaint);
+            canvas.drawCircle(b.x, b.y, dp(7), calibrationPaint);
+        }
+
+        canvas.drawCircle(a.x, a.y, dp(7), calibrationPaint);
+
+        textPaint.setTextSize(dp(13));
+        canvas.drawText(
+                calibrationMode ? "CALIBRAR" : "CAL",
+                a.x + dp(10),
+                a.y - dp(10),
+                textPaint
+        );
     }
 
     private void drawMagnifier(Canvas canvas) {
@@ -422,6 +479,10 @@ public class MeasurementView extends View {
         if (bitmap == null || landmarkLabels.isEmpty()) return true;
 
         scaleDetector.onTouchEvent(event);
+
+        if (calibrationMode) {
+            return handleCalibrationTouch(event);
+        }
 
         if (event.getPointerCount() >= 2) {
             magnifierActive = false;
@@ -498,6 +559,91 @@ public class MeasurementView extends View {
 
             case MotionEvent.ACTION_CANCEL:
                 draggingPoint = -1;
+                magnifierActive = false;
+                invalidate();
+                return true;
+        }
+
+        return true;
+    }
+
+    private boolean handleCalibrationTouch(MotionEvent event) {
+        if (event.getPointerCount() >= 2) {
+            magnifierActive = false;
+            handleTwoFingerPan(event);
+            return true;
+        } else {
+            twoFingerTracking = false;
+        }
+
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                downX = event.getX();
+                downY = event.getY();
+                moved = false;
+
+                PointF initial = screenToImage(downX, downY);
+                if (insideImage(initial)) {
+                    magnifierImagePoint = initial;
+                    magnifierActive = true;
+                }
+
+                invalidate();
+                return true;
+
+            case MotionEvent.ACTION_MOVE:
+                if (Math.hypot(event.getX() - downX, event.getY() - downY) > dp(6)) {
+                    moved = true;
+                }
+
+                PointF movePoint = screenToImage(event.getX(), event.getY());
+                if (insideImage(movePoint)) {
+                    magnifierImagePoint = movePoint;
+                    magnifierActive = true;
+                }
+
+                invalidate();
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                PointF upPoint = screenToImage(event.getX(), event.getY());
+
+                if (!moved && insideImage(upPoint)) {
+                    if (calibrationPoint1 == null) {
+                        calibrationPoint1 = upPoint;
+                    } else {
+                        calibrationPoint2 = upPoint;
+
+                        double pixels = Math.hypot(
+                                calibrationPoint2.x - calibrationPoint1.x,
+                                calibrationPoint2.y - calibrationPoint1.y
+                        );
+
+                        calibrationMode = false;
+                        magnifierActive = false;
+
+                        CalibrationListener listener = calibrationListener;
+                        calibrationListener = null;
+
+                        invalidate();
+
+                        if (listener != null && pixels > 0.0) {
+                            listener.onCalibrationReady(
+                                    new PointF(calibrationPoint1.x, calibrationPoint1.y),
+                                    new PointF(calibrationPoint2.x, calibrationPoint2.y),
+                                    pixels
+                            );
+                        }
+
+                        return true;
+                    }
+                }
+
+                magnifierActive = false;
+                invalidate();
+                return true;
+
+            case MotionEvent.ACTION_CANCEL:
                 magnifierActive = false;
                 invalidate();
                 return true;

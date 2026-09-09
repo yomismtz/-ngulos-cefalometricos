@@ -1877,6 +1877,27 @@ public class AnalysisActivity extends Activity {
     }
 
     private void addLevandoskiSummary(LinearLayout container) {
+        TextView note = new TextView(this);
+        note.setText(
+                "Líneas medias: la tabla proporcionada indica observación de coincidencia, no una medida en mm. " +
+                "Por eso YomCeph no asigna un valor ni un umbral automático a esa fila."
+        );
+        note.setTextSize(12.5f);
+        note.setTextColor(0xFF4A4652);
+        note.setGravity(Gravity.CENTER);
+        note.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        note.setBackgroundResource(R.drawable.button_soft_mint_centered);
+        note.setPadding(dp(10), dp(8), dp(10), dp(8));
+
+        LinearLayout.LayoutParams noteLp =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+        noteLp.setMargins(0, dp(4), 0, dp(10));
+        note.setLayoutParams(noteLp);
+        container.addView(note);
+
         TextView title = new TextView(this);
         title.setText("Comparación derecha / izquierda");
         title.setTextSize(16f);

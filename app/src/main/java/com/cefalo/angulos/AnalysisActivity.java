@@ -1775,6 +1775,21 @@ public class AnalysisActivity extends Activity {
             if (isProvidedAirwayTableReference(def.name)) {
                 return "Tabla docente aportada: referencia disponible solo para edades específicas";
             }
+
+            if (def.name.startsWith("Faringe superior")) {
+                int age = patientAgeYears();
+
+                if (age > 0 && age < 18) {
+                    return "McNamara: ≤5 mm = indicador de posible compromiso; la dimensión aumenta con la edad";
+                }
+
+                return "McNamara: adulto ≈17.4 mm; ≤5 mm = indicador de posible compromiso";
+            }
+
+            if (def.name.startsWith("Faringe posterior")) {
+                return "McNamara: promedio ≈10–12 mm; >15 mm puede sugerir lengua anterior/tonsilas aumentadas";
+            }
+
             return def.normText;
         }
 
@@ -1856,14 +1871,17 @@ public class AnalysisActivity extends Activity {
                 "Una telerradiografía lateral 2D no establece un diagnóstico respiratorio.";
     }
 
-    private AirwayRef airwayReference(String name) {
-        int age;
-
+    private int patientAgeYears() {
         try {
-            age = Integer.parseInt(patientAge.trim());
+            int age = Integer.parseInt(patientAge.trim());
+            return age >= 1 && age <= 120 ? age : -1;
         } catch (Exception e) {
-            age = -1;
+            return -1;
         }
+    }
+
+    private AirwayRef airwayReference(String name) {
+        int age = patientAgeYears();
 
         boolean female = "Femenino".equals(patientSex);
         boolean male = "Masculino".equals(patientSex);
@@ -1915,12 +1933,14 @@ public class AnalysisActivity extends Activity {
         // McNamara: mujeres primero en la tabla original (17.4±3.4;
         // 11.3±3.3) y hombres (17.4±4.3; 13.5±4.3).
         if (name.startsWith("Faringe superior")) {
+            if (age < 18) return null;
             if (male) return new AirwayRef(17.4, 4.3);
             if (female) return new AirwayRef(17.4, 3.4);
             return null;
         }
 
         if (name.startsWith("Faringe posterior")) {
+            if (age < 18) return null;
             if (male) return new AirwayRef(13.5, 4.3);
             if (female) return new AirwayRef(11.3, 3.3);
             return null;

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public final class SavedStudyStore {
@@ -57,7 +58,7 @@ public final class SavedStudyStore {
             if (study == null || study.studyName == null) continue;
 
             String name = study.studyName.trim();
-            if (!name.toLowerCase().startsWith("estudio ")) continue;
+            if (!name.toLowerCase(Locale.ROOT).startsWith("estudio ")) continue;
 
             try {
                 int value = Integer.parseInt(

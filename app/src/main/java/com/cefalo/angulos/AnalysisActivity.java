@@ -2186,7 +2186,7 @@ public class AnalysisActivity extends Activity {
         int width = 1400;
         int margin = 70;
         int titleHeight = 390;
-        int rowHeight = 220;
+        int rowHeight = 320;
         int footer = 125;
 
         int linearCount =
@@ -2593,11 +2593,14 @@ public class AnalysisActivity extends Activity {
 
         footerPaint.setTextSize(24f);
 
-        canvas.drawText(
+        drawWrappedText(
+                canvas,
                 "Referencia educativa: interpretar junto con historia clínica y exploración. Una medida cefalométrica aislada no equivale a un diagnóstico.",
                 margin,
-                height - 28,
-                footerPaint
+                height - 78,
+                width - margin,
+                footerPaint,
+                28f
         );
 
         return bitmap;

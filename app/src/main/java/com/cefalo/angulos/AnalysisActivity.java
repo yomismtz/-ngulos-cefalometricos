@@ -1339,6 +1339,46 @@ public class AnalysisActivity extends Activity {
                         dy * (p.x - a.x)
                 ) / length;
 
+        if (def.interpretation
+                == LinearMeasurementDefinition.Interpretation.HYOID_TRIANGLE) {
+            double t =
+                    (
+                            (p.x - a.x) * dx +
+                            (p.y - a.y) * dy
+                    ) / (length * length);
+
+            double projectionY = a.y + t * dy;
+            double magnitudeMm = Math.abs(signedPixels) * mmPerPixel;
+
+            if (Math.abs(p.y - projectionY) < 0.01) {
+                return 0.0;
+            }
+
+            // En coordenadas de imagen Android, Y aumenta hacia inferior.
+            // Así, H por debajo de C3-RGn siempre queda positivo aunque
+            // la radiografía esté orientada hacia la izquierda o derecha.
+            return p.y > projectionY
+                    ? magnitudeMm
+                    : -magnitudeMm;
+        }
+
+        if (def.interpretation
+                == LinearMeasurementDefinition.Interpretation.CERVICAL_DEPTH) {
+            PointF anteriorReference = measurementView.getPoint("N");
+
+            if (anteriorReference != null) {
+                double referenceSide =
+                        (
+                                dx * (anteriorReference.y - a.y) -
+                                dy * (anteriorReference.x - a.x)
+                        ) / length;
+
+                if (Math.abs(referenceSide) > 0.0001) {
+                    signedPixels *= Math.signum(referenceSide);
+                }
+            }
+        }
+
         double valueMm = signedPixels * mmPerPixel;
 
         if (def.type == LinearMeasurementDefinition.Type.PERPENDICULAR_ABS) {

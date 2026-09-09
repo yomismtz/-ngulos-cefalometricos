@@ -353,6 +353,10 @@ public class MeasurementView extends View {
 
             if (i == selectedIndex) {
                 canvas.drawCircle(s.x, s.y, dp(15), selectedRingPaint);
+                canvas.drawLine(s.x - dp(20), s.y, s.x - dp(11), s.y, selectedRingPaint);
+                canvas.drawLine(s.x + dp(11), s.y, s.x + dp(20), s.y, selectedRingPaint);
+                canvas.drawLine(s.x, s.y - dp(20), s.x, s.y - dp(11), selectedRingPaint);
+                canvas.drawLine(s.x, s.y + dp(11), s.x, s.y + dp(20), selectedRingPaint);
             }
 
             String label = i < landmarkLabels.size()

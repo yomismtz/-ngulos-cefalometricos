@@ -26,6 +26,7 @@ public class SavedStudiesActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundResource(R.drawable.bg_home);
+        root.setFitsSystemWindows(true);
 
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);

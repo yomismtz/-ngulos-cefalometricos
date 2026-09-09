@@ -857,6 +857,23 @@ public class MeasurementView extends View {
     public Double calculate(MeasurementDefinition definition) {
         if (definition == null) return null;
 
+        if (definition.type == MeasurementDefinition.Type.SIGNED_ANB) {
+            PointF s = getPoint(definition.pointLabels[0]);
+            PointF n = getPoint(definition.pointLabels[1]);
+            PointF a = getPoint(definition.pointLabels[2]);
+            PointF b = getPoint(definition.pointLabels[3]);
+
+            if (s == null || n == null || a == null || b == null) return null;
+
+            double sna = angleAtVertex(s, n, a);
+            double snb = angleAtVertex(s, n, b);
+
+            // ANB is conventionally defined as SNA - SNB.
+            // Keeping the sign is essential: negative values can represent
+            // a Class III sagittal relationship.
+            return sna - snb;
+        }
+
         if (definition.type == MeasurementDefinition.Type.THREE_POINTS) {
             PointF a = getPoint(definition.pointLabels[0]);
             PointF b = getPoint(definition.pointLabels[1]);

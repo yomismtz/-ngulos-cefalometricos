@@ -188,7 +188,7 @@ public final class MeasurementCatalog {
                 127,135,
                 "131° ± 4°",
                 "Marque el eje del incisivo superior y después el eje del incisivo inferior.",
-                "Ángulo interincisal disminuido; mayor proclinción relativa de los incisivos.",
+                "Ángulo interincisal disminuido; mayor proinclinación relativa de los incisivos.",
                 "Dentro del rango de referencia.",
                 "Ángulo interincisal aumentado; mayor retroinclinación relativa de los incisivos.",
                 true

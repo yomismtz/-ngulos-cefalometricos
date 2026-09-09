@@ -41,6 +41,12 @@ public class MeasurementDefinition {
     }
 
     public String diagnosis(double value) {
+        if (Double.isNaN(normalMin) || Double.isNaN(normalMax)) {
+            return normalDiagnosis == null || normalDiagnosis.trim().isEmpty()
+                    ? "Medida descriptiva; no se aplica clasificación automática."
+                    : normalDiagnosis;
+        }
+
         if (value < normalMin) return lowDiagnosis;
         if (value > normalMax) return highDiagnosis;
         return normalDiagnosis;

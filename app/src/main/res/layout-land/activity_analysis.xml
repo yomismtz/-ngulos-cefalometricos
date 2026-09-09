@@ -56,7 +56,7 @@
                     android:gravity="center"
                     android:text="🖼 Imagen"
                     android:textStyle="bold"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textColor="#15383D"
                     android:background="@drawable/button_soft_mint"
                     android:clickable="true"
@@ -70,99 +70,11 @@
                 android:text="Estudio sin nombre · Paciente sin nombre"
                 android:textColor="#2C7E86"
                 android:textStyle="bold"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:gravity="center"
                 android:paddingTop="8dp"
                 android:paddingBottom="5dp" />
 
-            <TextView
-                android:id="@+id/txtProgress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Punto seleccionado"
-                android:textStyle="bold"
-                android:textSize="15sp"
-                android:textColor="#5B3FA4"
-                android:background="@drawable/card_white"
-                android:padding="9dp" />
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:scrollbars="none"
-                android:layout_marginTop="5dp">
-
-                <LinearLayout
-                    android:id="@+id/pointChips"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical" />
-            </HorizontalScrollView>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:orientation="horizontal"
-                android:layout_marginTop="4dp">
-
-                <TextView
-                    android:id="@+id/btnPrevious"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="← Anterior"
-                    android:textStyle="bold"
-                    android:textSize="12sp"
-                    android:textColor="#5B3FA4"
-                    android:background="@drawable/button_soft_purple"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginRight="3dp" />
-
-                <TextView
-                    android:id="@+id/btnPointHelp"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Dónde está"
-                    android:textStyle="bold"
-                    android:textSize="12sp"
-                    android:textColor="#15383D"
-                    android:background="@drawable/button_soft_mint"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginLeft="3dp"
-                    android:layout_marginRight="3dp" />
-
-                <TextView
-                    android:id="@+id/btnNext"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Siguiente →"
-                    android:textStyle="bold"
-                    android:textSize="12sp"
-                    android:textColor="#5B3FA4"
-                    android:background="@drawable/button_soft_purple"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginLeft="3dp" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtInstruction"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Instrucción"
-                android:textSize="11sp"
-                android:textColor="#3D3946"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp" />
-            
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
@@ -196,6 +108,99 @@
                     android:focusable="true" />
             </LinearLayout>
 
+        <TextView
+                android:id="@+id/txtProgress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Punto seleccionado"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:textColor="#5B3FA4"
+                android:background="@drawable/card_white"
+                android:padding="9dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:scrollbars="none"
+                android:layout_marginTop="5dp">
+
+                <LinearLayout
+                    android:id="@+id/pointChips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical" />
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/btnPrevious"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                android:textAlignment="center"
+                    android:text="← Anterior"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:textColor="#5B3FA4"
+                    android:background="@drawable/button_soft_purple"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginRight="3dp" />
+
+                <TextView
+                    android:id="@+id/btnPointHelp"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                android:textAlignment="center"
+                    android:text="Dónde está"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:textColor="#15383D"
+                    android:background="@drawable/button_soft_mint"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="3dp" />
+
+                <TextView
+                    android:id="@+id/btnNext"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                android:textAlignment="center"
+                    android:text="Siguiente →"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:textColor="#5B3FA4"
+                    android:background="@drawable/button_soft_purple"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginLeft="3dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/txtInstruction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Instrucción"
+                android:textSize="11sp"
+                android:textColor="#3D3946"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp" />
+            
+            
+
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -208,6 +213,7 @@
                     android:layout_height="52dp"
                     android:layout_weight="1"
                     android:gravity="center"
+                android:textAlignment="center"
                     android:text="DESHACER&#10;PUNTO ANTERIOR"
                     android:textStyle="bold"
                     android:textSize="11sp"
@@ -223,6 +229,7 @@
                     android:layout_height="52dp"
                     android:layout_weight="1"
                     android:gravity="center"
+                android:textAlignment="center"
                     android:text="BORRAR TODOS&#10;LOS PUNTOS"
                     android:textStyle="bold"
                     android:textSize="11sp"
@@ -260,6 +267,7 @@
                     android:layout_height="46dp"
                     android:layout_weight="1.25"
                     android:gravity="center"
+                android:textAlignment="center"
                     android:text="💾 DATOS / GUARDAR"
                     android:textStyle="bold"
                     android:textSize="10sp"
@@ -276,6 +284,7 @@
                     android:layout_height="46dp"
                     android:layout_weight="1.25"
                     android:gravity="center"
+                android:textAlignment="center"
                     android:text="🔓 BLOQUEAR"
                     android:textStyle="bold"
                     android:textSize="10sp"
@@ -303,6 +312,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:gravity="center"
+            android:textAlignment="center"
                 android:text="CALCULAR ANÁLISIS"
                 android:textStyle="bold"
                 android:textSize="15sp"

@@ -108,7 +108,7 @@
                 android:layout_height="44dp"
                 android:layout_weight="1.25"
                 android:gravity="center"
-                android:text="? Dónde está"
+                android:text="Dónde está"
                 android:textStyle="bold"
                 android:textColor="#15383D"
                 android:background="@drawable/button_soft_mint"

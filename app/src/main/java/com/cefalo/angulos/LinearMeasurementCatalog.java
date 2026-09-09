@@ -95,7 +95,7 @@ public final class LinearMeasurementCatalog {
         ));
 
         list.add(m(
-                "Dimensión anteroposterior de la nasofaringe",
+                "Dimensión AP de la nasofaringe (AA-PNS/ENP)",
                 DISTANCE,
                 RANGE,
                 p("AA", "ENP"),

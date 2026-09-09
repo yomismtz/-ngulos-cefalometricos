@@ -1,0 +1,23 @@
+CEFALOÁNGULOS — PASOS PARA ABRIR EL PROYECTO
+
+1) Descomprime CefaloAngulos_AndroidStudio.zip.
+2) Abre Android Studio.
+3) Pulsa Open.
+4) Selecciona la carpeta CefaloAngulos (no la carpeta app por separado).
+5) Espera a que Android Studio lea Gradle.
+6) Si Android Studio pide instalar Android SDK 35, acepta.
+7) Si propone actualizar o configurar Gradle, usa la opción recomendada por Android Studio.
+8) Conecta tu teléfono Android con Depuración USB o crea un emulador.
+9) Pulsa Run (triángulo verde).
+
+Si Android Studio marca un error de Gradle, manda una captura de pantalla del error. El código fuente de la app ya está dentro de app/src/main y se puede adaptar al proyecto vacío que genere tu versión de Android Studio.
+
+FUNCIONAMIENTO
+- Inicio: dos botones, Steiner y Vertebral/Craneocervical.
+- Abre una radiografía.
+- Elige el ángulo en el menú.
+- Marca los puntos en el orden indicado.
+- Arrastra un punto para corregirlo.
+- Pellizca con dos dedos para zoom.
+- Mueve con dos dedos.
+- La app muestra grados y la interpretación según la tabla cargada.

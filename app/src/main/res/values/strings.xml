@@ -32,4 +32,10 @@
 
     <string name="cd_yomceph_icon">Icono de YomCeph</string>
     <string name="cd_tooth_ruler">Diente con regla</string>
+
+    <string name="info_privacy">INFORMACIÓN Y PRIVACIDAD</string>
+    <string name="educational_disclaimer_title">Uso educativo</string>
+    <string name="educational_disclaimer">YomCeph es una herramienta educativa. No es un dispositivo médico y no diagnostica, trata, cura ni previene ninguna afección médica. Para asesoramiento, diagnóstico o tratamiento, consulte a un profesional sanitario cualificado.</string>
+    <string name="understood">ENTENDIDO</string>
+    <string name="more_info">MÁS INFORMACIÓN</string>
 </resources>

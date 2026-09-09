@@ -428,7 +428,7 @@ public class MeasurementView extends View {
     private void drawMagnifier(Canvas canvas) {
         if (bitmap == null || magnifierImagePoint == null) return;
 
-        float radius = dp(64);
+        float radius = Math.min(dp(92), getWidth() * 0.28f);
         float cx = getWidth() - radius - dp(16);
         float cy = radius + dp(16);
 
@@ -441,7 +441,7 @@ public class MeasurementView extends View {
 
         if (currentScale <= 0f) currentScale = 1f;
 
-        float magnification = 3.2f;
+        float magnification = 4.2f;
         float sourceHalf = radius / (currentScale * magnification);
 
         int left = Math.max(0, Math.round(magnifierImagePoint.x - sourceHalf));
@@ -470,8 +470,8 @@ public class MeasurementView extends View {
         cross.setColor(Color.rgb(154, 111, 232));
         cross.setStrokeWidth(dp(2));
 
-        canvas.drawLine(cx - dp(12), cy, cx + dp(12), cy, cross);
-        canvas.drawLine(cx, cy - dp(12), cx, cy + dp(12), cross);
+        canvas.drawLine(cx - dp(18), cy, cx + dp(18), cy, cross);
+        canvas.drawLine(cx, cy - dp(18), cx, cy + dp(18), cross);
     }
 
     @Override

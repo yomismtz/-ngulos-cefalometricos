@@ -1,7 +1,7 @@
 package com.cefalo.angulos;
 
 public class MeasurementDefinition {
-    public enum Type { THREE_POINTS, TWO_LINES }
+    public enum Type { THREE_POINTS, TWO_LINES, SIGNED_ANB }
 
     public final String name;
     public final Type type;

@@ -157,28 +157,11 @@ public class AnalysisActivity extends Activity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnOpen).setOnClickListener(v -> openImage());
 
-        findViewById(R.id.btnUndo).setOnClickListener(v -> {
-            if (measurementView.isLocked()) {
-                Toast.makeText(
-                        this,
-                        "Desbloquee el trazado para deshacer un punto.",
-                        Toast.LENGTH_SHORT
-                ).show();
-                return;
-            }
-            measurementView.undo();
-        });
+        findViewById(R.id.btnUndo).setOnClickListener(v ->
+                measurementView.undo()
+        );
 
         findViewById(R.id.btnReset).setOnClickListener(v -> {
-            if (measurementView.isLocked()) {
-                Toast.makeText(
-                        this,
-                        "Desbloquee el trazado para borrar todos los puntos.",
-                        Toast.LENGTH_SHORT
-                ).show();
-                return;
-            }
-
             new AlertDialog.Builder(this)
                     .setTitle("Borrar todos los puntos")
                     .setMessage(
@@ -214,9 +197,8 @@ public class AnalysisActivity extends Activity {
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
-                "Mantenga el dedo sobre la radiografía para usar la lupa. " +
-                "El punto seleccionado queda marcado con un aro y una mira. " +
-                "Puede cambiar de punto con la lista, Anterior o Siguiente."
+                "Toque para colocar el punto. Arrastre con un dedo para mover la radiografía y use dos dedos para acercar o alejar. " +
+                "Si un punto ya quedó correcto, selecciónelo y pulse BLOQ. PUNTO para protegerlo."
         );
 
         if (linearDefinitions.isEmpty()) {
@@ -318,7 +300,15 @@ public class AnalysisActivity extends Activity {
             measurementView.setPoints(
                     mapSavedPoints(study)
             );
-            measurementView.setLocked(study.locked);
+            measurementView.setLocked(false);
+            measurementView.setPointLocks(
+                    mapSavedPointLocks(study)
+            );
+
+            if (study.locked) {
+                measurementView.lockAllPlacedPoints();
+            }
+
             mmPerPixel = study.mmPerPixel;
             calibrationLabel = safe(study.calibrationLabel);
 
@@ -372,6 +362,28 @@ public class AnalysisActivity extends Activity {
         return mapped;
     }
 
+    private List<Boolean> mapSavedPointLocks(
+            SavedStudyStore.StudyData study
+    ) {
+        List<Boolean> mapped = new ArrayList<>();
+
+        for (String currentLabel : landmarks) {
+            int savedIndex =
+                    study.labels.indexOf(currentLabel);
+
+            boolean value =
+                    savedIndex >= 0
+                            && savedIndex < study.pointLocks.size()
+                            && Boolean.TRUE.equals(
+                                    study.pointLocks.get(savedIndex)
+                            );
+
+            mapped.add(value);
+        }
+
+        return mapped;
+    }
+
     private void updateProgress(
             int placed,
             int total,
@@ -394,19 +406,25 @@ public class AnalysisActivity extends Activity {
         boolean selectedPlaced =
                 measurementView.hasPointAt(selected);
 
+        boolean selectedLocked =
+                measurementView.isPointLocked(selected);
+
+        String selectedState =
+                selectedLocked
+                        ? "Bloqueado: "
+                        : selectedPlaced
+                                ? "Corregir: "
+                                : "Marcar: ";
+
         if (placed >= total) {
             txtProgress.setText(
                     "✓ Puntos completos: " +
                     placed +
                     " / " +
                     total +
-                    "\nSeleccionado: " +
-                    currentLabel +
-                    (
-                            measurementView.isLocked()
-                                    ? "   ·   🔒 trazado bloqueado"
-                                    : "   ·   puede corregirlo"
-                    )
+                    "\n" +
+                    selectedState +
+                    currentLabel
             );
 
             btnCalculate.setAlpha(1f);
@@ -418,16 +436,14 @@ public class AnalysisActivity extends Activity {
                     " / " +
                     total +
                     "\n" +
-                    (
-                            selectedPlaced
-                                    ? "Corregir: "
-                                    : "Marcar: "
-                    ) +
+                    selectedState +
                     currentLabel
             );
 
             btnCalculate.setAlpha(0.55f);
         }
+
+        updateLockButton();
 
         if (!restoring) {
             saveStudy(true);
@@ -446,13 +462,14 @@ public class AnalysisActivity extends Activity {
 
         int index = landmarks.indexOf(currentLabel);
         boolean placed = index >= 0 && measurementView.hasPointAt(index);
+        boolean pointLocked = index >= 0 && measurementView.isPointLocked(index);
 
         txtInstruction.setText(
-                (placed ? "✓ " : "⌖ ") +
+                (pointLocked ? "BLOQUEADO · " : placed ? "✓ " : "⌖ ") +
                 currentLabel +
                 " · Dónde colocarlo:\n" +
                 PointGuide.description(currentLabel) +
-                "\nMantenga el dedo sobre la radiografía para usar la lupa ampliada."
+                "\nToque para marcar. Arrastre con un dedo para mover la imagen. Mantenga sobre el punto seleccionado para corregirlo con la lupa."
         );
     }
 
@@ -479,12 +496,18 @@ public class AnalysisActivity extends Activity {
             boolean isSelected =
                     i == selected;
 
+            boolean pointLocked =
+                    measurementView.isPointLocked(i);
+
             TextView chip = new TextView(this);
 
             chip.setText(
-                    (isSelected ? "⌖  " : "") +
                     label +
-                    (placed ? "  ✓" : "  —")
+                    (pointLocked
+                            ? "  🔒"
+                            : placed
+                                    ? "  ✓"
+                                    : "")
             );
 
             chip.setTextSize(11.5f);
@@ -495,10 +518,10 @@ public class AnalysisActivity extends Activity {
             chip.setGravity(Gravity.CENTER);
 
             chip.setPadding(
-                    dp(12),
-                    dp(8),
-                    dp(12),
-                    dp(8)
+                    dp(10),
+                    dp(6),
+                    dp(10),
+                    dp(6)
             );
 
             chip.setClickable(true);
@@ -532,7 +555,7 @@ public class AnalysisActivity extends Activity {
             lp.setMargins(
                     0,
                     0,
-                    dp(7),
+                    dp(5),
                     0
             );
 
@@ -645,48 +668,57 @@ public class AnalysisActivity extends Activity {
     }
 
     private void toggleLock() {
-        if (!measurementView.isLocked()
-                && !measurementView.isComplete()) {
+        int selected =
+                measurementView.getSelectedIndex();
 
+        if (!measurementView.hasPointAt(selected)) {
             Toast.makeText(
                     this,
-                    "Complete todos los puntos antes de bloquear el trazado.",
-                    Toast.LENGTH_LONG
+                    "Primero coloque el punto seleccionado.",
+                    Toast.LENGTH_SHORT
             ).show();
-
             return;
         }
 
-        measurementView.setLocked(
-                !measurementView.isLocked()
-        );
-
-        updateLockButton();
-        saveStudy(true);
+        if (measurementView.toggleSelectedPointLock()) {
+            updateLockButton();
+            refreshPointChips();
+            updatePointDescription(
+                    measurementView.getCurrentLabel()
+            );
+            saveStudy(true);
+        }
     }
 
     private void updateLockButton() {
-        if (measurementView.isLocked()) {
-            btnLock.setText(
-                    "DESBLOQUEAR"
-            );
-            btnLock.setBackgroundResource(
-                    R.drawable.button_soft_mint_centered
-            );
-            btnLock.setTextColor(
-                    0xFF15383D
-            );
+        int selected =
+                measurementView.getSelectedIndex();
 
-        } else {
-            btnLock.setText(
-                    "BLOQUEAR"
-            );
+        if (!measurementView.hasPointAt(selected)) {
+            btnLock.setText("BLOQ. PUNTO");
+            btnLock.setAlpha(0.55f);
             btnLock.setBackgroundResource(
                     R.drawable.button_soft_purple_centered
             );
-            btnLock.setTextColor(
-                    0xFF5B3FA4
+            btnLock.setTextColor(0xFF5B3FA4);
+            return;
+        }
+
+        btnLock.setAlpha(1f);
+
+        if (measurementView.isPointLocked(selected)) {
+            btnLock.setText("DESBLOQ. PUNTO");
+            btnLock.setBackgroundResource(
+                    R.drawable.button_soft_mint_centered
             );
+            btnLock.setTextColor(0xFF15383D);
+
+        } else {
+            btnLock.setText("BLOQ. PUNTO");
+            btnLock.setBackgroundResource(
+                    R.drawable.button_soft_purple_centered
+            );
+            btnLock.setTextColor(0xFF5B3FA4);
         }
     }
 
@@ -979,7 +1011,9 @@ public class AnalysisActivity extends Activity {
         study.patientAge = patientAge;
         study.patientSex = patientSex;
         study.locked =
-                measurementView.isLocked();
+                measurementView.areAllPlacedPointsLocked();
+        study.pointLocks =
+                measurementView.getPointLocksSnapshot();
         study.mmPerPixel = mmPerPixel;
         study.calibrationLabel = calibrationLabel;
 

@@ -406,7 +406,20 @@ public class MeasurementView extends View {
                     : String.valueOf(i + 1);
 
             textPaint.setTextSize(dp(14));
-            canvas.drawText(label, s.x + dp(12), s.y - dp(10), textPaint);
+
+            float textWidth = textPaint.measureText(label);
+            float labelX = s.x + dp(12);
+            float labelY = s.y - dp(10);
+
+            if (labelX + textWidth > getWidth() - dp(6)) {
+                labelX = Math.max(dp(6), s.x - textWidth - dp(12));
+            }
+
+            if (labelY < dp(18)) {
+                labelY = s.y + dp(24);
+            }
+
+            canvas.drawText(label, labelX, labelY, textPaint);
         }
     }
 
@@ -435,12 +448,23 @@ public class MeasurementView extends View {
     private void drawMagnifier(Canvas canvas) {
         if (bitmap == null || magnifierImagePoint == null) return;
 
-        float radius = Math.min(dp(92), getWidth() * 0.28f);
-        float cx = getWidth() - radius - dp(16);
-        float cy = radius + dp(16);
+        float available = Math.min(getWidth(), getHeight());
+        float radius = Math.min(dp(92), available * 0.28f);
+        float margin = dp(16);
+
+        PointF touchScreen = imageToScreen(magnifierImagePoint);
+
+        float cx = touchScreen.x > getWidth() / 2f
+                ? radius + margin
+                : getWidth() - radius - margin;
+
+        float cy = touchScreen.y < getHeight() / 2f
+                ? getHeight() - radius - margin
+                : radius + margin;
 
         float[] values = new float[9];
         matrix.getValues(values);
+
         float currentScale = (float) Math.sqrt(
                 values[Matrix.MSCALE_X] * values[Matrix.MSCALE_X] +
                 values[Matrix.MSKEW_Y] * values[Matrix.MSKEW_Y]
@@ -449,17 +473,7 @@ public class MeasurementView extends View {
         if (currentScale <= 0f) currentScale = 1f;
 
         float magnification = 4.2f;
-        float sourceHalf = radius / (currentScale * magnification);
-
-        int left = Math.max(0, Math.round(magnifierImagePoint.x - sourceHalf));
-        int top = Math.max(0, Math.round(magnifierImagePoint.y - sourceHalf));
-        int right = Math.min(bitmap.getWidth(), Math.round(magnifierImagePoint.x + sourceHalf));
-        int bottom = Math.min(bitmap.getHeight(), Math.round(magnifierImagePoint.y + sourceHalf));
-
-        if (right <= left || bottom <= top) return;
-
-        Rect src = new Rect(left, top, right, bottom);
-        RectF dst = new RectF(cx - radius, cy - radius, cx + radius, cy + radius);
+        float magnifierScale = currentScale * magnification;
 
         canvas.save();
 
@@ -467,7 +481,14 @@ public class MeasurementView extends View {
         clip.addCircle(cx, cy, radius, Path.Direction.CW);
         canvas.clipPath(clip);
         canvas.drawColor(Color.BLACK);
-        canvas.drawBitmap(bitmap, src, dst, imagePaint);
+
+        canvas.translate(cx, cy);
+        canvas.scale(magnifierScale, magnifierScale);
+        canvas.translate(
+                -magnifierImagePoint.x,
+                -magnifierImagePoint.y
+        );
+        canvas.drawBitmap(bitmap, 0f, 0f, imagePaint);
 
         canvas.restore();
 
@@ -479,6 +500,7 @@ public class MeasurementView extends View {
 
         canvas.drawLine(cx - dp(18), cy, cx + dp(18), cy, cross);
         canvas.drawLine(cx, cy - dp(18), cx, cy + dp(18), cross);
+        canvas.drawCircle(cx, cy, dp(3), cross);
     }
 
     @Override
@@ -803,10 +825,28 @@ public class MeasurementView extends View {
                     ? landmarkLabels.get(i)
                     : String.valueOf(i + 1);
 
+            float exportTextWidth = exportText.measureText(label);
+            float exportLabelX = x + labelOffset;
+            float exportLabelY = y - labelOffset;
+
+            if (exportLabelX + exportTextWidth > outW - labelOffset) {
+                exportLabelX = Math.max(
+                        labelOffset,
+                        x - exportTextWidth - labelOffset
+                );
+            }
+
+            if (exportLabelY < exportText.getTextSize()) {
+                exportLabelY = Math.min(
+                        outH - labelOffset,
+                        y + exportText.getTextSize() + labelOffset
+                );
+            }
+
             canvas.drawText(
                     label,
-                    x + labelOffset,
-                    y - labelOffset,
+                    exportLabelX,
+                    exportLabelY,
                     exportText
             );
         }

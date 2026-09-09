@@ -94,20 +94,32 @@ public class SavedStudiesActivity extends Activity {
             card.setElevation(dp(2));
 
             TextView name = new TextView(this);
-            name.setText("VERTEBRAL".equals(study.mode)
-                    ? "Análisis vertebral / craneocervical"
-                    : "Análisis de Steiner");
+            String titleText = study.studyName == null || study.studyName.trim().isEmpty()
+                    ? ("VERTEBRAL".equals(study.mode) ? "Estudio vertebral" : "Estudio Steiner")
+                    : study.studyName;
+            name.setText(titleText);
             name.setTextColor(0xFF5B3FA4);
             name.setTextSize(17f);
             name.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
             card.addView(name);
 
             TextView details = new TextView(this);
-            details.setText(
-                    format.format(new Date(study.updatedAt)) +
+
+            String patient = study.patientName == null ? "" : study.patientName.trim();
+            String age = study.patientAge == null ? "" : study.patientAge.trim();
+
+            String info = "VERTEBRAL".equals(study.mode)
+                    ? "Análisis vertebral / craneocervical"
+                    : "Análisis de Steiner";
+
+            if (!patient.isEmpty()) info += "\nPaciente: " + patient;
+            if (!age.isEmpty()) info += "   ·   Edad: " + age;
+
+            info += "\n" + format.format(new Date(study.updatedAt)) +
                     "   ·   " + study.placedCount() + "/" + study.labels.size() + " puntos" +
-                    (study.locked ? "   ·   🔒" : "")
-            );
+                    (study.locked ? "   ·   Bloqueado" : "");
+
+            details.setText(info);
             details.setTextColor(0xFF4A4652);
             details.setTextSize(14f);
             details.setPadding(0, dp(5), 0, dp(12));

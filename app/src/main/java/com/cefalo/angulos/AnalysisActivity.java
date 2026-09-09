@@ -699,11 +699,18 @@ public class AnalysisActivity extends Activity {
                         patientAge.trim() +
                         " años";
 
+        String sex =
+                patientSex.trim().isEmpty()
+                        ? ""
+                        : " · " +
+                        patientSex.trim();
+
         txtStudyInfo.setText(
                 title +
                 "   ·   " +
                 patient +
-                age
+                age +
+                sex
         );
     }
 
@@ -781,12 +788,34 @@ public class AnalysisActivity extends Activity {
                 InputType.TYPE_CLASS_NUMBER
         );
 
+        TextView labelSex =
+                formLabel("Sexo para normas que lo requieran");
+
+        Spinner editSex = new Spinner(this);
+        ArrayAdapter<String> sexAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                new String[]{"Sin especificar", "Femenino", "Masculino"}
+        );
+        sexAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+        editSex.setAdapter(sexAdapter);
+
+        if ("Femenino".equals(patientSex)) {
+            editSex.setSelection(1);
+        } else if ("Masculino".equals(patientSex)) {
+            editSex.setSelection(2);
+        }
+
         form.addView(labelStudy);
         form.addView(editStudy);
         form.addView(labelPatient);
         form.addView(editPatient);
         form.addView(labelAge);
         form.addView(editAge);
+        form.addView(labelSex);
+        form.addView(editSex);
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
@@ -833,9 +862,20 @@ public class AnalysisActivity extends Activity {
                                 .toString()
                                 .trim();
 
+                String selectedSex =
+                        String.valueOf(editSex.getSelectedItem());
+                patientSex =
+                        "Sin especificar".equals(selectedSex)
+                                ? ""
+                                : selectedSex;
+
                 updateStudyInfo();
                 saveStudy(false);
                 dialog.dismiss();
+
+                if (firstTime) {
+                    promptCalibrationBeforePoints();
+                }
             });
 
             if (firstTime) {
@@ -845,6 +885,7 @@ public class AnalysisActivity extends Activity {
                     updateStudyInfo();
                     saveStudy(true);
                     dialog.dismiss();
+                    promptCalibrationBeforePoints();
                 });
             }
         });
@@ -906,6 +947,7 @@ public class AnalysisActivity extends Activity {
         study.studyName = studyName;
         study.patientName = patientName;
         study.patientAge = patientAge;
+        study.patientSex = patientSex;
         study.locked =
                 measurementView.isLocked();
         study.mmPerPixel = mmPerPixel;
@@ -930,6 +972,34 @@ public class AnalysisActivity extends Activity {
                     Toast.LENGTH_LONG
             ).show();
         }
+    }
+
+    private void promptCalibrationBeforePoints() {
+        if (linearDefinitions.isEmpty()
+                || !measurementView.hasBitmap()
+                || (!Double.isNaN(mmPerPixel) && mmPerPixel > 0)) {
+            return;
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Paso 1 · Calibración")
+                .setMessage(
+                        "Antes de colocar los puntos, calibre la radiografía si desea obtener medidas en mm o cm. " +
+                        "Marque dos extremos de una referencia de longitud conocida y escriba cuánto mide.\n\n" +
+                        "Si la imagen no tiene una referencia válida, puede continuar sin calibrar; los ángulos seguirán funcionando, pero las medidas lineales no se calcularán."
+                )
+                .setNegativeButton(
+                        "Continuar sin calibrar",
+                        null
+                )
+                .setPositiveButton(
+                        "Calibrar ahora",
+                        (d, which) -> startCalibrationFlow()
+                )
+                .create();
+
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
     }
 
     private void updateCalibrationStatus() {
@@ -1209,6 +1279,11 @@ public class AnalysisActivity extends Activity {
                                 : " · " +
                                 patientAge +
                                 " años"
+                ) +
+                (
+                        patientSex.trim().isEmpty()
+                                ? ""
+                                : " · " + patientSex
                 )
         );
         heading.setTextColor(0xFF5B3FA4);
@@ -1718,6 +1793,11 @@ public class AnalysisActivity extends Activity {
                                 : " · " +
                                 patientAge +
                                 " años"
+                ) +
+                (
+                        patientSex.trim().isEmpty()
+                                ? ""
+                                : " · " + patientSex
                 ),
                 margin,
                 205,

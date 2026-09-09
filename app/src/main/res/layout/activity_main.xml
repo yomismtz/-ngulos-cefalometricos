@@ -75,6 +75,21 @@
             android:elevation="4dp"
             android:layout_marginBottom="22dp" />
 
+        <TextView
+            android:id="@+id/btnStudies"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:gravity="center"
+            android:background="@drawable/button_soft_purple"
+            android:text="MIS ANÁLISIS"
+            android:textColor="#5B3FA4"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="3dp"
+            android:layout_marginBottom="18dp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

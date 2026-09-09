@@ -6,7 +6,6 @@
         <item name="android:navigationBarColor">@color/nav_bar</item>
         <item name="android:statusBarColor">@color/status_bar</item>
         <item name="android:windowLightStatusBar">@bool/yom_light_system_bars</item>
-        <item name="android:windowLightNavigationBar">@bool/yom_light_system_bars</item>
         <item name="android:windowBackground">@drawable/bg_home</item>
     </style>
 </resources>

@@ -43,4 +43,5 @@
     <string name="export_report_image">SAVE REPORT AS IMAGE</string>
     <string name="export_annotated">SAVE RADIOGRAPH WITH POINTS AND LINES</string>
     <string name="educational_footer">Educational use · Does not replace professional assessment</string>
+    <string name="back_accessibility">Back</string>
 </resources>

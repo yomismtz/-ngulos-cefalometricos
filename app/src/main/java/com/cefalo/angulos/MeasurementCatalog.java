@@ -121,6 +121,7 @@ public final class MeasurementCatalog {
                 p("A","B","Go","Gn"),
                 72,76,
                 "74° ± 2° · referencia del protocolo aportado",
+                "Marque A-B y después Go-Gn.",
                 "Valor por debajo del rango del protocolo; no diagnostica por sí solo una mordida abierta.",
                 "Dentro del rango de referencia del protocolo.",
                 "Valor por encima del rango del protocolo; no diagnostica por sí solo una mordida profunda.",

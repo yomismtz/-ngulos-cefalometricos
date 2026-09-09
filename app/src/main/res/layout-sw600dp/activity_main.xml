@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@drawable/bg_home">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="18dp"
+        android:paddingBottom="28dp">
+
+        <LinearLayout
+            android:layout_width="500dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingLeft="18dp"
+            android:paddingRight="18dp">
+
+            <ImageView
+                android:id="@+id/imgLogo"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/yom_logo_transparent"
+                android:scaleType="fitCenter"
+                android:contentDescription="Logo Yom Dental" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YomCephalometrics"
+                android:textStyle="bold"
+                android:textSize="25sp"
+                android:textColor="#5B3FA4"
+                android:gravity="center"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cefalometría angular, lineal y análisis facial"
+                android:textSize="13sp"
+                android:textColor="#2C7E86"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/btnSteiner"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:background="@drawable/button_primary_centered"
+                android:text="ANÁLISIS DE STEINER"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="3dp"
+                android:layout_marginBottom="9dp" />
+
+            <TextView
+                android:id="@+id/btnVertebral"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:background="@drawable/button_secondary_centered"
+                android:text="ANÁLISIS VERTEBRAL / ROCABADO"
+                android:textColor="#15383D"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="3dp"
+                android:layout_marginBottom="9dp" />
+
+            <TextView
+                android:id="@+id/btnPowell"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:background="@drawable/button_primary_centered"
+                android:text="ANÁLISIS DE POWELL"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="3dp"
+                android:layout_marginBottom="9dp" />
+
+            <TextView
+                android:id="@+id/btnTweed"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:background="@drawable/button_secondary_centered"
+                android:text="ANÁLISIS DE TWEED"
+                android:textColor="#15383D"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="3dp"
+                android:layout_marginBottom="9dp" />
+
+            <TextView
+                android:id="@+id/btnLevandoski"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:background="@drawable/button_primary_centered"
+                android:text="ANÁLISIS PANORÁMICO DE LEVANDOSKI"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:maxLines="2"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="3dp"
+                android:layout_marginBottom="9dp" />
+
+            <TextView
+                android:id="@+id/btnAirway"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:background="@drawable/button_secondary_centered"
+                android:text="ANÁLISIS DE VÍA AÉREA"
+                android:textColor="#15383D"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="3dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:id="@+id/btnStudies"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:background="@drawable/button_soft_purple_centered"
+                android:text="MIS ANÁLISIS"
+                android:textColor="#5B3FA4"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="2dp"
+                android:layout_marginBottom="12dp" />
+
+            <ImageView
+                android:id="@+id/imgMascot"
+                android:layout_width="match_parent"
+                android:layout_height="125dp"
+                android:src="@drawable/tooth_ruler_mascot"
+                android:scaleType="fitCenter"
+                android:contentDescription="Ilustración dental" />
+        </LinearLayout>
+    </FrameLayout>
+</ScrollView>

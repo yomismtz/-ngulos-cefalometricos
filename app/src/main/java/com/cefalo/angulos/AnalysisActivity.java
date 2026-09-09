@@ -49,7 +49,7 @@ public class AnalysisActivity extends Activity {
     private TextView btnLock;
     private TextView btnCalibrate;
     private TextView txtCalibration;
-    private LinearLayout pointChips;
+    private LandmarkFlowLayout pointChips;
 
     private List<MeasurementDefinition> definitions;
     private List<LinearMeasurementDefinition> linearDefinitions = new ArrayList<>();
@@ -185,9 +185,6 @@ public class AnalysisActivity extends Activity {
         findViewById(R.id.btnNext)
                 .setOnClickListener(v -> measurementView.selectNext());
 
-        findViewById(R.id.btnPointHelp)
-                .setOnClickListener(v -> showCurrentPointGuide());
-
         findViewById(R.id.btnSaveStudy)
                 .setOnClickListener(v -> showStudyDetailsDialog(false));
 
@@ -197,8 +194,7 @@ public class AnalysisActivity extends Activity {
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
-                "Toque para colocar el punto seleccionado. Arrastre con un dedo para desplazarse por la radiografía y use dos dedos para hacer zoom. " +
-                "Para corregir un punto ya colocado, selecciónelo primero en su recuadro superior y después toque su nueva posición."
+                "Seleccione un punto en la barra inferior para ver aquí dónde se localiza."
         );
 
         if (linearDefinitions.isEmpty()) {
@@ -467,9 +463,8 @@ public class AnalysisActivity extends Activity {
         txtInstruction.setText(
                 (pointLocked ? "BLOQUEADO · " : placed ? "✓ " : "⌖ ") +
                 currentLabel +
-                " · Dónde colocarlo:\n" +
-                PointGuide.description(currentLabel) +
-                "\nToque para marcar. Arrastre con un dedo para mover la imagen. Para corregir un punto existente, selecciónelo en su recuadro y toque la nueva posición; tocar directamente otro punto no lo selecciona."
+                "\n" +
+                PointGuide.description(currentLabel)
         );
     }
 
@@ -502,15 +497,11 @@ public class AnalysisActivity extends Activity {
             TextView chip = new TextView(this);
 
             chip.setText(
-                    label +
-                    (pointLocked
-                            ? "  🔒"
-                            : placed
-                                    ? "  ✓"
-                                    : "")
+                    compactPointLabel(label) +
+                    (placed ? " ✓" : "")
             );
 
-            chip.setTextSize(11.5f);
+            chip.setTextSize(10.5f);
             chip.setTypeface(
                     Typeface.DEFAULT,
                     Typeface.BOLD
@@ -518,10 +509,10 @@ public class AnalysisActivity extends Activity {
             chip.setGravity(Gravity.CENTER);
 
             chip.setPadding(
-                    dp(10),
-                    dp(6),
-                    dp(10),
-                    dp(6)
+                    dp(8),
+                    dp(4),
+                    dp(8),
+                    dp(4)
             );
 
             chip.setClickable(true);
@@ -546,18 +537,13 @@ public class AnalysisActivity extends Activity {
                 chip.setTextColor(0xFF5B3FA4);
             }
 
-            LinearLayout.LayoutParams lp =
-                    new LinearLayout.LayoutParams(
+            ViewGroup.MarginLayoutParams lp =
+                    new ViewGroup.MarginLayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
-                            dp(48)
+                            dp(40)
                     );
 
-            lp.setMargins(
-                    0,
-                    0,
-                    dp(5),
-                    0
-            );
+            lp.setMargins(0, 0, 0, 0);
 
             chip.setLayoutParams(lp);
 
@@ -576,6 +562,56 @@ public class AnalysisActivity extends Activity {
             });
 
             pointChips.addView(chip);
+        }
+    }
+
+    private String compactPointLabel(String label) {
+        if (label == null) return "";
+
+        switch (label) {
+            case "IS borde": return "ISb";
+            case "IS ápice": return "ISa";
+            case "II borde": return "IIb";
+            case "II ápice": return "IIa";
+            case "Oclusal 1": return "Oc1";
+            case "Oclusal 2": return "Oc2";
+            case "CVT sup.": return "CVTs";
+            case "CVT inf.": return "CVTi";
+            case "OPT sup.": return "OPTs";
+            case "OPT inf.": return "OPTi";
+            case "C1 posterior": return "C1p";
+            case "C2 post-sup.": return "C2ps";
+            case "C7 post-inf.": return "C7pi";
+            case "Profundidad cervical": return "PC";
+            case "Occipital": return "Occ";
+            case "Odontoides ápice": return "Od";
+            case "C2 anteroinf.": return "C2ai";
+            case "Cd der.": return "Cd D";
+            case "Cd izq.": return "Cd I";
+            case "Go der.": return "Go D";
+            case "Go izq.": return "Go I";
+            case "Kr der.": return "Kr D";
+            case "Kr izq.": return "Kr I";
+            case "IC max der.": return "ICMx D";
+            case "IC max izq.": return "ICMx I";
+            case "IC mand der.": return "ICMd D";
+            case "IC mand izq.": return "ICMd I";
+            case "Cuerpo Md der.": return "Md D";
+            case "Cuerpo Md izq.": return "Md I";
+            case "M2 distal der.": return "M2 D";
+            case "M2 distal izq.": return "M2 I";
+            case "Rama ant der.": return "RA D";
+            case "Rama post der.": return "RP D";
+            case "Rama ant izq.": return "RA I";
+            case "Rama post izq.": return "RP I";
+            case "Faringe sup ant.": return "FSa";
+            case "Faringe sup post.": return "FSp";
+            case "Faringe inf ant.": return "FIa";
+            case "Faringe inf post.": return "FIp";
+            default:
+                return label.length() > 10
+                        ? label.substring(0, 10)
+                        : label;
         }
     }
 

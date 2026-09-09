@@ -2,7 +2,9 @@ package com.cefalo.angulos;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.Intent;
 import android.graphics.PointF;
+import android.net.Uri;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -221,6 +223,8 @@ public final class SavedStudyStore {
     public static void delete(Context context, String id) {
         if (id == null) return;
 
+        StudyData removedStudy = load(context, id);
+
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
@@ -234,5 +238,34 @@ public final class SavedStudyStore {
                 .remove("study_" + id)
                 .putStringSet(IDS, ids)
                 .apply();
+
+        if (removedStudy == null
+                || removedStudy.imageUri == null
+                || removedStudy.imageUri.trim().isEmpty()) {
+            return;
+        }
+
+        boolean stillUsed = false;
+
+        for (String remainingId : ids) {
+            StudyData remaining = load(context, remainingId);
+
+            if (remaining != null
+                    && removedStudy.imageUri.equals(remaining.imageUri)) {
+                stillUsed = true;
+                break;
+            }
+        }
+
+        if (!stillUsed) {
+            try {
+                context.getContentResolver()
+                        .releasePersistableUriPermission(
+                                Uri.parse(removedStudy.imageUri),
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        );
+            } catch (Exception ignored) {
+            }
+        }
     }
 }

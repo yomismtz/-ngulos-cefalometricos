@@ -602,6 +602,7 @@ public class MeasurementView extends View {
         }
 
         if (event.getPointerCount() >= 2) {
+            moved = true;
             magnifierActive = false;
             handleTwoFingerPan(event);
             return true;
@@ -698,6 +699,7 @@ public class MeasurementView extends View {
 
     private boolean handleCalibrationTouch(MotionEvent event) {
         if (event.getPointerCount() >= 2) {
+            moved = true;
             magnifierActive = false;
             handleTwoFingerPan(event);
             return true;

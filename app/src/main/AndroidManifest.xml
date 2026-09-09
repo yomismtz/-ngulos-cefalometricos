@@ -6,6 +6,7 @@
         android:icon="@drawable/ic_yom"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".SavedStudiesActivity" />
         <activity android:name=".AnalysisActivity" />
         <activity
             android:name=".MainActivity"

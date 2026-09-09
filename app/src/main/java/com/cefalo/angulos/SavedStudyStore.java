@@ -25,6 +25,7 @@ public final class SavedStudyStore {
         public String studyName;
         public String patientName;
         public String patientAge;
+        public String patientSex;
         public long updatedAt;
         public boolean locked;
         public double mmPerPixel = Double.NaN;
@@ -66,6 +67,7 @@ public final class SavedStudyStore {
             root.put("studyName", study.studyName == null ? "" : study.studyName);
             root.put("patientName", study.patientName == null ? "" : study.patientName);
             root.put("patientAge", study.patientAge == null ? "" : study.patientAge);
+            root.put("patientSex", study.patientSex == null ? "" : study.patientSex);
             root.put("updatedAt", study.updatedAt);
             root.put("locked", study.locked);
             if (Double.isNaN(study.mmPerPixel) || Double.isInfinite(study.mmPerPixel)) {
@@ -130,6 +132,7 @@ public final class SavedStudyStore {
             study.studyName = root.optString("studyName", "");
             study.patientName = root.optString("patientName", "");
             study.patientAge = root.optString("patientAge", "");
+            study.patientSex = root.optString("patientSex", "");
             study.updatedAt = root.optLong("updatedAt", 0L);
             study.locked = root.optBoolean("locked", false);
             study.mmPerPixel = root.isNull("mmPerPixel")

@@ -2,4 +2,35 @@
 <resources>
     <string name="app_name">YomCeph</string>
     <string name="app_slogan">Traza. Mide. Aprende.</string>
+
+    <string name="analysis_steiner">ANÁLISIS DE STEINER</string>
+    <string name="analysis_vertebral">ANÁLISIS VERTEBRAL / ROCABADO</string>
+    <string name="analysis_powell">ANÁLISIS DE POWELL</string>
+    <string name="analysis_tweed">ANÁLISIS DE TWEED</string>
+    <string name="analysis_levandoski">ANÁLISIS PANORÁMICO DE LEVANDOSKI</string>
+    <string name="analysis_airway">ANÁLISIS DE VÍA AÉREA</string>
+    <string name="my_analyses">MIS ANÁLISIS</string>
+
+    <string name="back_arrow">←</string>
+    <string name="analysis_title_placeholder">Análisis</string>
+    <string name="open_image">IMAGEN</string>
+    <string name="study_placeholder">Estudio sin nombre · Paciente sin nombre</string>
+    <string name="linear_uncalibrated">Medidas lineales: sin calibrar</string>
+    <string name="calibrate">CALIBRAR</string>
+    <string name="point_selected">Punto seleccionado</string>
+    <string name="previous">ANTERIOR</string>
+    <string name="where_is">DÓNDE ESTÁ</string>
+    <string name="next">SIGUIENTE</string>
+    <string name="instruction_placeholder">Instrucción</string>
+    <string name="undo_previous">DESHACER
+PUNTO ANTERIOR</string>
+    <string name="delete_all_points">BORRAR TODOS
+LOS PUNTOS</string>
+    <string name="center_image">CENTRAR</string>
+    <string name="data_save">DATOS / GUARDAR</string>
+    <string name="lock_trace">BLOQUEAR</string>
+    <string name="calculate_analysis">CALCULAR ANÁLISIS</string>
+
+    <string name="cd_yomceph_icon">Icono de YomCeph</string>
+    <string name="cd_tooth_ruler">Diente con regla</string>
 </resources>

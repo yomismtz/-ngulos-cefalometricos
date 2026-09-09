@@ -680,10 +680,10 @@ public class AnalysisActivity extends Activity {
     private void updateLockButton() {
         if (measurementView.isLocked()) {
             btnLock.setText(
-                    "🔒 DESBLOQUEAR"
+                    "DESBLOQUEAR"
             );
             btnLock.setBackgroundResource(
-                    R.drawable.button_soft_mint
+                    R.drawable.button_soft_mint_centered
             );
             btnLock.setTextColor(
                     0xFF15383D
@@ -691,10 +691,10 @@ public class AnalysisActivity extends Activity {
 
         } else {
             btnLock.setText(
-                    "🔓 BLOQUEAR TRAZADO"
+                    "BLOQUEAR"
             );
             btnLock.setBackgroundResource(
-                    R.drawable.button_soft_purple
+                    R.drawable.button_soft_purple_centered
             );
             btnLock.setTextColor(
                     0xFF5B3FA4
@@ -840,6 +840,10 @@ public class AnalysisActivity extends Activity {
         form.addView(labelSex);
         form.addView(editSex);
 
+        ScrollView formScroll = new ScrollView(this);
+        formScroll.setFillViewport(true);
+        formScroll.addView(form);
+
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
                         .setTitle(
@@ -847,7 +851,7 @@ public class AnalysisActivity extends Activity {
                                         ? "Identificar radiografía"
                                         : "Datos del estudio"
                         )
-                        .setView(form)
+                        .setView(formScroll)
                         .setPositiveButton(
                                 "Guardar",
                                 null
@@ -861,6 +865,12 @@ public class AnalysisActivity extends Activity {
                         .create();
 
         dialog.setOnShowListener(unused -> {
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setSoftInputMode(
+                        android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+                );
+            }
+
             dialog.getButton(
                     AlertDialog.BUTTON_POSITIVE
             ).setOnClickListener(v -> {
@@ -1029,18 +1039,16 @@ public class AnalysisActivity extends Activity {
         if (txtCalibration == null) return;
 
         if (Double.isNaN(mmPerPixel) || mmPerPixel <= 0) {
-            txtCalibration.setText("PASO 1 · Medidas lineales sin calibrar");
-            btnCalibrate.setText("📏 CALIBRAR mm/cm");
+            txtCalibration.setText("PASO 1 · SIN CALIBRAR");
+            btnCalibrate.setText("CALIBRAR");
             return;
         }
 
         txtCalibration.setText(
-                "✓ PASO 1 CALIBRADO · " +
-                calibrationLabel +
-                " · " +
-                String.format(Locale.US, "%.5f mm/píxel", mmPerPixel)
+                "PASO 1 · CALIBRADO · " +
+                calibrationLabel
         );
-        btnCalibrate.setText("📏 RECALIBRAR");
+        btnCalibrate.setText("RECALIBRAR");
     }
 
     private String calibrationInstructions() {
@@ -1969,12 +1977,8 @@ public class AnalysisActivity extends Activity {
                 backgroundRes
         );
 
-        button.setPadding(
-                dp(14),
-                dp(14),
-                dp(14),
-                dp(14)
-        );
+        button.setIncludeFontPadding(false);
+        button.setPadding(0, 0, 0, 0);
 
         button.setClickable(true);
         button.setFocusable(true);
@@ -2000,8 +2004,8 @@ public class AnalysisActivity extends Activity {
     private Bitmap buildReportBitmap() {
         int width = 1400;
         int margin = 70;
-        int titleHeight = 240;
-        int rowHeight = 180;
+        int titleHeight = 275;
+        int rowHeight = 220;
         int footer = 70;
 
         int linearCount =

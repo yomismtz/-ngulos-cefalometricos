@@ -1114,7 +1114,13 @@ public class AnalysisActivity extends Activity {
                         dy * (p.x - a.x)
                 ) / length;
 
-        return signedPixels * mmPerPixel;
+        double valueMm = signedPixels * mmPerPixel;
+
+        if (def.type == LinearMeasurementDefinition.Type.PERPENDICULAR_ABS) {
+            return Math.abs(valueMm);
+        }
+
+        return valueMm;
     }
 
     private void calculateFullAnalysis() {

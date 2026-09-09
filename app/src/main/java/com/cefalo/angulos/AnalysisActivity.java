@@ -1651,14 +1651,14 @@ public class AnalysisActivity extends Activity {
         }
 
         if (name.startsWith("Faringe superior")) {
-            if (female) return new AirwayRef(17.4, 3.4);
-            if (male) return new AirwayRef(17.4, 4.3);
+            if (male) return new AirwayRef(17.4, 3.4);
+            if (female) return new AirwayRef(17.4, 4.3);
             return null;
         }
 
         if (name.startsWith("Faringe posterior")) {
-            if (female) return new AirwayRef(11.3, 3.3);
-            if (male) return new AirwayRef(13.5, 4.3);
+            if (male) return new AirwayRef(13.5, 3.3);
+            if (female) return new AirwayRef(11.3, 4.3);
             return null;
         }
 

@@ -35,6 +35,7 @@ public final class SavedStudyStore {
         public String calibrationLabel = "";
         public List<String> labels = new ArrayList<>();
         public List<PointF> points = new ArrayList<>();
+        public List<Boolean> pointLocks = new ArrayList<>();
 
         public int placedCount() {
             int count = 0;
@@ -115,6 +116,12 @@ public final class SavedStudyStore {
             }
             root.put("points", points);
 
+            JSONArray locks = new JSONArray();
+            for (Boolean value : study.pointLocks) {
+                locks.put(Boolean.TRUE.equals(value));
+            }
+            root.put("pointLocks", locks);
+
             SharedPreferences prefs =
                     context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
@@ -194,6 +201,17 @@ public final class SavedStudyStore {
 
             while (study.points.size() < study.labels.size()) {
                 study.points.add(null);
+            }
+
+            JSONArray locks = root.optJSONArray("pointLocks");
+            if (locks != null) {
+                for (int i = 0; i < locks.length(); i++) {
+                    study.pointLocks.add(locks.optBoolean(i, false));
+                }
+            }
+
+            while (study.pointLocks.size() < study.labels.size()) {
+                study.pointLocks.add(false);
             }
 
             return study;

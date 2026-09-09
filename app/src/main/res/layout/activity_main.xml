@@ -19,7 +19,7 @@
             android:id="@+id/imgLogo"
             android:layout_width="132dp"
             android:layout_height="132dp"
-            android:src="@drawable/yom_logo"
+            android:src="@drawable/yom_logo_transparent"
             android:scaleType="fitCenter"
             android:contentDescription="Logo Yom Dental"
             android:layout_marginBottom="6dp" />
@@ -97,8 +97,8 @@
                 android:id="@+id/imgMascot"
                 android:layout_width="match_parent"
                 android:layout_height="190dp"
-                android:src="@drawable/yom_mascot"
-                android:scaleType="centerCrop"
+                android:src="@drawable/tooth_ruler_mascot"
+                android:scaleType="fitCenter"
                 android:contentDescription="Mascota Yom Dental" />
         </LinearLayout>
 

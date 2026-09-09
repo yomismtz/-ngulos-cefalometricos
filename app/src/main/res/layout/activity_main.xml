@@ -33,7 +33,7 @@
                 android:background="@drawable/cover_icon_circle"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:contentDescription="Icono de YomCeph" />
+                android:contentDescription="@string/cd_yomceph_icon" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -67,7 +67,7 @@
             android:textAlignment="center"
             android:includeFontPadding="false"
             android:background="@drawable/button_primary_centered"
-            android:text="ANÁLISIS DE STEINER"
+            android:text="@string/analysis_steiner"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="14sp"
@@ -84,7 +84,7 @@
             android:textAlignment="center"
             android:includeFontPadding="false"
             android:background="@drawable/button_secondary_centered"
-            android:text="ANÁLISIS VERTEBRAL / ROCABADO"
+            android:text="@string/analysis_vertebral"
             android:textColor="#15383D"
             android:textStyle="bold"
             android:textSize="14sp"
@@ -101,7 +101,7 @@
             android:textAlignment="center"
             android:includeFontPadding="false"
             android:background="@drawable/button_primary_centered"
-            android:text="ANÁLISIS DE POWELL"
+            android:text="@string/analysis_powell"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="14sp"
@@ -118,7 +118,7 @@
             android:textAlignment="center"
             android:includeFontPadding="false"
             android:background="@drawable/button_secondary_centered"
-            android:text="ANÁLISIS DE TWEED"
+            android:text="@string/analysis_tweed"
             android:textColor="#15383D"
             android:textStyle="bold"
             android:textSize="14sp"
@@ -135,7 +135,7 @@
             android:textAlignment="center"
             android:includeFontPadding="false"
             android:background="@drawable/button_primary_centered"
-            android:text="ANÁLISIS PANORÁMICO DE LEVANDOSKI"
+            android:text="@string/analysis_levandoski"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="13sp"
@@ -153,7 +153,7 @@
             android:textAlignment="center"
             android:includeFontPadding="false"
             android:background="@drawable/button_secondary_centered"
-            android:text="ANÁLISIS DE VÍA AÉREA"
+            android:text="@string/analysis_airway"
             android:textColor="#15383D"
             android:textStyle="bold"
             android:textSize="14sp"
@@ -170,7 +170,7 @@
             android:textAlignment="center"
             android:includeFontPadding="false"
             android:background="@drawable/button_soft_purple_centered"
-            android:text="MIS ANÁLISIS"
+            android:text="@string/my_analyses"
             android:textColor="#5B3FA4"
             android:textStyle="bold"
             android:textSize="14sp"
@@ -185,6 +185,6 @@
             android:layout_height="108dp"
             android:src="@drawable/tooth_ruler_mascot"
             android:scaleType="fitCenter"
-            android:contentDescription="Diente con regla" />
+            android:contentDescription="@string/cd_tooth_ruler" />
     </LinearLayout>
 </ScrollView>

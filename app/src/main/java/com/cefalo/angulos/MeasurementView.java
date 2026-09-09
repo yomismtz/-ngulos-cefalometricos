@@ -31,6 +31,7 @@ public class MeasurementView extends View {
     private final Paint imagePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Paint pointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint selectedPointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint selectedRingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint haloPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint magnifierBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -61,8 +62,12 @@ public class MeasurementView extends View {
         pointPaint.setColor(Color.rgb(34, 191, 199));
         pointPaint.setStyle(Paint.Style.FILL);
 
-        selectedPointPaint.setColor(Color.rgb(154, 111, 232));
+        selectedPointPaint.setColor(Color.rgb(34, 191, 199));
         selectedPointPaint.setStyle(Paint.Style.FILL);
+
+        selectedRingPaint.setColor(Color.rgb(142, 103, 214));
+        selectedRingPaint.setStyle(Paint.Style.STROKE);
+        selectedRingPaint.setStrokeWidth(dp(3));
 
         haloPaint.setColor(Color.WHITE);
         haloPaint.setStyle(Paint.Style.FILL);
@@ -239,19 +244,23 @@ public class MeasurementView extends View {
     }
 
     public void undo() {
-        if (locked) return;
+        if (locked || points.isEmpty()) return;
 
-        if (selectedIndex >= 0 && selectedIndex < points.size()
-                && points.get(selectedIndex) != null) {
-            points.set(selectedIndex, null);
-        } else {
-            for (int i = points.size() - 1; i >= 0; i--) {
-                if (points.get(i) != null) {
-                    points.set(i, null);
-                    selectedIndex = i;
-                    break;
-                }
+        int start = selectedIndex - 1;
+        if (start < 0) start = points.size() - 1;
+
+        int found = -1;
+        for (int step = 0; step < points.size(); step++) {
+            int i = (start - step + points.size()) % points.size();
+            if (points.get(i) != null) {
+                found = i;
+                break;
             }
+        }
+
+        if (found >= 0) {
+            points.set(found, null);
+            selectedIndex = found;
         }
 
         notifyProgress();
@@ -341,6 +350,10 @@ public class MeasurementView extends View {
                     dp(i == selectedIndex ? 9 : 8),
                     i == selectedIndex ? selectedPointPaint : pointPaint
             );
+
+            if (i == selectedIndex) {
+                canvas.drawCircle(s.x, s.y, dp(15), selectedRingPaint);
+            }
 
             String label = i < landmarkLabels.size()
                     ? landmarkLabels.get(i)

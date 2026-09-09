@@ -3,6 +3,9 @@ name: Build Signed Google Play Bundle
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   play-bundle:
     runs-on: ubuntu-latest
@@ -21,6 +24,17 @@ jobs:
           test -n "$STORE_PASSWORD" || (echo "Missing YOMCEPH_KEYSTORE_PASSWORD" && exit 1)
           test -n "$KEY_ALIAS" || (echo "Missing YOMCEPH_KEY_ALIAS" && exit 1)
           test -n "$KEY_PASSWORD" || (echo "Missing YOMCEPH_KEY_PASSWORD" && exit 1)
+
+      - name: Read app version
+        id: app_version
+        shell: bash
+        run: |
+          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle | head -n 1)
+          VERSION_CODE=$(sed -n "s/.*versionCode \([0-9][0-9]*\).*/\1/p" app/build.gradle | head -n 1)
+          test -n "$VERSION_NAME" || (echo "Could not read versionName" && exit 1)
+          test -n "$VERSION_CODE" || (echo "Could not read versionCode" && exit 1)
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -54,11 +68,14 @@ jobs:
           YOMCEPH_KEY_PASSWORD: ${{ secrets.YOMCEPH_KEY_PASSWORD }}
         run: |
           gradle --no-daemon :app:lintRelease :app:bundleRelease
-          cp app/build/outputs/bundle/release/app-release.aab YomCeph-v1.16-google-play.aab
+          cp app/build/outputs/bundle/release/app-release.aab "YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-google-play.aab"
+          sha256sum "YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-google-play.aab" > "YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-google-play.aab.sha256"
 
       - name: Upload signed AAB
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph-Google-Play-AAB
-          path: YomCeph-v1.16-google-play.aab
+          name: YomCeph-Google-Play-AAB-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
+          path: |
+            YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-google-play.aab
+            YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-google-play.aab.sha256
           if-no-files-found: error

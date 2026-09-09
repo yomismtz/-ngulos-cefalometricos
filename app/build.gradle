@@ -18,11 +18,12 @@ android {
     compileSdk 36
 
     defaultConfig {
-        applicationId 'com.cefalo.angulos'
+        // Keep this identifier stable after the first upload to Play Console.
+        applicationId 'com.yomceph.app'
         minSdk 24
         targetSdk 36
-        versionCode 17
-        versionName '1.16'
+        versionCode 18
+        versionName '1.17'
     }
 
     signingConfigs {
@@ -44,6 +45,11 @@ android {
                 signingConfig signingConfigs.release
             }
         }
+    }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds true
     }
 
     compileOptions {

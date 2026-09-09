@@ -1,0 +1,29 @@
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+*.iml
+.idea/
+.externalNativeBuild/
+.cxx/
+
+# Generated packages and reports
+*.apk
+*.aab
+*.apks
+*.sha256
+captures/
+
+# Signing material — never commit private keys
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+keystore.properties
+signing.properties
+
+# OS / editor
+.DS_Store
+Thumbs.db

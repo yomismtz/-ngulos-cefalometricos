@@ -10,45 +10,59 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:paddingLeft="18dp"
-        android:paddingRight="18dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="28dp">
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="24dp">
 
-        <ImageView
-            android:id="@+id/imgLogo"
-            android:layout_width="112dp"
-            android:layout_height="112dp"
-            android:src="@drawable/yom_logo_transparent"
-            android:scaleType="fitCenter"
-            android:contentDescription="Logo Yom Dental"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="YomCephalometrics"
-            android:textStyle="bold"
-            android:textSize="27sp"
-            android:textColor="#5B3FA4"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cefalometría angular, lineal y análisis facial"
-            android:textSize="14sp"
-            android:textColor="#2C7E86"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="184dp"
+            android:orientation="vertical"
             android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-            android:layout_marginTop="3dp"
-            android:layout_marginBottom="18dp" />
+            android:background="@drawable/cover_hero"
+            android:padding="14dp"
+            android:elevation="4dp"
+            android:layout_marginBottom="18dp">
+
+            <ImageView
+                android:id="@+id/imgLogo"
+                android:layout_width="86dp"
+                android:layout_height="86dp"
+                android:src="@drawable/ic_yomceph_foreground"
+                android:background="@drawable/cover_icon_circle"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Icono de YomCeph" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YomCeph"
+                android:textStyle="bold"
+                android:textSize="30sp"
+                android:textColor="#FFFFFF"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:layout_marginTop="5dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Traza. Mide. Aprende."
+                android:textSize="16sp"
+                android:textColor="#EFFFFB"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:includeFontPadding="false"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/btnSteiner"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="58dp"
             android:gravity="center"
             android:textAlignment="center"
             android:includeFontPadding="false"
@@ -57,17 +71,15 @@
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:maxLines="2"
-            android:padding="0dp"
             android:clickable="true"
             android:focusable="true"
             android:elevation="3dp"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="9dp" />
 
         <TextView
             android:id="@+id/btnVertebral"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="58dp"
             android:gravity="center"
             android:textAlignment="center"
             android:includeFontPadding="false"
@@ -76,17 +88,15 @@
             android:textColor="#15383D"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:maxLines="2"
-            android:padding="0dp"
             android:clickable="true"
             android:focusable="true"
             android:elevation="3dp"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="9dp" />
 
         <TextView
             android:id="@+id/btnPowell"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="58dp"
             android:gravity="center"
             android:textAlignment="center"
             android:includeFontPadding="false"
@@ -95,17 +105,15 @@
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:maxLines="2"
-            android:padding="0dp"
             android:clickable="true"
             android:focusable="true"
             android:elevation="3dp"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="9dp" />
 
         <TextView
             android:id="@+id/btnTweed"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="58dp"
             android:gravity="center"
             android:textAlignment="center"
             android:includeFontPadding="false"
@@ -114,17 +122,15 @@
             android:textColor="#15383D"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:maxLines="2"
-            android:padding="0dp"
             android:clickable="true"
             android:focusable="true"
             android:elevation="3dp"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="9dp" />
 
         <TextView
             android:id="@+id/btnLevandoski"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="62dp"
             android:gravity="center"
             android:textAlignment="center"
             android:includeFontPadding="false"
@@ -132,18 +138,17 @@
             android:text="ANÁLISIS PANORÁMICO DE LEVANDOSKI"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:maxLines="2"
-            android:padding="0dp"
             android:clickable="true"
             android:focusable="true"
             android:elevation="3dp"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="9dp" />
 
         <TextView
             android:id="@+id/btnAirway"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="58dp"
             android:gravity="center"
             android:textAlignment="center"
             android:includeFontPadding="false"
@@ -152,21 +157,19 @@
             android:textColor="#15383D"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:maxLines="2"
-            android:padding="0dp"
             android:clickable="true"
             android:focusable="true"
             android:elevation="3dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="14dp" />
 
         <TextView
             android:id="@+id/btnStudies"
             android:layout_width="match_parent"
-            android:layout_height="58dp"
+            android:layout_height="54dp"
             android:gravity="center"
             android:textAlignment="center"
             android:includeFontPadding="false"
-            android:background="@drawable/button_soft_purple"
+            android:background="@drawable/button_soft_purple_centered"
             android:text="MIS ANÁLISIS"
             android:textColor="#5B3FA4"
             android:textStyle="bold"
@@ -174,14 +177,14 @@
             android:clickable="true"
             android:focusable="true"
             android:elevation="2dp"
-            android:layout_marginBottom="14dp" />
+            android:layout_marginBottom="10dp" />
 
         <ImageView
             android:id="@+id/imgMascot"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
+            android:layout_height="108dp"
             android:src="@drawable/tooth_ruler_mascot"
             android:scaleType="fitCenter"
-            android:contentDescription="Ilustración dental" />
+            android:contentDescription="Diente con regla" />
     </LinearLayout>
 </ScrollView>

@@ -61,6 +61,7 @@ public class AnalysisActivity extends Activity {
     private String studyName = "";
     private String patientName = "";
     private String patientAge = "";
+    private String patientSex = "";
     private double mmPerPixel = Double.NaN;
     private String calibrationLabel = "";
 
@@ -90,6 +91,7 @@ public class AnalysisActivity extends Activity {
             studyName = safe(restoredStudy.studyName);
             patientName = safe(restoredStudy.patientName);
             patientAge = safe(restoredStudy.patientAge);
+            patientSex = safe(restoredStudy.patientSex);
             mmPerPixel = restoredStudy.mmPerPixel;
             calibrationLabel = safe(restoredStudy.calibrationLabel);
         } else {
@@ -99,6 +101,7 @@ public class AnalysisActivity extends Activity {
                 studyName = safe(savedInstanceState.getString("STUDY_NAME"));
                 patientName = safe(savedInstanceState.getString("PATIENT_NAME"));
                 patientAge = safe(savedInstanceState.getString("PATIENT_AGE"));
+                patientSex = safe(savedInstanceState.getString("PATIENT_SEX"));
                 mmPerPixel = savedInstanceState.getDouble("MM_PER_PIXEL", Double.NaN);
                 calibrationLabel = safe(savedInstanceState.getString("CALIBRATION_LABEL"));
             }
@@ -114,24 +117,29 @@ public class AnalysisActivity extends Activity {
 
         setContentView(R.layout.activity_analysis);
 
-        boolean vertebral = "VERTEBRAL".equals(mode);
+        definitions = new ArrayList<>();
+        linearDefinitions = new ArrayList<>();
 
-        definitions = vertebral
-                ? MeasurementCatalog.vertebral()
-                : MeasurementCatalog.steiner();
-
-        linearDefinitions = vertebral
-                ? LinearMeasurementCatalog.rocabado()
-                : new ArrayList<>();
+        if ("VERTEBRAL".equals(mode)) {
+            definitions = MeasurementCatalog.vertebral();
+            linearDefinitions = LinearMeasurementCatalog.rocabado();
+        } else if ("POWELL".equals(mode)) {
+            definitions = MeasurementCatalog.powell();
+        } else if ("TWEED".equals(mode)) {
+            definitions = MeasurementCatalog.tweed();
+        } else if ("LEVANDOSKI".equals(mode)) {
+            linearDefinitions = LinearMeasurementCatalog.levandoski();
+        } else if ("AIRWAY".equals(mode)) {
+            definitions = MeasurementCatalog.airwayAngles();
+            linearDefinitions = LinearMeasurementCatalog.airway();
+        } else {
+            definitions = MeasurementCatalog.steiner();
+        }
 
         landmarks = buildLandmarkList(definitions, linearDefinitions);
 
         TextView txtTitle = findViewById(R.id.txtTitle);
-        txtTitle.setText(
-                vertebral
-                        ? "Análisis vertebral"
-                        : "Análisis de Steiner"
-        );
+        txtTitle.setText(modeTitle());
 
         measurementView = findViewById(R.id.measurementView);
         txtProgress = findViewById(R.id.txtProgress);
@@ -214,7 +222,7 @@ public class AnalysisActivity extends Activity {
                 "Puede cambiar de punto con la lista, Anterior o Siguiente."
         );
 
-        if (!vertebral) {
+        if (linearDefinitions.isEmpty()) {
             btnCalibrate.setVisibility(android.view.View.GONE);
             txtCalibration.setVisibility(android.view.View.GONE);
         }
@@ -250,8 +258,18 @@ public class AnalysisActivity extends Activity {
         outState.putString("STUDY_NAME", studyName);
         outState.putString("PATIENT_NAME", patientName);
         outState.putString("PATIENT_AGE", patientAge);
+        outState.putString("PATIENT_SEX", patientSex);
         outState.putDouble("MM_PER_PIXEL", mmPerPixel);
         outState.putString("CALIBRATION_LABEL", calibrationLabel);
+    }
+
+    private String modeTitle() {
+        if ("VERTEBRAL".equals(mode)) return "Vertebral / Rocabado";
+        if ("POWELL".equals(mode)) return "Análisis de Powell";
+        if ("TWEED".equals(mode)) return "Análisis de Tweed";
+        if ("LEVANDOSKI".equals(mode)) return "Análisis de Levandoski";
+        if ("AIRWAY".equals(mode)) return "Análisis de vía aérea";
+        return "Análisis de Steiner";
     }
 
     private String safe(String value) {

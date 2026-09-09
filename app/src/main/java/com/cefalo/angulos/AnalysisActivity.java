@@ -5,11 +5,15 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -18,6 +22,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,6 +32,8 @@ import java.util.Set;
 public class AnalysisActivity extends Activity {
 
     private static final int REQ_IMAGE = 1001;
+    private static final int REQ_SAVE_ANNOTATED = 1002;
+    private static final int REQ_SAVE_REPORT = 1003;
 
     private MeasurementView measurementView;
     private TextView txtProgress;
@@ -36,6 +43,9 @@ public class AnalysisActivity extends Activity {
     private List<MeasurementDefinition> definitions;
     private List<String> landmarks;
     private boolean vertebral;
+
+    private Bitmap pendingSaveBitmap;
+    private int pendingSaveRequest = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +158,7 @@ public class AnalysisActivity extends Activity {
         TextView intro = new TextView(this);
         intro.setText(
                 "Resultados calculados con los mismos puntos anatómicos. " +
-                "Puede cerrar esta ventana, corregir un punto y volver a calcular."
+                "Puede corregir un punto y volver a calcular."
         );
         intro.setTextSize(14f);
         intro.setTextColor(0xFF4A4652);
@@ -182,6 +192,46 @@ public class AnalysisActivity extends Activity {
             container.addView(row);
         }
 
+        TextView saveAnnotated = createDialogButton(
+                "GUARDAR RADIOGRAFÍA CON PUNTOS",
+                R.drawable.button_soft_mint,
+                0xFF15383D
+        );
+        saveAnnotated.setOnClickListener(v -> {
+            Bitmap annotated = measurementView.renderAnnotatedBitmap();
+            if (annotated == null) {
+                Toast.makeText(this, "No se pudo preparar la imagen.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            startSaveImage(
+                    annotated,
+                    "YomCephalometrics_radiografia_puntos.png",
+                    REQ_SAVE_ANNOTATED
+            );
+        });
+        container.addView(saveAnnotated);
+
+        TextView saveReport = createDialogButton(
+                "GUARDAR INFORME COMO IMAGEN",
+                R.drawable.card_steiner,
+                Color.WHITE
+        );
+        saveReport.setOnClickListener(v -> {
+            Bitmap report = buildReportBitmap();
+            if (report == null) {
+                Toast.makeText(this, "No se pudo preparar el informe.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            startSaveImage(
+                    report,
+                    vertebral
+                            ? "YomCephalometrics_informe_vertebral.png"
+                            : "YomCephalometrics_informe_steiner.png",
+                    REQ_SAVE_REPORT
+            );
+        });
+        container.addView(saveReport);
+
         new AlertDialog.Builder(this)
                 .setTitle(vertebral
                         ? "Resultados · Vertebral"
@@ -189,6 +239,206 @@ public class AnalysisActivity extends Activity {
                 .setView(scroll)
                 .setPositiveButton("Cerrar", null)
                 .show();
+    }
+
+    private TextView createDialogButton(String text, int backgroundRes, int textColor) {
+        TextView button = new TextView(this);
+        button.setText(text);
+        button.setGravity(Gravity.CENTER);
+        button.setTextStyle(Typeface.BOLD);
+        button.setTextSize(15f);
+        button.setTextColor(textColor);
+        button.setBackgroundResource(backgroundRes);
+        button.setPadding(dp(14), dp(14), dp(14), dp(14));
+        button.setClickable(true);
+        button.setFocusable(true);
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(54)
+        );
+        lp.setMargins(0, dp(6), 0, dp(8));
+        button.setLayoutParams(lp);
+
+        return button;
+    }
+
+    private Bitmap buildReportBitmap() {
+        int width = 1400;
+        int margin = 70;
+        int titleHeight = 165;
+        int rowHeight = 180;
+        int footer = 70;
+
+        int height = titleHeight + (definitions.size() * rowHeight) + footer;
+
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.rgb(247, 245, 251));
+
+        Paint titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        titlePaint.setColor(Color.rgb(91, 63, 164));
+        titlePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        titlePaint.setTextSize(58f);
+
+        Paint subtitlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        subtitlePaint.setColor(Color.rgb(44, 126, 134));
+        subtitlePaint.setTextSize(30f);
+
+        Paint namePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        namePaint.setColor(Color.rgb(91, 63, 164));
+        namePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        namePaint.setTextSize(34f);
+
+        Paint valuePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        valuePaint.setColor(Color.rgb(25, 25, 30));
+        valuePaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        valuePaint.setTextSize(34f);
+
+        Paint detailPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        detailPaint.setColor(Color.rgb(65, 61, 72));
+        detailPaint.setTextSize(27f);
+
+        Paint cardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        cardPaint.setColor(Color.WHITE);
+
+        Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        strokePaint.setColor(Color.rgb(205, 194, 231));
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setStrokeWidth(3f);
+
+        canvas.drawText("YomCephalometrics", margin, 72, titlePaint);
+        canvas.drawText(
+                vertebral ? "Informe de análisis vertebral / craneocervical" : "Informe de análisis de Steiner",
+                margin,
+                120,
+                subtitlePaint
+        );
+
+        int y = titleHeight;
+
+        for (MeasurementDefinition def : definitions) {
+            Double value = measurementView.calculate(def);
+            if (value == null) continue;
+
+            float left = margin;
+            float top = y;
+            float right = width - margin;
+            float bottom = y + rowHeight - 18;
+
+            android.graphics.RectF rect = new android.graphics.RectF(left, top, right, bottom);
+            canvas.drawRoundRect(rect, 30f, 30f, cardPaint);
+            canvas.drawRoundRect(rect, 30f, 30f, strokePaint);
+
+            canvas.drawText(def.name, left + 30, top + 46, namePaint);
+
+            String valueLine = String.format(
+                    Locale.US,
+                    "%.1f°   ·   Norma: %s",
+                    value,
+                    def.normText
+            );
+            canvas.drawText(valueLine, left + 30, top + 91, valuePaint);
+
+            drawWrappedText(
+                    canvas,
+                    def.diagnosis(value),
+                    left + 30,
+                    top + 132,
+                    right - 30,
+                    detailPaint,
+                    34f
+            );
+
+            y += rowHeight;
+        }
+
+        Paint footerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        footerPaint.setColor(Color.rgb(100, 91, 115));
+        footerPaint.setTextSize(24f);
+        canvas.drawText(
+                "Resultados angulares calculados a partir de los puntos marcados en la radiografía.",
+                margin,
+                height - 28,
+                footerPaint
+        );
+
+        return bitmap;
+    }
+
+    private void drawWrappedText(
+            Canvas canvas,
+            String text,
+            float x,
+            float y,
+            float maxRight,
+            Paint paint,
+            float lineHeight
+    ) {
+        if (text == null || text.trim().isEmpty()) return;
+
+        String[] words = text.split("\\s+");
+        StringBuilder line = new StringBuilder();
+        float currentY = y;
+
+        for (String word : words) {
+            String test = line.length() == 0
+                    ? word
+                    : line + " " + word;
+
+            if (x + paint.measureText(test) > maxRight && line.length() > 0) {
+                canvas.drawText(line.toString(), x, currentY, paint);
+                line = new StringBuilder(word);
+                currentY += lineHeight;
+            } else {
+                line = new StringBuilder(test);
+            }
+        }
+
+        if (line.length() > 0) {
+            canvas.drawText(line.toString(), x, currentY, paint);
+        }
+    }
+
+    private void startSaveImage(Bitmap bitmap, String suggestedName, int requestCode) {
+        pendingSaveBitmap = bitmap;
+        pendingSaveRequest = requestCode;
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/png");
+        intent.putExtra(Intent.EXTRA_TITLE, suggestedName);
+
+        startActivityForResult(intent, requestCode);
+    }
+
+    private void writePendingBitmap(Uri uri) {
+        if (pendingSaveBitmap == null || uri == null) return;
+
+        try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+            if (out == null) throw new IOException("No se pudo abrir el archivo de salida.");
+
+            boolean ok = pendingSaveBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.flush();
+
+            if (!ok) throw new IOException("No se pudo codificar PNG.");
+
+            Toast.makeText(this, "Imagen guardada correctamente.", Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            Toast.makeText(
+                    this,
+                    "No se pudo guardar la imagen.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } finally {
+            if (pendingSaveBitmap != null && !pendingSaveBitmap.isRecycled()) {
+                pendingSaveBitmap.recycle();
+            }
+            pendingSaveBitmap = null;
+            pendingSaveRequest = -1;
+        }
     }
 
     private int dp(int value) {
@@ -205,6 +455,19 @@ public class AnalysisActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQ_SAVE_ANNOTATED || requestCode == REQ_SAVE_REPORT) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                writePendingBitmap(data.getData());
+            } else {
+                if (pendingSaveBitmap != null && !pendingSaveBitmap.isRecycled()) {
+                    pendingSaveBitmap.recycle();
+                }
+                pendingSaveBitmap = null;
+                pendingSaveRequest = -1;
+            }
+            return;
+        }
 
         if (requestCode != REQ_IMAGE
                 || resultCode != RESULT_OK

@@ -48,4 +48,5 @@
     <string name="export_report_image">GUARDAR INFORME COMO IMAGEN</string>
     <string name="export_annotated">GUARDAR RADIOGRAFÍA CON PUNTOS Y LÍNEAS</string>
     <string name="educational_footer">Uso educativo · No sustituye valoración profesional</string>
+    <string name="back_accessibility">Volver</string>
 </resources>

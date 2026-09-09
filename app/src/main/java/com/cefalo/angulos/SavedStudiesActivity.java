@@ -201,9 +201,9 @@ public class SavedStudiesActivity extends Activity {
                     new AlertDialog.Builder(this)
                             .setTitle("Eliminar análisis")
                             .setMessage(
-                                    "¿Desea eliminar "" +
+                                    "¿Desea eliminar \"" +
                                     name.getText() +
-                                    ""?"
+                                    "\"?"
                             )
                             .setNegativeButton("Cancelar", null)
                             .setPositiveButton(

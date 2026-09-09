@@ -1376,7 +1376,7 @@ public class AnalysisActivity extends Activity {
 
         if (!linearDefinitions.isEmpty()) {
             TextView linearTitle = new TextView(this);
-            linearTitle.setText("Medidas lineales · Rocabado");
+            linearTitle.setText(linearSectionTitle());
             linearTitle.setTextColor(0xFF5B3FA4);
             linearTitle.setTextSize(17f);
             linearTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
@@ -1417,9 +1417,9 @@ public class AnalysisActivity extends Activity {
                             "\n" +
                             String.format(Locale.US, "%.2f mm", value) +
                             "   ·   Norma: " +
-                            def.normText +
+                            linearNormText(def, value) +
                             "\n" +
-                            def.diagnosis(value)
+                            linearDiagnosis(def, value)
                     );
                     row.setTextSize(15f);
                     row.setTextColor(0xFF292631);
@@ -1437,7 +1437,15 @@ public class AnalysisActivity extends Activity {
 
                     container.addView(row);
                 }
+
+                if ("LEVANDOSKI".equals(mode)) {
+                    addLevandoskiSummary(container);
+                }
             }
+        }
+
+        if ("TWEED".equals(mode)) {
+            addTweedSummary(container);
         }
 
         TextView saveAnnotated =
@@ -1508,17 +1516,306 @@ public class AnalysisActivity extends Activity {
         container.addView(saveReport);
 
         new AlertDialog.Builder(this)
-                .setTitle(
-                        "VERTEBRAL".equals(mode)
-                                ? "Resultados · Vertebral"
-                                : "Resultados · Steiner"
-                )
+                .setTitle("Resultados · " + modeTitle())
                 .setView(scroll)
                 .setPositiveButton(
                         "Cerrar",
                         null
                 )
                 .show();
+    }
+
+    private String linearSectionTitle() {
+        if ("VERTEBRAL".equals(mode)) return "Medidas lineales · Rocabado";
+        if ("LEVANDOSKI".equals(mode)) return "Medidas lineales · Levandoski";
+        if ("AIRWAY".equals(mode)) return "Medidas lineales · Vía aérea";
+        return "Medidas lineales";
+    }
+
+    private String linearNormText(
+            LinearMeasurementDefinition def,
+            double value
+    ) {
+        if (!"AIRWAY".equals(mode)) {
+            return def.normText;
+        }
+
+        AirwayRef ref = airwayReference(def.name);
+        if (ref == null) {
+            if (def.name.startsWith("AD1") || def.name.startsWith("AD2") || def.name.startsWith("AD3")) {
+                return "Tabla disponible para 6 y 16 años";
+            }
+            return def.normText;
+        }
+
+        return String.format(
+                Locale.US,
+                "%.2f ± %.2f mm",
+                ref.mean,
+                ref.sd
+        );
+    }
+
+    private String linearDiagnosis(
+            LinearMeasurementDefinition def,
+            double value
+    ) {
+        if (!"AIRWAY".equals(mode)) {
+            return def.diagnosis(value);
+        }
+
+        AirwayRef ref = airwayReference(def.name);
+        if (ref == null) {
+            if ((def.name.startsWith("AD1") || def.name.startsWith("AD2") || def.name.startsWith("AD3"))
+                    && !("6".equals(patientAge.trim()) || "16".equals(patientAge.trim()))) {
+                return "La tabla proporcionada solo incluye referencias a los 6 y 16 años; se muestra la medida sin clasificar.";
+            }
+
+            if ((def.name.startsWith("Faringe superior") || def.name.startsWith("Faringe posterior"))
+                    && patientSex.trim().isEmpty()) {
+                return "Seleccione sexo en Datos / Guardar para aplicar la referencia correspondiente.";
+            }
+
+            return "Medida obtenida; no hay una referencia aplicable con los datos actuales.";
+        }
+
+        double min = ref.mean - ref.sd;
+        double max = ref.mean + ref.sd;
+
+        if (value >= min && value <= max) {
+            return "Dentro del intervalo de referencia.";
+        }
+
+        if (def.name.startsWith("Faringe superior")) {
+            return value > max
+                    ? "Tubo aéreo superior amplio."
+                    : "Tubo aéreo superior estrecho.";
+        }
+
+        if (def.name.startsWith("Faringe posterior")) {
+            return value > max
+                    ? "Valor aumentado: puede asociarse con localización anterior de la lengua o amígdalas grandes según la tabla proporcionada."
+                    : "Valor disminuido respecto a la referencia.";
+        }
+
+        return value > max
+                ? "Valor aumentado respecto a la referencia; la tabla lo relaciona con vía aérea funcionalmente adecuada."
+                : "Valor disminuido respecto a la referencia; la tabla lo relaciona con vía aérea funcionalmente inadecuada.";
+    }
+
+    private AirwayRef airwayReference(String name) {
+        int age;
+        try {
+            age = Integer.parseInt(patientAge.trim());
+        } catch (Exception e) {
+            age = -1;
+        }
+
+        boolean female = "Femenino".equals(patientSex);
+        boolean male = "Masculino".equals(patientSex);
+
+        if (name.startsWith("AD1")) {
+            if (!female && !male) return null;
+            if (age == 6) {
+                return female
+                        ? new AirwayRef(20.66, 5.50)
+                        : new AirwayRef(14.74, 5.69);
+            }
+            if (age == 16) {
+                return female
+                        ? new AirwayRef(26.48, 4.45)
+                        : new AirwayRef(26.32, 4.28);
+            }
+            return null;
+        }
+
+        if (name.startsWith("AD2")) {
+            if (!female && !male) return null;
+            if (age == 6) {
+                return female
+                        ? new AirwayRef(15.89, 3.53)
+                        : new AirwayRef(14.93, 3.52);
+            }
+            if (age == 16) {
+                return female
+                        ? new AirwayRef(22.44, 4.26)
+                        : new AirwayRef(21.78, 4.67);
+            }
+            return null;
+        }
+
+        if (name.startsWith("AD3")) {
+            if (age == 6) return new AirwayRef(7.02, 3.70);
+            if (age == 16) return new AirwayRef(14.56, 4.70);
+            return null;
+        }
+
+        if (name.startsWith("Faringe superior")) {
+            if (female) return new AirwayRef(17.4, 3.4);
+            if (male) return new AirwayRef(17.4, 4.3);
+            return null;
+        }
+
+        if (name.startsWith("Faringe posterior")) {
+            if (female) return new AirwayRef(11.3, 3.3);
+            if (male) return new AirwayRef(13.5, 4.3);
+            return null;
+        }
+
+        return null;
+    }
+
+    private static class AirwayRef {
+        final double mean;
+        final double sd;
+
+        AirwayRef(double mean, double sd) {
+            this.mean = mean;
+            this.sd = sd;
+        }
+    }
+
+    private void addTweedSummary(LinearLayout container) {
+        MeasurementDefinition fmaDef = null;
+        for (MeasurementDefinition def : definitions) {
+            if ("FMA".equals(def.name)) {
+                fmaDef = def;
+                break;
+            }
+        }
+
+        if (fmaDef == null) return;
+        Double fma = measurementView.calculate(fmaDef);
+        if (fma == null) return;
+
+        String prognosis;
+        if (fma >= 16 && fma <= 20) {
+            prognosis = "Pronóstico bueno";
+        } else if (fma >= 21 && fma <= 29) {
+            prognosis = "Pronóstico excelente";
+        } else if (fma >= 30 && fma <= 35) {
+            prognosis = "Pronóstico regular";
+        } else if (fma > 35) {
+            prognosis = "Pronóstico desfavorable";
+        } else {
+            prognosis = "FMA fuera de los intervalos de pronóstico mostrados en la tabla proporcionada";
+        }
+
+        TextView summary = new TextView(this);
+        summary.setText(
+                "Pronóstico de Tweed según FMA\n" +
+                String.format(Locale.US, "FMA %.1f° · %s", fma, prognosis)
+        );
+        summary.setTextSize(14f);
+        summary.setTextColor(0xFF5B3FA4);
+        summary.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        summary.setGravity(Gravity.CENTER);
+        summary.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        summary.setBackgroundResource(R.drawable.button_soft_mint);
+        summary.setPadding(dp(12), dp(10), dp(12), dp(10));
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        lp.setMargins(0, dp(4), 0, dp(10));
+        summary.setLayoutParams(lp);
+        container.addView(summary);
+    }
+
+    private void addLevandoskiSummary(LinearLayout container) {
+        TextView title = new TextView(this);
+        title.setText("Comparación derecha / izquierda");
+        title.setTextSize(16f);
+        title.setTextColor(0xFF5B3FA4);
+        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setPadding(0, dp(8), 0, dp(6));
+        container.addView(title);
+
+        addLevPair(container, "Cóndilo-incisivo maxilar",
+                "Cóndilo a incisivo central maxilar derecho",
+                "Cóndilo a incisivo central maxilar izquierdo");
+
+        addLevPair(container, "Cóndilo-incisivo mandibular",
+                "Cóndilo a incisivo central mandibular derecho",
+                "Cóndilo a incisivo central mandibular izquierdo");
+
+        addLevPair(container, "Cóndilo-Gonion",
+                "Cóndilo-Gonion derecho",
+                "Cóndilo-Gonion izquierdo");
+
+        addLevPair(container, "Gonion-Coronoides",
+                "Gonion-Coronoides derecho",
+                "Gonion-Coronoides izquierdo");
+
+        addLevPair(container, "Línea media-Cóndilo",
+                "Línea media a cóndilo derecho",
+                "Línea media a cóndilo izquierdo");
+
+        addLevPair(container, "Línea media-Cuerpo mandibular",
+                "Línea media a cuerpo mandibular derecho",
+                "Línea media a cuerpo mandibular izquierdo");
+
+        addLevPair(container, "2º molar-Línea media",
+                "Distal 2º molar derecho a línea media",
+                "Distal 2º molar izquierdo a línea media");
+
+        addLevPair(container, "Ancho de rama mandibular",
+                "Ancho de rama mandibular derecha",
+                "Ancho de rama mandibular izquierda");
+    }
+
+    private void addLevPair(
+            LinearLayout container,
+            String label,
+            String rightName,
+            String leftName
+    ) {
+        Double right = calculateLinearByName(rightName);
+        Double left = calculateLinearByName(leftName);
+        if (right == null || left == null) return;
+
+        double diff = right - left;
+        String conclusion;
+
+        if (Math.abs(diff) < 0.005) {
+            conclusion = "Las medidas coinciden";
+        } else if (diff > 0) {
+            conclusion = "Lado derecho mayor por " +
+                    String.format(Locale.US, "%.2f mm", Math.abs(diff));
+        } else {
+            conclusion = "Lado izquierdo mayor por " +
+                    String.format(Locale.US, "%.2f mm", Math.abs(diff));
+        }
+
+        TextView row = new TextView(this);
+        row.setText(
+                label + "\n" +
+                String.format(Locale.US, "D %.2f mm · I %.2f mm\n%s", right, left, conclusion)
+        );
+        row.setTextSize(13f);
+        row.setTextColor(0xFF3D3946);
+        row.setGravity(Gravity.CENTER);
+        row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        row.setBackgroundResource(R.drawable.button_soft_mint);
+        row.setPadding(dp(10), dp(9), dp(10), dp(9));
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        lp.setMargins(0, 0, 0, dp(7));
+        row.setLayoutParams(lp);
+        container.addView(row);
+    }
+
+    private Double calculateLinearByName(String name) {
+        for (LinearMeasurementDefinition def : linearDefinitions) {
+            if (name.equals(def.name)) {
+                return calculateLinear(def);
+            }
+        }
+        return null;
     }
 
     private String safeFileName(String name) {

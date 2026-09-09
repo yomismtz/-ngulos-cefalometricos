@@ -11,7 +11,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Typeface;
-import android.media.ExifInterface;
+import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
@@ -2653,15 +2653,11 @@ public class AnalysisActivity extends Activity {
         Uri uri = data.getData();
 
         try {
-            int takeFlags =
-                    data.getFlags() &
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION;
-
-            if (takeFlags != 0) {
+            if ((data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION) != 0) {
                 getContentResolver()
                         .takePersistableUriPermission(
                                 uri,
-                                takeFlags
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION
                         );
             }
         } catch (Exception ignored) {

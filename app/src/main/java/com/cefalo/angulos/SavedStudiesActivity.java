@@ -123,6 +123,10 @@ public class SavedStudiesActivity extends Activity {
                 patientText += " · " + study.patientAge + " años";
             }
 
+            if (study.patientSex != null && !study.patientSex.trim().isEmpty()) {
+                patientText += " · " + study.patientSex;
+            }
+
             patient.setText(patientText);
             patient.setTextColor(0xFF2C7E86);
             patient.setTextSize(14f);
@@ -130,11 +134,21 @@ public class SavedStudiesActivity extends Activity {
             card.addView(patient);
 
             TextView type = new TextView(this);
-            type.setText(
-                    "VERTEBRAL".equals(study.mode)
-                            ? "Análisis vertebral / craneocervical"
-                            : "Análisis de Steiner"
-            );
+            String typeText;
+            if ("VERTEBRAL".equals(study.mode)) {
+                typeText = "Análisis vertebral / Rocabado";
+            } else if ("POWELL".equals(study.mode)) {
+                typeText = "Análisis de Powell";
+            } else if ("TWEED".equals(study.mode)) {
+                typeText = "Análisis de Tweed";
+            } else if ("LEVANDOSKI".equals(study.mode)) {
+                typeText = "Análisis de Levandoski";
+            } else if ("AIRWAY".equals(study.mode)) {
+                typeText = "Análisis de vía aérea";
+            } else {
+                typeText = "Análisis de Steiner";
+            }
+            type.setText(typeText);
             type.setTextColor(0xFF4A4652);
             type.setTextSize(14f);
             type.setPadding(0, dp(3), 0, 0);

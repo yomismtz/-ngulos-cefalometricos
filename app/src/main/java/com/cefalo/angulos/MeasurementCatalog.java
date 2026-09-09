@@ -10,35 +10,287 @@ public final class MeasurementCatalog {
 
     public static List<MeasurementDefinition> steiner() {
         List<MeasurementDefinition> list = new ArrayList<>();
-        list.add(m("SNA", THREE_POINTS, p("S","N","A"),80,84,"82° ± 2°","Marque S, luego N y luego A. N es el vértice.","Retrognatismo maxilar","Posición maxilar normal","Prognatismo maxilar",false));
-        list.add(m("S-N / Po-Or", TWO_LINES, p("S","N","Po","Or"),4,10,"7° ± 3°","Marque S-N y después Po-Or.","Tendencia a patrón horizontal o braquifacial","Relación craneal normal con Frankfort","Tendencia a patrón vertical o dolicofacial",true));
-        list.add(m("Po-Or / ENA-ENP", TWO_LINES, p("Po","Or","ENA","ENP"),3,7,"5° ± 2°","Marque Po-Or y después ENA-ENP (plano palatino).","Tendencia a mordida abierta o rotación posterior del maxilar","Relación normal Frankfort-plano palatino","Tendencia a mordida profunda o rotación anterior del maxilar",true));
-        list.add(m("SNB", THREE_POINTS, p("S","N","B"),78,82,"80° ± 2°","Marque S, N y B. N es el vértice.","Retrognatismo mandibular","Mandíbula en posición normal","Prognatismo mandibular",false));
-        list.add(m("SND", THREE_POINTS, p("S","N","D"),74,78,"76° ± 2°","Marque S, N y D. N es el vértice.","Retrognatismo de la sínfisis mandibular","Sínfisis en posición normal","Prognatismo de la sínfisis mandibular",false));
-        list.add(m("Ángulo goníaco Ar-Go-Me", THREE_POINTS, p("Ar","Go","Me"),123,127,"125° ± 2°","Marque Ar, Go y Me. Go es el vértice.","Crecimiento horizontal / rotación antihoraria","Mesofacial","Crecimiento vertical / rotación horaria",false));
-        list.add(m("Go-Gn / SN", TWO_LINES, p("Go","Gn","S","N"),27,37,"32° ± 5°","Marque Go-Gn y después S-N.","Patrón horizontal / rotación antihoraria / tendencia a mordida profunda","Mesofacial","Patrón vertical / rotación horaria / tendencia a mordida abierta",true));
-        list.add(m("ANB", THREE_POINTS, p("A","N","B"),1,3,"2° ± 1°","Marque A, N y B. N es el vértice.","Clase III","Clase I","Clase II",false));
-        list.add(m("AB / Go-Gn", TWO_LINES, p("A","B","Go","Gn"),72,76,"74° ± 2°","Marque A-B y después Go-Gn.","Tendencia a mordida abierta","Relación vertical normal","Tendencia a mordida profunda",true));
-        list.add(m("IS / SN", TWO_LINES, p("IS borde","IS ápice","S","N"),102,106,"104° ± 2°","Marque el eje del incisivo superior y después S-N.","Retroinclinación","Incisivo superior en norma","Proinclinación",true));
-        list.add(m("IS / NA (angular)", TWO_LINES, p("IS borde","IS ápice","N","A"),20,24,"22° ± 2°","Marque el eje del incisivo superior y después N-A.","Palatinización","Incisivo superior en norma","Vestibularización",true));
-        list.add(m("II / NB (angular)", TWO_LINES, p("II borde","II ápice","N","B"),24,26,"25° ± 1°","Marque el eje del incisivo inferior y después N-B.","Lingualización","Incisivo inferior en norma","Vestibularización",true));
-        list.add(m("Plano oclusal / SN", TWO_LINES, p("Oclusal 1","Oclusal 2","S","N"),13,15,"14° ± 1°","Marque dos puntos del plano oclusal y después S-N.","Plano oclusal cerrado","Inclinación normal","Plano oclusal abierto",true));
-        list.add(m("Ángulo interincisal", TWO_LINES, p("IS borde","IS ápice","II borde","II ápice"),131,139,"135° ± 4°","Marque el eje del incisivo superior y después el eje del incisivo inferior.","Tendencia a mordida abierta","Relación incisiva normal","Tendencia a mordida profunda",true));
+
+        list.add(m(
+                "SNA",
+                THREE_POINTS,
+                p("S","N","A"),
+                80,84,
+                "82° ± 2°",
+                "Marque S, N y A. N es el vértice.",
+                "Posición maxilar relativamente posterior respecto a la base craneal SN; corroborar con el resto del análisis.",
+                "Dentro del rango de referencia de Steiner.",
+                "Posición maxilar relativamente anterior respecto a la base craneal SN; corroborar con el resto del análisis.",
+                false
+        ));
+
+        list.add(m(
+                "SN / Frankfort (complementaria)",
+                TWO_LINES,
+                p("S","N","Po","Or"),
+                4,10,
+                "7° ± 3° · referencia complementaria",
+                "Marque S-N y después Po-Or.",
+                "Ángulo SN-Frankfort por debajo del rango de referencia; no define por sí solo el biotipo facial.",
+                "Ángulo SN-Frankfort dentro del rango de referencia adoptado.",
+                "Ángulo SN-Frankfort por encima del rango de referencia; no define por sí solo el biotipo facial.",
+                true
+        ));
+
+        list.add(m(
+                "Frankfort / plano palatino (complementaria)",
+                TWO_LINES,
+                p("Po","Or","ENA","ENP"),
+                3,7,
+                "5° ± 2° · referencia del protocolo aportado",
+                "Marque Po-Or y después ENA-ENP.",
+                "Valor por debajo del rango del protocolo; no diagnostica mordida abierta o profunda de forma aislada.",
+                "Dentro del rango de referencia del protocolo.",
+                "Valor por encima del rango del protocolo; no diagnostica mordida abierta o profunda de forma aislada.",
+                true
+        ));
+
+        list.add(m(
+                "SNB",
+                THREE_POINTS,
+                p("S","N","B"),
+                78,82,
+                "80° ± 2°",
+                "Marque S, N y B. N es el vértice.",
+                "Posición mandibular relativamente posterior respecto a la base craneal SN; corroborar con otras medidas.",
+                "Dentro del rango de referencia de Steiner.",
+                "Posición mandibular relativamente anterior respecto a la base craneal SN; corroborar con otras medidas.",
+                false
+        ));
+
+        list.add(m(
+                "SND",
+                THREE_POINTS,
+                p("S","N","D"),
+                74,78,
+                "76° ± 2°",
+                "Marque S, N y D. N es el vértice.",
+                "Mentón/sínfisis relativamente posterior respecto a la referencia; esta medida es complementaria.",
+                "Dentro del rango de referencia.",
+                "Mentón/sínfisis relativamente anterior respecto a la referencia; esta medida es complementaria.",
+                false
+        ));
+
+        list.add(m(
+                "Ángulo goníaco Ar-Go-Me",
+                THREE_POINTS,
+                p("Ar","Go","Me"),
+                123,137,
+                "123°–137° · referencia publicada",
+                "Marque Ar, Go y Me. Go es el vértice.",
+                "Ángulo goníaco disminuido; compatible con un patrón más hipodivergente, a corroborar con otros parámetros.",
+                "Dentro del rango de referencia publicado.",
+                "Ángulo goníaco aumentado; compatible con un patrón más hiperdivergente, a corroborar con otros parámetros.",
+                false
+        ));
+
+        list.add(m(
+                "Go-Gn / SN",
+                TWO_LINES,
+                p("Go","Gn","S","N"),
+                27,37,
+                "32° ± 5°",
+                "Marque Go-Gn y después S-N.",
+                "Ángulo disminuido; compatible con patrón mandibular más hipodivergente/rotación anterior. No determina la mordida por sí solo.",
+                "Dentro del rango de referencia de Steiner.",
+                "Ángulo aumentado; compatible con patrón mandibular más hiperdivergente/rotación posterior. No determina la mordida por sí solo.",
+                true
+        ));
+
+        list.add(m(
+                "ANB",
+                THREE_POINTS,
+                p("A","N","B"),
+                0,4,
+                "2° ± 2°",
+                "Marque A, N y B. N es el vértice.",
+                "ANB por debajo del rango: compatible con tendencia esquelética Clase III; confirmar con otras medidas sagitales.",
+                "ANB dentro del rango de referencia para relación esquelética Clase I.",
+                "ANB por encima del rango: compatible con tendencia esquelética Clase II; confirmar con otras medidas sagitales.",
+                false
+        ));
+
+        list.add(m(
+                "AB / Go-Gn (complementaria)",
+                TWO_LINES,
+                p("A","B","Go","Gn"),
+                72,76,
+                "74° ± 2° · referencia del protocolo aportado",
+                "Valor por debajo del rango del protocolo; no diagnostica por sí solo una mordida abierta.",
+                "Dentro del rango de referencia del protocolo.",
+                "Valor por encima del rango del protocolo; no diagnostica por sí solo una mordida profunda.",
+                true
+        ));
+
+        list.add(m(
+                "IS / SN",
+                TWO_LINES,
+                p("IS borde","IS ápice","S","N"),
+                99,107,
+                "103° ± 4°",
+                "Marque el eje del incisivo superior y después S-N.",
+                "Incisivo superior relativamente retroinclinado respecto a SN.",
+                "Dentro del rango de referencia.",
+                "Incisivo superior relativamente proinclinado respecto a SN.",
+                true
+        ));
+
+        list.add(m(
+                "IS / NA (angular)",
+                TWO_LINES,
+                p("IS borde","IS ápice","N","A"),
+                20,24,
+                "22° ± 2°",
+                "Marque el eje del incisivo superior y después N-A.",
+                "Incisivo superior relativamente retroinclinado respecto a NA.",
+                "Dentro del rango de referencia.",
+                "Incisivo superior relativamente proinclinado respecto a NA.",
+                true
+        ));
+
+        list.add(m(
+                "II / NB (angular)",
+                TWO_LINES,
+                p("II borde","II ápice","N","B"),
+                23,27,
+                "25° ± 2°",
+                "Marque el eje del incisivo inferior y después N-B.",
+                "Incisivo inferior relativamente retroinclinado respecto a NB.",
+                "Dentro del rango de referencia.",
+                "Incisivo inferior relativamente proinclinado respecto a NB.",
+                true
+        ));
+
+        list.add(m(
+                "Plano oclusal / SN",
+                TWO_LINES,
+                p("Oclusal 1","Oclusal 2","S","N"),
+                12,16,
+                "14° ± 2°",
+                "Marque dos puntos del plano oclusal y después S-N.",
+                "Plano oclusal con inclinación menor que el rango de referencia.",
+                "Dentro del rango de referencia.",
+                "Plano oclusal con inclinación mayor que el rango de referencia.",
+                true
+        ));
+
+        list.add(m(
+                "Ángulo interincisal",
+                TWO_LINES,
+                p("IS borde","IS ápice","II borde","II ápice"),
+                127,135,
+                "131° ± 4°",
+                "Marque el eje del incisivo superior y después el eje del incisivo inferior.",
+                "Ángulo interincisal disminuido; mayor proclinción relativa de los incisivos.",
+                "Dentro del rango de referencia.",
+                "Ángulo interincisal aumentado; mayor retroinclinación relativa de los incisivos.",
+                true
+        ));
+
         return list;
     }
 
     public static List<MeasurementDefinition> vertebral() {
         List<MeasurementDefinition> list = new ArrayList<>();
-        list.add(m("ANB", THREE_POINTS, p("A","N","B"),0,4,"2° ± 2°","Marque A, N y B. N es el vértice.","Tendencia a Clase III esqueletal","Relación Clase I esqueletal","Tendencia a Clase II esqueletal",false));
-        list.add(m("SN / Go-Gn", TWO_LINES, p("S","N","Go","Gn"),27,37,"32° ± 5°","Marque S-N y después Go-Gn.","Patrón horizontal / rotación anterior","Equilibrio vertical y sagital","Patrón vertical / rotación posterior",true));
-        list.add(m("SN / Po-Or", TWO_LINES, p("S","N","Po","Or"),6,10,"6°–10°","Marque S-N y después Po-Or.","Protracción cefálica","Orientación craneal equilibrada","Extensión de la cabeza",true));
-        list.add(m("SN / CVT", TWO_LINES, p("S","N","CVT sup.","CVT inf."),96,102,"96°–102°","Marque S-N y luego dos puntos de la tangente cervical CVT.","Flexión de cabeza / protracción cefálica","Relación equilibrada cráneo-columna cervical","Extensión de cabeza / tendencia a patrón vertical",true));
-        list.add(m("SN / OPT", TWO_LINES, p("S","N","OPT sup.","OPT inf."),94,100,"94°–100°","Marque S-N y luego dos puntos de la tangente del proceso odontoideo OPT.","Flexión de cabeza / protracción cefálica","Relación equilibrada cráneo-columna cervical","Extensión de cabeza / rotación mandibular posterior",true));
-        list.add(m("McGregor–C4", TWO_LINES, p("Occipital","ENP","C4-1","C4-2"),100,110,"100°–110°","Use Occipital-ENP como plano de McGregor y después marque dos puntos que definan la referencia de C4.","Flexión / tendencia a rectificación cervical","Relación equilibrada cráneo-columna cervical","Extensión craneocervical / incremento de lordosis",true));
-        list.add(m("Ángulo posteroinferior (API) · McGregor / OP", TWO_LINES, p("Occipital","ENP","Odontoides ápice","C2 anteroinf."),96,106,"96°–106°","Marque occipital y ENP para McGregor; después ápice de odontoides y punto anteroinferior de C2.","Flexión craneocervical / cabeza hacia adelante","Relación adecuada entre cráneo y C2","Extensión craneocervical / cabeza hacia atrás",true));
+
+        list.add(m(
+                "ANB",
+                THREE_POINTS,
+                p("A","N","B"),
+                0,4,
+                "2° ± 2°",
+                "Marque A, N y B. N es el vértice.",
+                "Compatible con tendencia esquelética Clase III; confirmar con otras medidas sagitales.",
+                "Dentro del rango de referencia para relación esquelética Clase I.",
+                "Compatible con tendencia esquelética Clase II; confirmar con otras medidas sagitales.",
+                false
+        ));
+
+        list.add(m(
+                "SN / Go-Gn",
+                TWO_LINES,
+                p("S","N","Go","Gn"),
+                27,37,
+                "32° ± 5°",
+                "Marque S-N y después Go-Gn.",
+                "Ángulo disminuido; compatible con patrón mandibular más hipodivergente/rotación anterior.",
+                "Dentro del rango de referencia.",
+                "Ángulo aumentado; compatible con patrón mandibular más hiperdivergente/rotación posterior.",
+                true
+        ));
+
+        list.add(m(
+                "SN / Frankfort",
+                TWO_LINES,
+                p("S","N","Po","Or"),
+                6,10,
+                "6°–10° · referencia postural complementaria",
+                "Marque S-N y después Po-Or.",
+                "Valor por debajo del rango de referencia; describa la inclinación, sin diagnosticar postura por esta medida aislada.",
+                "Dentro del rango de referencia adoptado.",
+                "Valor por encima del rango de referencia; describa la inclinación, sin diagnosticar postura por esta medida aislada.",
+                true
+        ));
+
+        list.add(m(
+                "SN / CVT",
+                TWO_LINES,
+                p("S","N","CVT sup.","CVT inf."),
+                96,102,
+                "96°–102° · rango del protocolo",
+                "Marque S-N y luego dos puntos de la tangente cervical CVT.",
+                "Valor menor al rango del protocolo; interpretación postural orientativa y dependiente de la posición natural de la cabeza.",
+                "Dentro del rango del protocolo; no implica normalidad clínica por sí solo.",
+                "Valor mayor al rango del protocolo; interpretación postural orientativa y dependiente de la posición natural de la cabeza.",
+                true
+        ));
+
+        list.add(m(
+                "SN / OPT",
+                TWO_LINES,
+                p("S","N","OPT sup.","OPT inf."),
+                94,100,
+                "94°–100° · rango del protocolo",
+                "Marque S-N y luego dos puntos de la tangente del proceso odontoideo OPT.",
+                "Valor menor al rango del protocolo; interpretación postural orientativa.",
+                "Dentro del rango del protocolo; no implica normalidad clínica por sí solo.",
+                "Valor mayor al rango del protocolo; interpretación postural orientativa.",
+                true
+        ));
+
+        list.add(m(
+                "McGregor–C4",
+                TWO_LINES,
+                p("Occipital","ENP","C4-1","C4-2"),
+                100,110,
+                "100°–110° · referencia del protocolo aportado",
+                "Use Occipital-ENP como plano de McGregor y después marque dos puntos que definan la referencia de C4.",
+                "Valor por debajo del rango del protocolo. La evidencia externa para un umbral diagnóstico aislado es limitada.",
+                "Dentro del rango del protocolo. No debe interpretarse como diagnóstico independiente.",
+                "Valor por encima del rango del protocolo. La evidencia externa para un umbral diagnóstico aislado es limitada.",
+                true
+        ));
+
+        list.add(m(
+                "Ángulo posteroinferior (API) · McGregor / OP",
+                TWO_LINES,
+                p("Occipital","ENP","Odontoides ápice","C2 anteroinf."),
+                96,106,
+                "96°–106°",
+                "Marque occipital y ENP para McGregor; después ápice de odontoides y punto anteroinferior de C2.",
+                "Menor de 96°: rotación posterior del cráneo según la referencia de Rocabado; correlacionar clínicamente.",
+                "Dentro del intervalo funcional de referencia de Rocabado.",
+                "Mayor de 106°: rotación anterior del cráneo según la referencia de Rocabado; correlacionar clínicamente.",
+                true
+        ));
+
         return list;
     }
-
 
     public static List<MeasurementDefinition> powell() {
         List<MeasurementDefinition> list = new ArrayList<>();
@@ -48,11 +300,11 @@ public final class MeasurementCatalog {
                 THREE_POINTS,
                 p("G'","N'","Pr"),
                 115,130,
-                "115°-130°",
+                "115°–130°",
                 "Marque G', N' y Pr. N' es el vértice.",
-                "Transición frente-raíz nasal más marcada / región nasofrontal más angulada",
-                "Relación armónica entre frente y raíz nasal",
-                "Transición frente-raíz nasal más abierta o menos marcada",
+                "Ángulo nasofrontal menor al rango de Powell.",
+                "Dentro del rango estético de referencia de Powell.",
+                "Ángulo nasofrontal mayor al rango de Powell.",
                 false
         ));
 
@@ -61,11 +313,11 @@ public final class MeasurementCatalog {
                 TWO_LINES,
                 p("G'","Pg'","N'","Pr"),
                 30,40,
-                "30°-40°",
+                "30°–40°",
                 "Marque el plano facial G'-Pg' y el eje nasal N'-Pr.",
-                "Menor proyección nasal relativa al plano facial",
-                "Relación equilibrada entre proyección nasal y plano facial",
-                "Mayor proyección nasal relativa al plano facial",
+                "Menor proyección nasal relativa al plano facial según esta medida.",
+                "Dentro del rango estético de referencia de Powell.",
+                "Mayor proyección nasal relativa al plano facial según esta medida.",
                 true
         ));
 
@@ -74,11 +326,11 @@ public final class MeasurementCatalog {
                 THREE_POINTS,
                 p("N'","Pr","Pg'"),
                 120,132,
-                "120°-132°",
+                "120°–132°",
                 "Marque N', Pr y Pg'. Pr es el vértice.",
-                "Puede asociarse a mayor proyección nasal relativa o menor proyección anterior del mentón",
-                "Relación proporcional entre proyección nasal y mentoniana",
-                "Puede asociarse a menor proyección nasal relativa o mayor prominencia del mentón",
+                "Ángulo nasomental menor al rango de Powell; interpretar la relación nariz-mentón en conjunto.",
+                "Dentro del rango estético de referencia de Powell.",
+                "Ángulo nasomental aumentado; puede reflejar mayor prominencia relativa del mentón o menor proyección nasal.",
                 false
         ));
 
@@ -87,11 +339,11 @@ public final class MeasurementCatalog {
                 TWO_LINES,
                 p("G'","Pg'","Me'","C"),
                 80,95,
-                "80°-95°",
+                "80°–95°",
                 "Marque el plano facial G'-Pg' y la línea mentocervical Me'-C.",
-                "Ángulo mentocervical disminuido",
-                "Relación equilibrada entre mentón y región cervical",
-                "Ángulo mentocervical aumentado",
+                "Ángulo mentocervical menor al rango de Powell; valorar junto con el perfil facial completo.",
+                "Dentro del rango estético de referencia de Powell.",
+                "Ángulo mentocervical mayor al rango de Powell; valorar junto con el contorno submentoniano y el perfil facial.",
                 true
         ));
 
@@ -106,11 +358,11 @@ public final class MeasurementCatalog {
                 TWO_LINES,
                 p("Po","Or","Go","Me"),
                 21,29,
-                "25° ± 4°",
+                "21°–29° · centro clásico ≈25°",
                 "Plano de Frankfort Po-Or con plano mandibular Go-Me.",
-                "FMA disminuido",
-                "FMA dentro del rango ideal",
-                "FMA aumentado",
+                "FMA menor al intervalo clásico; patrón mandibular relativamente hipodivergente.",
+                "FMA dentro del intervalo clásico de referencia.",
+                "FMA mayor al intervalo clásico; patrón mandibular relativamente hiperdivergente.",
                 true
         ));
 
@@ -118,12 +370,12 @@ public final class MeasurementCatalog {
                 "FMIA",
                 TWO_LINES,
                 p("Po","Or","II borde","II ápice"),
-                65,65,
-                "Objetivo 65°",
+                60,75,
+                "60°–75° · objetivo de Tweed depende del FMA",
                 "Plano de Frankfort Po-Or con eje axial del incisivo inferior.",
-                "FMIA por debajo de 65°",
-                "FMIA de 65°",
-                "FMIA por encima de 65°",
+                "FMIA por debajo del rango de referencia; interpretar junto con FMA e IMPA.",
+                "FMIA dentro del rango de referencia publicado.",
+                "FMIA por encima del rango de referencia; interpretar junto con FMA e IMPA.",
                 true
         ));
 
@@ -131,12 +383,12 @@ public final class MeasurementCatalog {
                 "IMPA",
                 TWO_LINES,
                 p("Go","Me","II borde","II ápice"),
-                90,90,
-                "Objetivo 90°",
+                85,95,
+                "90° ± 5°",
                 "Plano mandibular Go-Me con eje axial del incisivo inferior.",
-                "Incisivo inferior relativamente retroinclinado",
-                "IMPA de 90°",
-                "Incisivo inferior relativamente proinclinado",
+                "Incisivo inferior relativamente retroinclinado respecto al plano mandibular.",
+                "IMPA dentro del rango clásico de referencia.",
+                "Incisivo inferior relativamente proinclinado respecto al plano mandibular.",
                 true
         ));
 
@@ -150,12 +402,12 @@ public final class MeasurementCatalog {
                 "Ba-S-NA",
                 THREE_POINTS,
                 p("Ba","S","N"),
-                126,126,
-                "126°",
+                122,130,
+                "≈126° ± 4° · referencia poblacional",
                 "Marque Ba, S y N. S es el vértice.",
-                "Mal desarrollo respecto a la referencia de la tabla",
-                "Valor de referencia",
-                "Buen desarrollo respecto a la referencia de la tabla",
+                "Ángulo por debajo de la referencia poblacional; no diagnostica desarrollo ni obstrucción de vía aérea por sí solo.",
+                "Dentro del rango de referencia poblacional.",
+                "Ángulo por encima de la referencia poblacional; no diagnostica desarrollo ni obstrucción de vía aérea por sí solo.",
                 false
         ));
 
@@ -163,22 +415,47 @@ public final class MeasurementCatalog {
                 "Ba-S-ENP",
                 THREE_POINTS,
                 p("Ba","S","ENP"),
-                63,63,
-                "63°",
+                58,68,
+                "≈63° ± 5° · depende de población/patrón esquelético",
                 "Marque Ba, S y ENP. S es el vértice.",
-                "Vía aérea estructuralmente inadecuada respecto a la referencia",
-                "Valor de referencia",
-                "Vía aérea estructuralmente adecuada respecto a la referencia",
+                "Ángulo por debajo de la referencia; no equivale a una vía aérea inadecuada.",
+                "Dentro del rango de referencia aproximado.",
+                "Ángulo por encima de la referencia; no equivale a una vía aérea adecuada.",
                 false
         ));
 
         return list;
     }
 
-    private static MeasurementDefinition m(String name, MeasurementDefinition.Type type, String[] labels,
-        double min, double max, String norm, String instruction,
-        String low, String normal, String high, boolean supplement) {
-        return new MeasurementDefinition(name,type,labels,min,max,norm,instruction,low,normal,high,supplement);
+    private static MeasurementDefinition m(
+            String name,
+            MeasurementDefinition.Type type,
+            String[] labels,
+            double min,
+            double max,
+            String norm,
+            String instruction,
+            String low,
+            String normal,
+            String high,
+            boolean supplement
+    ) {
+        return new MeasurementDefinition(
+                name,
+                type,
+                labels,
+                min,
+                max,
+                norm,
+                instruction,
+                low,
+                normal,
+                high,
+                supplement
+        );
     }
-    private static String[] p(String... values){ return values; }
+
+    private static String[] p(String... values) {
+        return values;
+    }
 }

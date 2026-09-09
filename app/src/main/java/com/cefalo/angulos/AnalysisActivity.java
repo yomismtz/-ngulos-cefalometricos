@@ -267,7 +267,7 @@ public class AnalysisActivity extends Activity {
         if ("VERTEBRAL".equals(mode)) return "Vertebral / Rocabado";
         if ("POWELL".equals(mode)) return "Análisis de Powell";
         if ("TWEED".equals(mode)) return "Análisis de Tweed";
-        if ("LEVANDOSKI".equals(mode)) return "Análisis de Levandoski";
+        if ("LEVANDOSKI".equals(mode)) return "Panorámico de Levandoski";
         if ("AIRWAY".equals(mode)) return "Análisis de vía aérea";
         return "Análisis de Steiner";
     }

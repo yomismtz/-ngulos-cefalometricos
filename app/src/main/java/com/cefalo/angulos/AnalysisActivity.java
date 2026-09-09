@@ -1275,6 +1275,72 @@ public class AnalysisActivity extends Activity {
             container.addView(row);
         }
 
+        if (!linearDefinitions.isEmpty()) {
+            TextView linearTitle = new TextView(this);
+            linearTitle.setText("Medidas lineales · Rocabado");
+            linearTitle.setTextColor(0xFF5B3FA4);
+            linearTitle.setTextSize(17f);
+            linearTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            linearTitle.setPadding(0, dp(8), 0, dp(8));
+            container.addView(linearTitle);
+
+            if (Double.isNaN(mmPerPixel) || mmPerPixel <= 0) {
+                TextView warning = new TextView(this);
+                warning.setText(
+                        "Para obtener resultados en mm primero calibre la radiografía con una referencia de longitud conocida."
+                );
+                warning.setTextColor(0xFF7A4F00);
+                warning.setTextSize(14f);
+                warning.setBackgroundResource(R.drawable.button_soft_mint);
+                warning.setPadding(dp(14), dp(12), dp(14), dp(12));
+                container.addView(warning);
+
+            } else {
+                TextView calibration = new TextView(this);
+                calibration.setText(
+                        "Calibración: " +
+                        calibrationLabel +
+                        " · " +
+                        String.format(Locale.US, "%.5f mm/píxel", mmPerPixel)
+                );
+                calibration.setTextColor(0xFF2C7E86);
+                calibration.setTextSize(13f);
+                calibration.setPadding(0, 0, 0, dp(8));
+                container.addView(calibration);
+
+                for (LinearMeasurementDefinition def : linearDefinitions) {
+                    Double value = calculateLinear(def);
+                    if (value == null) continue;
+
+                    TextView row = new TextView(this);
+                    row.setText(
+                            def.name +
+                            "\n" +
+                            String.format(Locale.US, "%.2f mm", value) +
+                            "   ·   Norma: " +
+                            def.normText +
+                            "\n" +
+                            def.diagnosis(value)
+                    );
+                    row.setTextSize(15f);
+                    row.setTextColor(0xFF292631);
+                    row.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
+                    row.setBackgroundResource(R.drawable.card_white);
+                    row.setPadding(dp(14), dp(12), dp(14), dp(12));
+
+                    LinearLayout.LayoutParams lp =
+                            new LinearLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT
+                            );
+                    lp.setMargins(0, 0, 0, dp(10));
+                    row.setLayoutParams(lp);
+
+                    container.addView(row);
+                }
+            }
+        }
+
         TextView saveAnnotated =
                 createDialogButton(
                         "GUARDAR RADIOGRAFÍA CON PUNTOS",
@@ -1421,9 +1487,17 @@ public class AnalysisActivity extends Activity {
         int rowHeight = 180;
         int footer = 70;
 
+        int linearCount =
+                (!linearDefinitions.isEmpty() &&
+                 !Double.isNaN(mmPerPixel) &&
+                 mmPerPixel > 0)
+                        ? linearDefinitions.size()
+                        : 0;
+
         int height =
                 titleHeight +
-                (definitions.size() * rowHeight) +
+                ((definitions.size() + linearCount) * rowHeight) +
+                (linearCount > 0 ? 70 : 0) +
                 footer;
 
         Bitmap bitmap =
@@ -1626,6 +1700,20 @@ public class AnalysisActivity extends Activity {
                 infoPaint
         );
 
+        if (!linearDefinitions.isEmpty() &&
+                !Double.isNaN(mmPerPixel) &&
+                mmPerPixel > 0) {
+            canvas.drawText(
+                    "Calibración: " +
+                    calibrationLabel +
+                    " · " +
+                    String.format(Locale.US, "%.5f mm/píxel", mmPerPixel),
+                    margin,
+                    235,
+                    infoPaint
+            );
+        }
+
         int y = titleHeight;
 
         for (MeasurementDefinition def : definitions) {
@@ -1697,6 +1785,79 @@ public class AnalysisActivity extends Activity {
             y += rowHeight;
         }
 
+        if (!linearDefinitions.isEmpty() &&
+                !Double.isNaN(mmPerPixel) &&
+                mmPerPixel > 0) {
+
+            y += 50;
+
+            for (LinearMeasurementDefinition def : linearDefinitions) {
+                Double value = calculateLinear(def);
+                if (value == null) continue;
+
+                float left = margin;
+                float top = y;
+                float right = width - margin;
+                float bottom = y + rowHeight - 18;
+
+                android.graphics.RectF rect =
+                        new android.graphics.RectF(
+                                left,
+                                top,
+                                right,
+                                bottom
+                        );
+
+                canvas.drawRoundRect(
+                        rect,
+                        30f,
+                        30f,
+                        cardPaint
+                );
+
+                canvas.drawRoundRect(
+                        rect,
+                        30f,
+                        30f,
+                        strokePaint
+                );
+
+                canvas.drawText(
+                        def.name,
+                        left + 30,
+                        top + 46,
+                        namePaint
+                );
+
+                String valueLine =
+                        String.format(
+                                Locale.US,
+                                "%.2f mm   ·   Norma: %s",
+                                value,
+                                def.normText
+                        );
+
+                canvas.drawText(
+                        valueLine,
+                        left + 30,
+                        top + 91,
+                        valuePaint
+                );
+
+                drawWrappedText(
+                        canvas,
+                        def.diagnosis(value),
+                        left + 30,
+                        top + 132,
+                        right - 30,
+                        detailPaint,
+                        34f
+                );
+
+                y += rowHeight;
+            }
+        }
+
         Paint footerPaint =
                 new Paint(
                         Paint.ANTI_ALIAS_FLAG
@@ -1713,7 +1874,7 @@ public class AnalysisActivity extends Activity {
         footerPaint.setTextSize(24f);
 
         canvas.drawText(
-                "Resultados angulares calculados a partir de los puntos marcados en la radiografía.",
+                "Resultados calculados a partir de los puntos marcados; las medidas lineales requieren calibración de la radiografía.",
                 margin,
                 height - 28,
                 footerPaint

@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK and Bundle
 
 on:
   workflow_dispatch:
@@ -21,34 +21,38 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK packages
-        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+      - name: Install Android 16 SDK
+        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
-      - name: Set up Gradle 8.9
+      - name: Set up Gradle 8.13
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.13'
 
       - name: Run Android lint
-        run: gradle --no-daemon :app:lintDebug
+        run: gradle --no-daemon :app:lintDebug :app:lintRelease
 
-      - name: Print lint summary
-        if: always()
-        run: |
-          REPORT="app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt"
-          if [ -f "$REPORT" ]; then
-            sed -n '1,260p' "$REPORT"
-          fi
-
-      - name: Build installable debug APK
+      - name: Build test APK
         run: gradle --no-daemon :app:assembleDebug
 
-      - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk YomCeph-v1.15.apk
+      - name: Build release App Bundle
+        run: gradle --no-daemon :app:bundleRelease
 
-      - name: Upload APK artifact
+      - name: Rename artifacts
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk YomCeph-v1.16-test.apk
+          cp app/build/outputs/bundle/release/app-release.aab YomCeph-v1.16-unsigned.aab
+
+      - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph-APK
-          path: YomCeph-v1.15.apk
+          name: YomCeph-Test-APK
+          path: YomCeph-v1.16-test.apk
+          if-no-files-found: error
+
+      - name: Upload unsigned App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: YomCeph-Unsigned-AAB
+          path: YomCeph-v1.16-unsigned.aab
           if-no-files-found: error

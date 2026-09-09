@@ -19,6 +19,7 @@
             android:id="@+id/imgLogo"
             android:layout_width="132dp"
             android:layout_height="132dp"
+            android:src="@drawable/yom_logo"
             android:scaleType="fitCenter"
             android:contentDescription="Logo Yom Dental"
             android:layout_marginBottom="6dp" />
@@ -79,6 +80,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/card_white"
+            android:padding="12dp"
             android:elevation="2dp">
 
             <TextView
@@ -95,6 +97,7 @@
                 android:id="@+id/imgMascot"
                 android:layout_width="match_parent"
                 android:layout_height="190dp"
+                android:src="@drawable/yom_mascot"
                 android:scaleType="centerCrop"
                 android:contentDescription="Mascota Yom Dental" />
         </LinearLayout>

@@ -2,16 +2,48 @@ plugins {
     id 'com.android.application'
 }
 
+def signingEnv = [
+        "YOMCEPH_KEYSTORE_PATH",
+        "YOMCEPH_KEYSTORE_PASSWORD",
+        "YOMCEPH_KEY_ALIAS",
+        "YOMCEPH_KEY_PASSWORD"
+]
+def hasReleaseSigning = signingEnv.every { key ->
+    def value = System.getenv(key)
+    value != null && !value.trim().isEmpty()
+}
+
 android {
     namespace 'com.cefalo.angulos'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId 'com.cefalo.angulos'
         minSdk 24
-        targetSdk 35
-        versionCode 16
-        versionName '1.15'
+        targetSdk 36
+        versionCode 17
+        versionName '1.16'
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(System.getenv("YOMCEPH_KEYSTORE_PATH"))
+                storePassword System.getenv("YOMCEPH_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("YOMCEPH_KEY_ALIAS")
+                keyPassword System.getenv("YOMCEPH_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            debuggable false
+            minifyEnabled false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
     }
 
     compileOptions {
@@ -19,7 +51,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 }
-
 
 dependencies {
     implementation 'androidx.exifinterface:exifinterface:1.4.2'

@@ -39,6 +39,142 @@ public final class MeasurementCatalog {
         return list;
     }
 
+
+    public static List<MeasurementDefinition> powell() {
+        List<MeasurementDefinition> list = new ArrayList<>();
+
+        list.add(m(
+                "Nasofrontal",
+                THREE_POINTS,
+                p("G'","N'","Pr"),
+                115,130,
+                "115°-130°",
+                "Marque G', N' y Pr. N' es el vértice.",
+                "Transición frente-raíz nasal más marcada / región nasofrontal más angulada",
+                "Relación armónica entre frente y raíz nasal",
+                "Transición frente-raíz nasal más abierta o menos marcada",
+                false
+        ));
+
+        list.add(m(
+                "Nasofacial",
+                TWO_LINES,
+                p("G'","Pg'","N'","Pr"),
+                30,40,
+                "30°-40°",
+                "Marque el plano facial G'-Pg' y el eje nasal N'-Pr.",
+                "Menor proyección nasal relativa al plano facial",
+                "Relación equilibrada entre proyección nasal y plano facial",
+                "Mayor proyección nasal relativa al plano facial",
+                true
+        ));
+
+        list.add(m(
+                "Nasomental",
+                THREE_POINTS,
+                p("N'","Pr","Pg'"),
+                120,132,
+                "120°-132°",
+                "Marque N', Pr y Pg'. Pr es el vértice.",
+                "Puede asociarse a mayor proyección nasal relativa o menor proyección anterior del mentón",
+                "Relación proporcional entre proyección nasal y mentoniana",
+                "Puede asociarse a menor proyección nasal relativa o mayor prominencia del mentón",
+                false
+        ));
+
+        list.add(m(
+                "Mentocervical",
+                TWO_LINES,
+                p("G'","Pg'","Me'","C"),
+                80,95,
+                "80°-95°",
+                "Marque el plano facial G'-Pg' y la línea mentocervical Me'-C.",
+                "Ángulo mentocervical disminuido",
+                "Relación equilibrada entre mentón y región cervical",
+                "Ángulo mentocervical aumentado",
+                true
+        ));
+
+        return list;
+    }
+
+    public static List<MeasurementDefinition> tweed() {
+        List<MeasurementDefinition> list = new ArrayList<>();
+
+        list.add(m(
+                "FMA",
+                TWO_LINES,
+                p("Po","Or","Go","Me"),
+                21,29,
+                "25° ± 4°",
+                "Plano de Frankfort Po-Or con plano mandibular Go-Me.",
+                "FMA disminuido",
+                "FMA dentro del rango ideal",
+                "FMA aumentado",
+                true
+        ));
+
+        list.add(m(
+                "FMIA",
+                TWO_LINES,
+                p("Po","Or","II borde","II ápice"),
+                65,65,
+                "Objetivo 65°",
+                "Plano de Frankfort Po-Or con eje axial del incisivo inferior.",
+                "FMIA por debajo de 65°",
+                "FMIA de 65°",
+                "FMIA por encima de 65°",
+                true
+        ));
+
+        list.add(m(
+                "IMPA",
+                TWO_LINES,
+                p("Go","Me","II borde","II ápice"),
+                90,90,
+                "Objetivo 90°",
+                "Plano mandibular Go-Me con eje axial del incisivo inferior.",
+                "Incisivo inferior relativamente retroinclinado",
+                "IMPA de 90°",
+                "Incisivo inferior relativamente proinclinado",
+                true
+        ));
+
+        return list;
+    }
+
+    public static List<MeasurementDefinition> airwayAngles() {
+        List<MeasurementDefinition> list = new ArrayList<>();
+
+        list.add(m(
+                "Ba-S-NA",
+                THREE_POINTS,
+                p("Ba","S","N"),
+                126,126,
+                "126°",
+                "Marque Ba, S y N. S es el vértice.",
+                "Mal desarrollo respecto a la referencia de la tabla",
+                "Valor de referencia",
+                "Buen desarrollo respecto a la referencia de la tabla",
+                false
+        ));
+
+        list.add(m(
+                "Ba-S-ENP",
+                THREE_POINTS,
+                p("Ba","S","ENP"),
+                63,63,
+                "63°",
+                "Marque Ba, S y ENP. S es el vértice.",
+                "Vía aérea estructuralmente inadecuada respecto a la referencia",
+                "Valor de referencia",
+                "Vía aérea estructuralmente adecuada respecto a la referencia",
+                false
+        ));
+
+        return list;
+    }
+
     private static MeasurementDefinition m(String name, MeasurementDefinition.Type type, String[] labels,
         double min, double max, String norm, String instruction,
         String low, String normal, String high, boolean supplement) {

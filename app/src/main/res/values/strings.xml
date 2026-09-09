@@ -22,10 +22,8 @@
     <string name="where_is">DÓNDE ESTÁ</string>
     <string name="next">SIGUIENTE</string>
     <string name="instruction_placeholder">Instrucción</string>
-    <string name="undo_previous">DESHACER
-PUNTO ANTERIOR</string>
-    <string name="delete_all_points">BORRAR TODOS
-LOS PUNTOS</string>
+    <string name="undo_previous">DESHACER\\nPUNTO ANTERIOR</string>
+    <string name="delete_all_points">BORRAR TODOS\\nLOS PUNTOS</string>
     <string name="center_image">CENTRAR</string>
     <string name="data_save">DATOS / GUARDAR</string>
     <string name="lock_trace">BLOQUEAR</string>

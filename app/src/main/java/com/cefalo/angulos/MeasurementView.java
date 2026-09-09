@@ -31,11 +31,13 @@ public class MeasurementView extends View {
     private Bitmap bitmap;
     private final List<String> landmarkLabels = new ArrayList<>();
     private final List<PointF> points = new ArrayList<>();
+    private final List<Boolean> pointLocks = new ArrayList<>();
 
     private final Paint imagePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Paint pointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint selectedPointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint selectedRingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint lockedRingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint haloPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint magnifierBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -52,6 +54,7 @@ public class MeasurementView extends View {
     private int selectedIndex = 0;
     private int draggingPoint = -1;
     private float downX, downY;
+    private float lastPanX, lastPanY;
     private boolean moved = false;
     private boolean locked = false;
 
@@ -77,6 +80,10 @@ public class MeasurementView extends View {
         selectedRingPaint.setColor(Color.rgb(142, 103, 214));
         selectedRingPaint.setStyle(Paint.Style.STROKE);
         selectedRingPaint.setStrokeWidth(dp(3));
+
+        lockedRingPaint.setColor(Color.rgb(185, 243, 230));
+        lockedRingPaint.setStyle(Paint.Style.STROKE);
+        lockedRingPaint.setStrokeWidth(dp(3));
 
         haloPaint.setColor(Color.WHITE);
         haloPaint.setStyle(Paint.Style.FILL);
@@ -156,8 +163,11 @@ public class MeasurementView extends View {
         landmarkLabels.addAll(labels);
 
         points.clear();
+        pointLocks.clear();
+
         for (int i = 0; i < landmarkLabels.size(); i++) {
             points.add(null);
+            pointLocks.add(false);
         }
 
         selectedIndex = landmarkLabels.isEmpty() ? -1 : 0;
@@ -183,6 +193,79 @@ public class MeasurementView extends View {
 
         notifyProgress();
         invalidate();
+    }
+
+    public void setPointLocks(List<Boolean> savedLocks) {
+        for (int i = 0; i < pointLocks.size(); i++) {
+            boolean value =
+                    savedLocks != null
+                            && i < savedLocks.size()
+                            && Boolean.TRUE.equals(savedLocks.get(i))
+                            && hasPointAt(i);
+
+            pointLocks.set(i, value);
+        }
+
+        notifyProgress();
+        invalidate();
+    }
+
+    public List<Boolean> getPointLocksSnapshot() {
+        return new ArrayList<>(pointLocks);
+    }
+
+    public boolean isPointLocked(int index) {
+        return index >= 0
+                && index < pointLocks.size()
+                && Boolean.TRUE.equals(pointLocks.get(index));
+    }
+
+    public boolean isSelectedPointLocked() {
+        return isPointLocked(selectedIndex);
+    }
+
+    public boolean toggleSelectedPointLock() {
+        if (selectedIndex < 0
+                || selectedIndex >= points.size()
+                || points.get(selectedIndex) == null) {
+            return false;
+        }
+
+        pointLocks.set(
+                selectedIndex,
+                !Boolean.TRUE.equals(pointLocks.get(selectedIndex))
+        );
+
+        notifyProgress();
+        invalidate();
+        return true;
+    }
+
+    public void lockAllPlacedPoints() {
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i) != null) {
+                pointLocks.set(i, true);
+            }
+        }
+
+        notifyProgress();
+        invalidate();
+    }
+
+    public boolean areAllPlacedPointsLocked() {
+        boolean hasPlaced = false;
+
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i) == null) continue;
+
+            hasPlaced = true;
+
+            if (!Boolean.TRUE.equals(pointLocks.get(i))) {
+                return false;
+            }
+        }
+
+        return hasPlaced;
     }
 
     public List<PointF> getPointsSnapshot() {
@@ -293,7 +376,7 @@ public class MeasurementView extends View {
         int found = -1;
         for (int step = 0; step < points.size(); step++) {
             int i = (start - step + points.size()) % points.size();
-            if (points.get(i) != null) {
+            if (points.get(i) != null && !isPointLocked(i)) {
                 found = i;
                 break;
             }
@@ -313,6 +396,7 @@ public class MeasurementView extends View {
 
         for (int i = 0; i < points.size(); i++) {
             points.set(i, null);
+            pointLocks.set(i, false);
         }
 
         selectedIndex = landmarkLabels.isEmpty() ? -1 : 0;
@@ -392,6 +476,10 @@ public class MeasurementView extends View {
                     dp(i == selectedIndex ? 9 : 8),
                     i == selectedIndex ? selectedPointPaint : pointPaint
             );
+
+            if (isPointLocked(i)) {
+                canvas.drawCircle(s.x, s.y, dp(16), lockedRingPaint);
+            }
 
             if (i == selectedIndex) {
                 canvas.drawCircle(s.x, s.y, dp(15), selectedRingPaint);
@@ -526,6 +614,8 @@ public class MeasurementView extends View {
             case MotionEvent.ACTION_DOWN:
                 downX = event.getX();
                 downY = event.getY();
+                lastPanX = downX;
+                lastPanY = downY;
                 moved = false;
 
                 PointF initial = screenToImage(downX, downY);
@@ -534,28 +624,63 @@ public class MeasurementView extends View {
                     magnifierActive = true;
                 }
 
-                draggingPoint = locked
-                        ? -1
-                        : findNearbyPoint(downX, downY, dp(34));
+                // Solo puede arrastrarse el punto que el estudiante seleccionó.
+                // Así, colocar un punto muy cerca de otro no mueve ni borra el anterior.
+                draggingPoint =
+                        !locked
+                        && selectedIndex >= 0
+                        && selectedIndex < points.size()
+                        && points.get(selectedIndex) != null
+                        && !isPointLocked(selectedIndex)
+                        && isTouchNearPoint(
+                                selectedIndex,
+                                downX,
+                                downY,
+                                dp(30)
+                        )
+                                ? selectedIndex
+                                : -1;
 
                 invalidate();
                 return true;
 
             case MotionEvent.ACTION_MOVE:
-                if (Math.hypot(event.getX() - downX, event.getY() - downY) > dp(6)) {
+                float x = event.getX();
+                float y = event.getY();
+
+                if (Math.hypot(x - downX, y - downY) > dp(6)) {
                     moved = true;
                 }
 
-                PointF movePoint = screenToImage(event.getX(), event.getY());
-                if (insideImage(movePoint)) {
+                PointF movePoint = screenToImage(x, y);
+
+                if (!locked
+                        && draggingPoint >= 0
+                        && !isPointLocked(draggingPoint)
+                        && insideImage(movePoint)) {
+
+                    points.set(draggingPoint, movePoint);
+                    selectedIndex = draggingPoint;
+                    magnifierImagePoint = movePoint;
+                    magnifierActive = true;
+
+                } else if (moved && !scaleDetector.isInProgress()) {
+                    // Un dedo arrastra la radiografía libremente en X/Y.
+                    // Un toque corto sigue colocando el punto seleccionado.
+                    float dx = x - lastPanX;
+                    float dy = y - lastPanY;
+
+                    matrix.postTranslate(dx, dy);
+                    updateInverse();
+
+                    magnifierActive = false;
+                } else if (insideImage(movePoint)) {
                     magnifierImagePoint = movePoint;
                     magnifierActive = true;
                 }
 
-                if (!locked && draggingPoint >= 0 && insideImage(movePoint)) {
-                    points.set(draggingPoint, movePoint);
-                    selectedIndex = draggingPoint;
-                }
+                lastPanX = x;
+                lastPanY = y;
 
                 invalidate();
                 return true;
@@ -567,9 +692,12 @@ public class MeasurementView extends View {
                     if (draggingPoint >= 0) {
                         draggingPoint = -1;
                         notifyProgress();
-                    } else if (!moved && insideImage(upPoint)
+
+                    } else if (!moved
+                            && insideImage(upPoint)
                             && selectedIndex >= 0
-                            && selectedIndex < points.size()) {
+                            && selectedIndex < points.size()
+                            && !isPointLocked(selectedIndex)) {
 
                         points.set(selectedIndex, upPoint);
                         performClick();
@@ -712,18 +840,23 @@ public class MeasurementView extends View {
         lastTwoFingerY = cy;
     }
 
-    private int findNearbyPoint(float sx, float sy, float radiusPx) {
-        for (int i = 0; i < points.size(); i++) {
-            PointF point = points.get(i);
-            if (point == null) continue;
+    private boolean isTouchNearPoint(
+            int index,
+            float sx,
+            float sy,
+            float radiusPx
+    ) {
+        if (index < 0 || index >= points.size()) return false;
 
-            PointF p = imageToScreen(point);
-            if (Math.hypot(sx - p.x, sy - p.y) <= radiusPx) {
-                return i;
-            }
-        }
+        PointF point = points.get(index);
+        if (point == null) return false;
 
-        return -1;
+        PointF p = imageToScreen(point);
+
+        return Math.hypot(
+                sx - p.x,
+                sy - p.y
+        ) <= radiusPx;
     }
 
     private int firstMissingIndex() {

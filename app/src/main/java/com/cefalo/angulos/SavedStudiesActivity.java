@@ -33,7 +33,7 @@ public class SavedStudiesActivity extends Activity {
         header.setPadding(dp(10), dp(10), dp(10), dp(10));
         header.setBackgroundResource(R.drawable.header_gradient);
 
-        TextView back = button("←", R.drawable.button_soft_purple, 0xFFFFFFFF);
+        TextView back = button("←", R.drawable.button_soft_purple_centered, 0xFF5B3FA4);
         back.setTextSize(24f);
         back.setOnClickListener(v -> finish());
         header.addView(back, new LinearLayout.LayoutParams(dp(48), dp(48)));
@@ -174,7 +174,7 @@ public class SavedStudiesActivity extends Activity {
 
             TextView open = button(
                     "ABRIR",
-                    R.drawable.card_steiner,
+                    R.drawable.button_primary_centered,
                     0xFFFFFFFF
             );
 
@@ -198,7 +198,7 @@ public class SavedStudiesActivity extends Activity {
 
             TextView delete = button(
                     "ELIMINAR",
-                    R.drawable.button_soft_mint,
+                    R.drawable.button_soft_mint_centered,
                     0xFF15383D
             );
 
@@ -235,11 +235,17 @@ public class SavedStudiesActivity extends Activity {
 
             card.addView(row);
 
+            int availableWidth =
+                    getResources().getDisplayMetrics().widthPixels - dp(28);
+            int cardWidth =
+                    Math.min(availableWidth, dp(560));
+
             LinearLayout.LayoutParams cardLp =
                     new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            cardWidth,
                             ViewGroup.LayoutParams.WRAP_CONTENT
                     );
+            cardLp.gravity = Gravity.CENTER_HORIZONTAL;
             cardLp.setMargins(0, 0, 0, dp(12));
 
             listContainer.addView(card, cardLp);
@@ -258,9 +264,11 @@ public class SavedStudiesActivity extends Activity {
         view.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         view.setTextSize(15f);
         view.setBackgroundResource(bg);
+        view.setIncludeFontPadding(false);
+        view.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
         view.setClickable(true);
         view.setFocusable(true);
-        view.setPadding(dp(8), 0, dp(8), 0);
+        view.setPadding(0, 0, 0, 0);
         return view;
     }
 

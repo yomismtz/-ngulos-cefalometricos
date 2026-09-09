@@ -245,7 +245,7 @@ public class AnalysisActivity extends Activity {
         TextView button = new TextView(this);
         button.setText(text);
         button.setGravity(Gravity.CENTER);
-        button.setTextStyle(Typeface.BOLD);
+        button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         button.setTextSize(15f);
         button.setTextColor(textColor);
         button.setBackgroundResource(backgroundRes);

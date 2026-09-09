@@ -26,7 +26,7 @@
     <string name="delete_all_points">BORRAR TODOS\\nLOS PUNTOS</string>
     <string name="center_image">CENTRAR</string>
     <string name="data_save">DATOS / GUARDAR</string>
-    <string name="lock_trace">BLOQUEAR</string>
+    <string name="lock_trace">BLOQ. PUNTO</string>
     <string name="calculate_analysis">CALCULAR ANÁLISIS</string>
 
     <string name="cd_yomceph_icon">Icono de YomCeph</string>

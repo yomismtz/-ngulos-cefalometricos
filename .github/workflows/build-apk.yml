@@ -29,8 +29,8 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build installable debug APK
-        run: gradle --no-daemon :app:assembleDebug
+      - name: Lint and build installable debug APK
+        run: gradle --no-daemon :app:lintDebug :app:assembleDebug
 
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk YomCeph-v1.11.apk

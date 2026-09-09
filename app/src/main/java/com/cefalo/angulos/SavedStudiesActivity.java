@@ -1,6 +1,5 @@
 package com.cefalo.angulos;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -11,11 +10,13 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class SavedStudiesActivity extends Activity {
+public class SavedStudiesActivity extends AppCompatActivity {
 
     private LinearLayout listContainer;
 
@@ -34,14 +35,14 @@ public class SavedStudiesActivity extends Activity {
         header.setPadding(dp(10), dp(10), dp(10), dp(10));
         header.setBackgroundResource(R.drawable.header_gradient);
 
-        TextView back = button("←", R.drawable.button_soft_purple_centered, 0xFF5B3FA4);
+        TextView back = button("←", R.drawable.button_soft_purple_centered, getColor(R.color.brand_purple));
         back.setTextSize(24f);
         back.setOnClickListener(v -> finish());
         header.addView(back, new LinearLayout.LayoutParams(dp(48), dp(48)));
 
         TextView title = new TextView(this);
         title.setText("Mis análisis");
-        title.setTextColor(0xFFFFFFFF);
+        title.setTextColor(getColor(R.color.white));
         title.setTextSize(22f);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setGravity(Gravity.CENTER);
@@ -82,7 +83,7 @@ public class SavedStudiesActivity extends Activity {
                     "Todavía no hay análisis guardados.\n" +
                     "Abra una radiografía y el estudio se guardará automáticamente."
             );
-            empty.setTextColor(0xFF645B73);
+            empty.setTextColor(getColor(R.color.text_secondary));
             empty.setTextSize(16f);
             empty.setGravity(Gravity.CENTER);
             empty.setPadding(dp(18), dp(50), dp(18), dp(18));
@@ -109,7 +110,7 @@ public class SavedStudiesActivity extends Activity {
                             ? "Estudio"
                             : study.studyName
             );
-            name.setTextColor(0xFF5B3FA4);
+            name.setTextColor(getColor(R.color.brand_purple));
             name.setTextSize(18f);
             name.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
             card.addView(name);
@@ -129,7 +130,7 @@ public class SavedStudiesActivity extends Activity {
             }
 
             patient.setText(patientText);
-            patient.setTextColor(0xFF2C7E86);
+            patient.setTextColor(getColor(R.color.brand_teal));
             patient.setTextSize(14f);
             patient.setPadding(0, dp(3), 0, 0);
             card.addView(patient);
@@ -150,7 +151,7 @@ public class SavedStudiesActivity extends Activity {
                 typeText = "Análisis de Steiner";
             }
             type.setText(typeText);
-            type.setTextColor(0xFF4A4652);
+            type.setTextColor(getColor(R.color.text_primary));
             type.setTextSize(14f);
             type.setPadding(0, dp(3), 0, 0);
             card.addView(type);
@@ -165,7 +166,7 @@ public class SavedStudiesActivity extends Activity {
                     " puntos" +
                     (study.locked ? "   ·   🔒" : "")
             );
-            details.setTextColor(0xFF6A6471);
+            details.setTextColor(getColor(R.color.text_secondary));
             details.setTextSize(13f);
             details.setPadding(0, dp(5), 0, dp(12));
             card.addView(details);
@@ -176,7 +177,7 @@ public class SavedStudiesActivity extends Activity {
             TextView open = button(
                     "ABRIR",
                     R.drawable.button_primary_centered,
-                    0xFFFFFFFF
+                    getColor(R.color.white)
             );
 
             open.setOnClickListener(v -> {
@@ -200,7 +201,7 @@ public class SavedStudiesActivity extends Activity {
             TextView delete = button(
                     "ELIMINAR",
                     R.drawable.button_soft_mint_centered,
-                    0xFF15383D
+                    getColor(R.color.mint_text)
             );
 
             LinearLayout.LayoutParams deleteLp =

@@ -2844,52 +2844,48 @@ public class AnalysisActivity extends Activity {
             ExifInterface exif =
                     new ExifInterface(in);
 
-            int orientation =
-                    exif.getAttributeInt(
-                            ExifInterface.TAG_ORIENTATION,
-                            ExifInterface.ORIENTATION_NORMAL
-                    );
+            int rotationDegrees =
+                    exif.getRotationDegrees();
 
-            float degrees = 0f;
+            boolean flipped =
+                    exif.isFlipped();
 
-            if (orientation
-                    == ExifInterface.ORIENTATION_ROTATE_90) {
-                degrees = 90f;
-
-            } else if (
-                    orientation
-                            == ExifInterface.ORIENTATION_ROTATE_180
-            ) {
-                degrees = 180f;
-
-            } else if (
-                    orientation
-                            == ExifInterface.ORIENTATION_ROTATE_270
-            ) {
-                degrees = 270f;
-            }
-
-            if (degrees == 0f) {
+            if (rotationDegrees == 0 && !flipped) {
                 return bitmap;
             }
 
             Matrix matrix =
                     new Matrix();
 
-            matrix.postRotate(degrees);
+            // ExifInterface define la orientación como espejo horizontal
+            // primero y rotación después.
+            if (flipped) {
+                matrix.postScale(-1f, 1f);
+            }
 
-            return Bitmap.createBitmap(
-                    bitmap,
-                    0,
-                    0,
-                    bitmap.getWidth(),
-                    bitmap.getHeight(),
-                    matrix,
-                    true
-            );
+            if (rotationDegrees != 0) {
+                matrix.postRotate(rotationDegrees);
+            }
+
+            Bitmap corrected =
+                    Bitmap.createBitmap(
+                            bitmap,
+                            0,
+                            0,
+                            bitmap.getWidth(),
+                            bitmap.getHeight(),
+                            matrix,
+                            true
+                    );
+
+            if (corrected != bitmap
+                    && !bitmap.isRecycled()) {
+                bitmap.recycle();
+            }
+
+            return corrected;
 
         } catch (Exception e) {
             return bitmap;
         }
-    }
-}
+    }}

@@ -2185,7 +2185,7 @@ public class AnalysisActivity extends Activity {
         strokePaint.setStrokeWidth(3f);
 
         canvas.drawText(
-                "YomCephalometrics",
+                "YomCeph",
                 margin,
                 72,
                 titlePaint

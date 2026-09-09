@@ -25,10 +25,10 @@ public final class LinearMeasurementCatalog {
                 p("Occipital", "C1 posterior"),
                 4.0,
                 9.0,
-                "4-9 mm",
-                "Por debajo del intervalo de referencia.",
-                "Dentro del intervalo de referencia C0-C1.",
-                "Por encima del intervalo de referencia."
+                "4–9 mm",
+                "Distancia suboccipital menor de 4 mm según la referencia de Rocabado; correlacionar clínicamente.",
+                "Dentro del intervalo funcional de referencia C0-C1.",
+                "Distancia suboccipital mayor de 9 mm según la referencia de Rocabado; correlacionar clínicamente."
         ));
 
         list.add(m(
@@ -38,10 +38,10 @@ public final class LinearMeasurementCatalog {
                 p("C3", "RGn"),
                 60.6,
                 73.8,
-                "67.20 mm ± 6.6 mm",
-                "Por debajo del promedio de referencia del triángulo hioideo.",
-                "Dentro de ±1 DE del promedio de referencia.",
-                "Por encima del promedio de referencia del triángulo hioideo."
+                "67.2 ± 6.6 mm · Bibby/Preston",
+                "Por debajo de ±1 DE de la muestra de referencia histórica del triángulo hioideo; no constituye diagnóstico.",
+                "Dentro de ±1 DE de la muestra de referencia histórica del triángulo hioideo.",
+                "Por encima de ±1 DE de la muestra de referencia histórica del triángulo hioideo; no constituye diagnóstico."
         ));
 
         list.add(m(
@@ -51,10 +51,10 @@ public final class LinearMeasurementCatalog {
                 p("C3", "H"),
                 28.86,
                 34.66,
-                "31.76 mm ± 2.9 mm",
-                "Por debajo del promedio de referencia del triángulo hioideo.",
-                "Dentro de ±1 DE del promedio de referencia.",
-                "Por encima del promedio de referencia del triángulo hioideo."
+                "31.76 ± 2.9 mm · Bibby/Preston",
+                "Por debajo de ±1 DE de la muestra de referencia histórica; interpretar con edad, postura y patrón esqueletal.",
+                "Dentro de ±1 DE de la muestra de referencia histórica.",
+                "Por encima de ±1 DE de la muestra de referencia histórica; interpretar con edad, postura y patrón esqueletal."
         ));
 
         list.add(m(
@@ -62,12 +62,12 @@ public final class LinearMeasurementCatalog {
                 DISTANCE,
                 RANGE,
                 p("H", "RGn"),
-                31.03,
-                42.63,
-                "36.83 mm ± 5.8 mm",
-                "Por debajo del promedio de referencia del triángulo hioideo.",
-                "Dentro de ±1 DE del promedio de referencia.",
-                "Por encima del promedio de referencia del triángulo hioideo."
+                31.00,
+                42.66,
+                "36.83 ± 5.83 mm · Bibby/Preston",
+                "Por debajo de ±1 DE de la muestra de referencia histórica; no constituye diagnóstico.",
+                "Dentro de ±1 DE de la muestra de referencia histórica.",
+                "Por encima de ±1 DE de la muestra de referencia histórica; no constituye diagnóstico."
         ));
 
         list.add(m(
@@ -77,7 +77,7 @@ public final class LinearMeasurementCatalog {
                 p("C3", "RGn", "H"),
                 Double.NaN,
                 Double.NaN,
-                "Positivo: H debajo de RGn-C3",
+                "Positivo: H debajo de C3-RGn",
                 "",
                 "",
                 ""
@@ -90,87 +90,86 @@ public final class LinearMeasurementCatalog {
                 p("C2 post-sup.", "C7 post-inf.", "Profundidad cervical"),
                 8.0,
                 12.0,
-                "10 ± 2 mm",
+                "8–12 mm · referencia Penning/Rocabado",
                 "",
                 "",
                 ""
         ));
 
         list.add(m(
-                "Dimensión AP de la nasofaringe (AA-PNS/ENP)",
+                "Dimensión AP ósea de nasofaringe (AA-ENP)",
                 DISTANCE,
                 RANGE,
                 p("AA", "ENP"),
-                29.2,
-                36.6,
-                "32.9 mm ± 3.7 mm",
-                "Por debajo del intervalo de referencia.",
-                "Dentro del intervalo de referencia.",
-                "Por encima del intervalo de referencia."
+                29.25,
+                36.57,
+                "32.91 ± 3.66 mm · Bibby/Preston",
+                "Por debajo de ±1 DE de la muestra histórica. Esta distancia ósea no diagnostica obstrucción de vía aérea.",
+                "Dentro de ±1 DE de la muestra histórica. No descarta trastorno respiratorio.",
+                "Por encima de ±1 DE de la muestra histórica. Esta distancia ósea no diagnostica normalidad respiratoria."
         ));
 
         return list;
     }
-
 
     public static List<LinearMeasurementDefinition> levandoski() {
         List<LinearMeasurementDefinition> list = new ArrayList<>();
 
         list.add(m("Cóndilo a incisivo central maxilar derecho", DISTANCE, COMPARATIVE,
                 p("Cd der.", "IC max der."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado izquierdo", ""));
+                "Comparación D/I", "", "Comparar con lado izquierdo; la panorámica presenta magnificación y distorsión.", ""));
         list.add(m("Cóndilo a incisivo central maxilar izquierdo", DISTANCE, COMPARATIVE,
                 p("Cd izq.", "IC max izq."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado derecho", ""));
+                "Comparación D/I", "", "Comparar con lado derecho; la panorámica presenta magnificación y distorsión.", ""));
 
         list.add(m("Cóndilo a incisivo central mandibular derecho", DISTANCE, COMPARATIVE,
                 p("Cd der.", "IC mand der."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado izquierdo", ""));
+                "Comparación D/I", "", "Comparar con lado izquierdo; usar como tamizaje de asimetría.", ""));
         list.add(m("Cóndilo a incisivo central mandibular izquierdo", DISTANCE, COMPARATIVE,
                 p("Cd izq.", "IC mand izq."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado derecho", ""));
+                "Comparación D/I", "", "Comparar con lado derecho; usar como tamizaje de asimetría.", ""));
 
         list.add(m("Cóndilo-Gonion derecho", DISTANCE, COMPARATIVE,
                 p("Cd der.", "Go der."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Altura condilar/ramal comparativa", ""));
+                "Comparación D/I", "", "Comparar con lado izquierdo; no diagnostica asimetría por sí sola.", ""));
         list.add(m("Cóndilo-Gonion izquierdo", DISTANCE, COMPARATIVE,
                 p("Cd izq.", "Go izq."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Altura condilar/ramal comparativa", ""));
+                "Comparación D/I", "", "Comparar con lado derecho; no diagnostica asimetría por sí sola.", ""));
 
         list.add(m("Gonion-Coronoides derecho", DISTANCE, COMPARATIVE,
                 p("Go der.", "Kr der."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Altura coronoidea comparativa", ""));
+                "Comparación D/I", "", "Comparar con lado izquierdo; no diagnostica hiperplasia coronoidea por sí sola.", ""));
         list.add(m("Gonion-Coronoides izquierdo", DISTANCE, COMPARATIVE,
                 p("Go izq.", "Kr izq."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Altura coronoidea comparativa", ""));
+                "Comparación D/I", "", "Comparar con lado derecho; no diagnostica hiperplasia coronoidea por sí sola.", ""));
 
         list.add(m("Línea media a cóndilo derecho", PERPENDICULAR_ABS, COMPARATIVE,
                 p("LM sup.", "LM inf.", "Cd der."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado izquierdo", ""));
+                "Comparación D/I", "", "Comparar con lado izquierdo; interpretar con cautela por distorsión panorámica.", ""));
         list.add(m("Línea media a cóndilo izquierdo", PERPENDICULAR_ABS, COMPARATIVE,
                 p("LM sup.", "LM inf.", "Cd izq."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado derecho", ""));
+                "Comparación D/I", "", "Comparar con lado derecho; interpretar con cautela por distorsión panorámica.", ""));
 
         list.add(m("Línea media a cuerpo mandibular derecho", PERPENDICULAR_ABS, COMPARATIVE,
                 p("LM sup.", "LM inf.", "Cuerpo Md der."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado izquierdo", ""));
+                "Comparación D/I", "", "Comparar con lado izquierdo; usar como orientación, no como diagnóstico definitivo.", ""));
         list.add(m("Línea media a cuerpo mandibular izquierdo", PERPENDICULAR_ABS, COMPARATIVE,
                 p("LM sup.", "LM inf.", "Cuerpo Md izq."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado derecho", ""));
+                "Comparación D/I", "", "Comparar con lado derecho; usar como orientación, no como diagnóstico definitivo.", ""));
 
         list.add(m("Distal 2º molar derecho a línea media", PERPENDICULAR_ABS, COMPARATIVE,
                 p("LM sup.", "LM inf.", "M2 distal der."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado izquierdo", ""));
+                "Comparación D/I", "", "Comparar con lado izquierdo.", ""));
         list.add(m("Distal 2º molar izquierdo a línea media", PERPENDICULAR_ABS, COMPARATIVE,
                 p("LM sup.", "LM inf.", "M2 distal izq."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado derecho", ""));
+                "Comparación D/I", "", "Comparar con lado derecho.", ""));
 
         list.add(m("Ancho de rama mandibular derecha", DISTANCE, COMPARATIVE,
                 p("Rama ant der.", "Rama post der."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado izquierdo", ""));
+                "Comparación D/I", "", "Comparar con lado izquierdo; la medición panorámica puede distorsionarse.", ""));
         list.add(m("Ancho de rama mandibular izquierda", DISTANCE, COMPARATIVE,
                 p("Rama ant izq.", "Rama post izq."), Double.NaN, Double.NaN,
-                "Comparar D/I", "", "Comparar con lado derecho", ""));
+                "Comparación D/I", "", "Comparar con lado derecho; la medición panorámica puede distorsionarse.", ""));
 
         return list;
     }
@@ -180,19 +179,28 @@ public final class LinearMeasurementCatalog {
 
         list.add(m("AD1 · ENP-AD1", DISTANCE, RANGE,
                 p("ENP", "AD1"), Double.NaN, Double.NaN,
-                "Según edad y sexo", "", "Referencia dependiente de edad/sexo", ""));
+                "Referencia docente aportada para 6 y 16 años", "",
+                "Se muestra como referencia tabular; no usar como diagnóstico de obstrucción/adenoides.", ""));
+
         list.add(m("AD2 · ENP-AD2", DISTANCE, RANGE,
                 p("ENP", "AD2"), Double.NaN, Double.NaN,
-                "Según edad y sexo", "", "Referencia dependiente de edad/sexo", ""));
+                "Referencia docente aportada para 6 y 16 años", "",
+                "Se muestra como referencia tabular; no usar como diagnóstico de obstrucción/adenoides.", ""));
+
         list.add(m("AD3 · Uptp-Adenoides", DISTANCE, RANGE,
                 p("Uptp", "Adenoides"), Double.NaN, Double.NaN,
-                "6 años: 7.02±3.7 · 16 años: 14.56±4.70", "", "Referencia dependiente de edad", ""));
+                "Tabla aportada: 6 a 7.02±3.70 · 16 a 14.56±4.70 mm", "",
+                "Se muestra como referencia tabular; no usar como diagnóstico respiratorio.", ""));
+
         list.add(m("Faringe superior", DISTANCE, RANGE,
                 p("Faringe sup ant.", "Faringe sup post."), Double.NaN, Double.NaN,
-                "H: 17.4±3.4 · M: 17.4±4.3", "", "Referencia dependiente de sexo", ""));
+                "McNamara: H 17.4±4.3 · M 17.4±3.4 mm", "",
+                "Comparar con referencia de McNamara; una cefalometría 2D no diagnostica obstrucción.", ""));
+
         list.add(m("Faringe posterior o inferior", DISTANCE, RANGE,
                 p("Faringe inf ant.", "Faringe inf post."), Double.NaN, Double.NaN,
-                "H: 13.5±3.3 · M: 11.3±4.3", "", "Referencia dependiente de sexo", ""));
+                "McNamara: H 13.5±4.3 · M 11.3±3.3 mm", "",
+                "Comparar con referencia de McNamara; una cefalometría 2D no diagnostica apnea ni hipertrofia amigdalina.", ""));
 
         return list;
     }

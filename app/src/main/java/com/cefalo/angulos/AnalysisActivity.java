@@ -208,9 +208,6 @@ public class AnalysisActivity extends Activity {
         findViewById(R.id.btnSaveStudy)
                 .setOnClickListener(v -> showStudyDetailsDialog(false));
 
-        findViewById(R.id.btnAssisted)
-                .setOnClickListener(v -> showAssistedDetectionInfo());
-
         btnCalibrate.setOnClickListener(v -> startCalibrationFlow());
 
         btnLock.setOnClickListener(v -> toggleLock());
@@ -529,7 +526,7 @@ public class AnalysisActivity extends Activity {
             LinearLayout.LayoutParams lp =
                     new LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
-                            dp(42)
+                            dp(48)
                     );
 
             lp.setMargins(
@@ -647,21 +644,6 @@ public class AnalysisActivity extends Activity {
         guideDialog.show();
     }
 
-    private void showAssistedDetectionInfo() {
-        new AlertDialog.Builder(this)
-                .setTitle("Detección asistida")
-                .setMessage(
-                        "Esta función se mantiene como desarrollo futuro. " +
-                        "La app podrá sugerir la posición de los puntos, pero cada uno tendrá que ser confirmado o corregido manualmente antes de calcular.\n\n" +
-                        "En esta versión se usa la lupa de precisión, la mira de selección y la guía anatómica de cada punto."
-                )
-                .setPositiveButton(
-                        "Entendido",
-                        null
-                )
-                .show();
-    }
-
     private void toggleLock() {
         if (!measurementView.isLocked()
                 && !measurementView.isComplete()) {
@@ -776,7 +758,7 @@ public class AnalysisActivity extends Activity {
 
         ImageView image = new ImageView(this);
         image.setImageResource(
-                R.drawable.yom_logo_transparent
+                R.drawable.ic_yomceph_mark
         );
         image.setScaleType(
                 ImageView.ScaleType.CENTER_INSIDE
@@ -928,6 +910,15 @@ public class AnalysisActivity extends Activity {
                 });
             }
         });
+
+        if (firstTime) {
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setOnCancelListener(unused -> {
+                updateStudyInfo();
+                saveStudy(true);
+                promptCalibrationBeforePoints();
+            });
+        }
 
         dialog.show();
     }
@@ -1151,6 +1142,16 @@ public class AnalysisActivity extends Activity {
     }
 
     private void showCalibrationLengthDialog(double pixelDistance) {
+        if (pixelDistance < 10.0) {
+            measurementView.clearCalibrationOverlay();
+            Toast.makeText(
+                    this,
+                    "La referencia quedó demasiado corta. Marque dos extremos más separados.",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
         LinearLayout form = new LinearLayout(this);
         form.setOrientation(LinearLayout.VERTICAL);
         form.setPadding(dp(20), dp(6), dp(20), dp(8));
@@ -1224,7 +1225,11 @@ public class AnalysisActivity extends Activity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Paso 1 · Longitud de referencia")
                 .setView(scroll)
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(
+                        "Cancelar",
+                        (unused, which) ->
+                                measurementView.clearCalibrationOverlay()
+                )
                 .setPositiveButton("Guardar", null)
                 .create();
 
@@ -1280,6 +1285,7 @@ public class AnalysisActivity extends Activity {
 
                         updateCalibrationStatus();
                         saveStudy(true);
+                        measurementView.clearCalibrationOverlay();
 
                         Toast.makeText(
                                 this,
@@ -2578,6 +2584,10 @@ public class AnalysisActivity extends Activity {
         );
 
         intent.setType("image/*");
+        intent.addFlags(
+                Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+        );
 
         startActivityForResult(
                 intent,
@@ -2631,11 +2641,20 @@ public class AnalysisActivity extends Activity {
         Uri uri = data.getData();
 
         try {
-            getContentResolver()
-                    .takePersistableUriPermission(
-                            uri,
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+            int takeFlags =
+                    data.getFlags() &
+                    (
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     );
+
+            if (takeFlags != 0) {
+                getContentResolver()
+                        .takePersistableUriPermission(
+                                uri,
+                                takeFlags
+                        );
+            }
         } catch (Exception ignored) {
         }
 

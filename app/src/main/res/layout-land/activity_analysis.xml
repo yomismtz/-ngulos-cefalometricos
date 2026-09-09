@@ -33,7 +33,7 @@
                     android:gravity="center"
                     android:text="←"
                     android:textSize="22sp"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#5B3FA4"
                     android:background="@drawable/button_soft_purple"
                     android:clickable="true"
                     android:focusable="true" />

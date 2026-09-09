@@ -4,13 +4,15 @@ public class LinearMeasurementDefinition {
 
     public enum Type {
         DISTANCE,
-        SIGNED_PERPENDICULAR
+        SIGNED_PERPENDICULAR,
+        PERPENDICULAR_ABS
     }
 
     public enum Interpretation {
         RANGE,
         HYOID_TRIANGLE,
-        CERVICAL_DEPTH
+        CERVICAL_DEPTH,
+        COMPARATIVE
     }
 
     public final String name;
@@ -57,6 +59,10 @@ public class LinearMeasurementDefinition {
                 return "Triángulo hioideo negativo: H se encuentra por encima del plano RGn-C3.";
             }
             return "H se encuentra sobre el plano RGn-C3.";
+        }
+
+        if (interpretation == Interpretation.COMPARATIVE) {
+            return normalDiagnosis;
         }
 
         if (interpretation == Interpretation.CERVICAL_DEPTH) {

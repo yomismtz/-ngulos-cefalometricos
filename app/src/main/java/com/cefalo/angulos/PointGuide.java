@@ -35,6 +35,14 @@ public final class PointGuide {
         GUIDE.put("C4-2", "C4-2: segundo punto de referencia de C4 según el protocolo con el que trace McGregor–C4.");
         GUIDE.put("Odontoides ápice", "Ápice de la odontoides: punto más superior del proceso odontoideo de C2.");
         GUIDE.put("C2 anteroinf.", "C2 anteroinferior: ángulo/punto anteroinferior del cuerpo del axis (C2).");
+        GUIDE.put("C1 posterior", "C1 posterior: marque el punto del arco posterior del atlas utilizado para la distancia C0-C1.");
+        GUIDE.put("C3", "C3: ángulo más anteroinferior del cuerpo de la tercera vértebra cervical.");
+        GUIDE.put("RGn", "RGn o retrognation: punto más posteroinferior de la sínfisis mandibular.");
+        GUIDE.put("H", "H o hyoidale: punto más superior y anterior del cuerpo del hioides.");
+        GUIDE.put("AA", "AA: punto más anterior del cuerpo del atlas.");
+        GUIDE.put("C2 post-sup.", "C2 post-sup.: margen posterosuperior del ápice del proceso odontoides de la segunda vértebra cervical, usado para la tangente cervical.");
+        GUIDE.put("C7 post-inf.", "C7 post-inf.: punto posteroinferior del cuerpo de la séptima vértebra cervical, usado para la tangente cervical.");
+        GUIDE.put("Profundidad cervical", "Profundidad cervical: marque el punto de máxima profundidad de la curvatura cervical respecto a la tangente C2-C7.");
     }
 
     private PointGuide() {}

@@ -1020,6 +1020,22 @@ public class AnalysisActivity extends Activity {
         btnCalibrate.setText("📏 RECALIBRAR");
     }
 
+    private String calibrationInstructions() {
+        String base =
+                "Use una regla, calibrador o marcador de longitud conocida visible en la imagen. " +
+                "Puede estar horizontal, vertical o diagonal. Marque sus dos extremos y después indique cuánto mide.\n\n" +
+                "La calibración se guarda con este estudio.";
+
+        if ("LEVANDOSKI".equals(mode)) {
+            return base +
+                    "\n\nImportante: en radiografías panorámicas la magnificación puede variar entre zonas. " +
+                    "Use las medidas de Levandoski principalmente para comparación derecha/izquierda y evite interpretar una sola calibración global como escala geométrica exacta de toda la panorámica.";
+        }
+
+        return base +
+                " Para reducir error de magnificación, la referencia debe pertenecer a la misma imagen y, de ser posible, al mismo plano del objeto medido.";
+    }
+
     private void startCalibrationFlow() {
         if (!measurementView.hasBitmap()) {
             Toast.makeText(
@@ -1033,9 +1049,7 @@ public class AnalysisActivity extends Activity {
         new AlertDialog.Builder(this)
                 .setTitle("Calibrar medidas lineales")
                 .setMessage(
-                        "Use una regla, calibrador o marcador de longitud conocida que sea visible en la radiografía. " +
-                        "Puede estar horizontal, vertical o diagonal. Marque sus dos extremos y luego indique cuánto mide.\n\n" +
-                        "La calibración se guarda con este estudio. Para reducir error de magnificación, la referencia debe corresponder a la misma radiografía y, de ser posible, al mismo plano del objeto medido."
+                        calibrationInstructions()
                 )
                 .setNegativeButton("Cancelar", null)
                 .setPositiveButton(

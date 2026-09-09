@@ -2655,10 +2655,7 @@ public class AnalysisActivity extends Activity {
         try {
             int takeFlags =
                     data.getFlags() &
-                    (
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    );
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION;
 
             if (takeFlags != 0) {
                 getContentResolver()

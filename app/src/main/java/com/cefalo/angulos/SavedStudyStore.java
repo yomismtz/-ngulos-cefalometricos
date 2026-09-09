@@ -22,6 +22,9 @@ public final class SavedStudyStore {
         public String id;
         public String mode;
         public String imageUri;
+        public String studyName;
+        public String patientName;
+        public String patientAge;
         public long updatedAt;
         public boolean locked;
         public List<String> labels = new ArrayList<>();
@@ -49,6 +52,9 @@ public final class SavedStudyStore {
             root.put("id", study.id);
             root.put("mode", study.mode);
             root.put("imageUri", study.imageUri);
+            root.put("studyName", study.studyName == null ? "" : study.studyName);
+            root.put("patientName", study.patientName == null ? "" : study.patientName);
+            root.put("patientAge", study.patientAge == null ? "" : study.patientAge);
             root.put("updatedAt", study.updatedAt);
             root.put("locked", study.locked);
 
@@ -95,6 +101,9 @@ public final class SavedStudyStore {
             study.id = root.optString("id", id);
             study.mode = root.optString("mode", "STEINER");
             study.imageUri = root.optString("imageUri", null);
+            study.studyName = root.optString("studyName", "");
+            study.patientName = root.optString("patientName", "");
+            study.patientAge = root.optString("patientAge", "");
             study.updatedAt = root.optLong("updatedAt", 0L);
             study.locked = root.optBoolean("locked", false);
 

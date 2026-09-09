@@ -381,6 +381,7 @@ public class AnalysisActivity extends Activity {
             String currentLabel
     ) {
         refreshPointChips();
+        updatePointDescription(currentLabel);
 
         if (total == 0) {
             txtProgress.setText(
@@ -434,6 +435,28 @@ public class AnalysisActivity extends Activity {
         if (!restoring) {
             saveStudy(true);
         }
+    }
+
+    private void updatePointDescription(String currentLabel) {
+        if (txtInstruction == null) return;
+
+        if (currentLabel == null || currentLabel.trim().isEmpty()) {
+            txtInstruction.setText(
+                    "Seleccione un punto para ver exactamente dónde colocarlo."
+            );
+            return;
+        }
+
+        int index = landmarks.indexOf(currentLabel);
+        boolean placed = index >= 0 && measurementView.hasPointAt(index);
+
+        txtInstruction.setText(
+                (placed ? "✓ " : "⌖ ") +
+                currentLabel +
+                " · Dónde colocarlo:\n" +
+                PointGuide.description(currentLabel) +
+                "\nMantenga el dedo sobre la radiografía para usar la lupa ampliada."
+        );
     }
 
     private void refreshPointChips() {
@@ -1046,15 +1069,50 @@ public class AnalysisActivity extends Activity {
             return;
         }
 
-        new AlertDialog.Builder(this)
-                .setTitle("Calibrar medidas lineales")
-                .setMessage(
-                        calibrationInstructions()
-                )
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp(20), dp(8), dp(20), dp(8));
+
+        TextView step = new TextView(this);
+        step.setText("1. Localice una referencia de longitud conocida en la radiografía.");
+        step.setTextSize(14f);
+        step.setTextColor(0xFF3D3946);
+        step.setPadding(0, 0, 0, dp(8));
+        content.addView(step);
+
+        TextView step2 = new TextView(this);
+        step2.setText("2. Toque un extremo y después el otro. Puede ser horizontal, vertical o diagonal.");
+        step2.setTextSize(14f);
+        step2.setTextColor(0xFF3D3946);
+        step2.setPadding(0, 0, 0, dp(8));
+        content.addView(step2);
+
+        TextView step3 = new TextView(this);
+        step3.setText("3. Después escribirá cuánto mide realmente en mm o cm.");
+        step3.setTextSize(14f);
+        step3.setTextColor(0xFF3D3946);
+        step3.setPadding(0, 0, 0, dp(8));
+        content.addView(step3);
+
+        TextView note = new TextView(this);
+        note.setText(calibrationInstructions());
+        note.setTextSize(12.5f);
+        note.setTextColor(0xFF2C7E86);
+        note.setBackgroundResource(R.drawable.button_soft_mint);
+        note.setPadding(dp(12), dp(10), dp(12), dp(10));
+        content.addView(note);
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.addView(content);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Paso 1 · Calibración")
+                .setView(scroll)
                 .setNegativeButton("Cancelar", null)
                 .setPositiveButton(
                         "Marcar referencia",
-                        (dialog, which) -> {
+                        (unused, which) -> {
                             Toast.makeText(
                                     this,
                                     "Toque el primer extremo y después el segundo.",
@@ -1067,32 +1125,65 @@ public class AnalysisActivity extends Activity {
                             );
                         }
                 )
-                .show();
+                .create();
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+            );
+        }
     }
 
     private void showCalibrationLengthDialog(double pixelDistance) {
         LinearLayout form = new LinearLayout(this);
         form.setOrientation(LinearLayout.VERTICAL);
-        form.setPadding(dp(22), dp(8), dp(22), dp(4));
+        form.setPadding(dp(20), dp(6), dp(20), dp(8));
 
         TextView info = new TextView(this);
         info.setText(
-                "Distancia marcada en la imagen: " +
+                "Referencia marcada: " +
                 String.format(Locale.US, "%.1f píxeles", pixelDistance)
         );
-        info.setTextColor(0xFF4A4652);
+        info.setTextColor(0xFF5B3FA4);
+        info.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         info.setTextSize(14f);
+        info.setGravity(Gravity.CENTER);
+        info.setPadding(0, 0, 0, dp(10));
         form.addView(info);
 
-        TextView label = formLabel("Longitud real de esa referencia");
+        TextView help = new TextView(this);
+        help.setText(
+                "Escriba la longitud REAL de la regla, calibrador o marcador que acaba de señalar."
+        );
+        help.setTextColor(0xFF4A4652);
+        help.setTextSize(13f);
+        help.setGravity(Gravity.CENTER);
+        help.setPadding(0, 0, 0, dp(8));
+        form.addView(help);
+
+        TextView label = formLabel("Longitud conocida");
+        label.setGravity(Gravity.CENTER);
+        form.addView(label);
+
+        LinearLayout valueRow = new LinearLayout(this);
+        valueRow.setOrientation(LinearLayout.HORIZONTAL);
+        valueRow.setGravity(Gravity.CENTER_VERTICAL);
 
         EditText length = new EditText(this);
         length.setSingleLine(true);
         length.setHint("Ej. 10");
+        length.setTextSize(16f);
+        length.setGravity(Gravity.CENTER);
         length.setInputType(
                 InputType.TYPE_CLASS_NUMBER |
                 InputType.TYPE_NUMBER_FLAG_DECIMAL
         );
+
+        LinearLayout.LayoutParams lengthLp =
+                new LinearLayout.LayoutParams(0, dp(54), 1f);
+        valueRow.addView(length, lengthLp);
 
         Spinner unit = new Spinner(this);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -1105,74 +1196,86 @@ public class AnalysisActivity extends Activity {
         );
         unit.setAdapter(adapter);
 
-        form.addView(label);
-        form.addView(length);
-        form.addView(unit);
+        LinearLayout.LayoutParams unitLp =
+                new LinearLayout.LayoutParams(dp(100), dp(54));
+        unitLp.setMargins(dp(8), 0, 0, 0);
+        valueRow.addView(unit, unitLp);
+
+        form.addView(valueRow);
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.addView(form);
 
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Longitud de calibración")
-                .setView(form)
+                .setTitle("Paso 1 · Longitud de referencia")
+                .setView(scroll)
                 .setNegativeButton("Cancelar", null)
-                .setPositiveButton("Guardar calibración", null)
+                .setPositiveButton("Guardar", null)
                 .create();
 
-        dialog.setOnShowListener(unused ->
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                        .setOnClickListener(v -> {
-                            String raw = length.getText().toString().trim();
+        dialog.setOnShowListener(unused -> {
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setSoftInputMode(
+                        android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+                );
+            }
 
-                            if (raw.isEmpty()) {
-                                length.setError("Ingrese una longitud.");
-                                return;
-                            }
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    .setOnClickListener(v -> {
+                        String raw = length.getText().toString().trim();
 
-                            double value;
+                        if (raw.isEmpty()) {
+                            length.setError("Ingrese una longitud.");
+                            return;
+                        }
 
-                            try {
-                                value = Double.parseDouble(
-                                        raw.replace(',', '.')
+                        double value;
+
+                        try {
+                            value = Double.parseDouble(
+                                    raw.replace(',', '.')
+                            );
+                        } catch (Exception e) {
+                            length.setError("Longitud no válida.");
+                            return;
+                        }
+
+                        if (value <= 0 || pixelDistance <= 0) {
+                            length.setError("Debe ser mayor que cero.");
+                            return;
+                        }
+
+                        String selectedUnit =
+                                String.valueOf(unit.getSelectedItem());
+
+                        double realMm =
+                                "cm".equals(selectedUnit)
+                                        ? value * 10.0
+                                        : value;
+
+                        mmPerPixel = realMm / pixelDistance;
+
+                        calibrationLabel =
+                                String.format(
+                                        Locale.US,
+                                        "%.2f %s",
+                                        value,
+                                        selectedUnit
                                 );
-                            } catch (Exception e) {
-                                length.setError("Longitud no válida.");
-                                return;
-                            }
 
-                            if (value <= 0 || pixelDistance <= 0) {
-                                length.setError("La longitud debe ser mayor que cero.");
-                                return;
-                            }
+                        updateCalibrationStatus();
+                        saveStudy(true);
 
-                            String selectedUnit =
-                                    String.valueOf(unit.getSelectedItem());
+                        Toast.makeText(
+                                this,
+                                "Calibración guardada. Ya puede colocar los puntos.",
+                                Toast.LENGTH_LONG
+                        ).show();
 
-                            double realMm =
-                                    "cm".equals(selectedUnit)
-                                            ? value * 10.0
-                                            : value;
-
-                            mmPerPixel =
-                                    realMm / pixelDistance;
-
-                            calibrationLabel =
-                                    String.format(
-                                            Locale.US,
-                                            "%.2f %s",
-                                            value,
-                                            selectedUnit
-                                    );
-
-                            updateCalibrationStatus();
-                            saveStudy(true);
-
-                            Toast.makeText(
-                                    this,
-                                    "Calibración guardada.",
-                                    Toast.LENGTH_LONG
-                            ).show();
-
-                            dialog.dismiss();
-                        })
-        );
+                        dialog.dismiss();
+                    });
+        });
 
         dialog.show();
     }

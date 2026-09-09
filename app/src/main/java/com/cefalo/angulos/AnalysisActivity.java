@@ -1,6 +1,5 @@
 package com.cefalo.angulos;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,10 +9,15 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.pdf.PdfDocument;
 import android.graphics.Typeface;
 import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.ViewGroup;
@@ -26,25 +30,31 @@ import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-public class AnalysisActivity extends Activity {
+public class AnalysisActivity extends AppCompatActivity {
 
     private static final int REQ_IMAGE = 1001;
     private static final int REQ_SAVE_ANNOTATED = 1002;
     private static final int REQ_SAVE_REPORT = 1003;
+    private static final int REQ_SAVE_PDF = 1004;
 
     private MeasurementView measurementView;
     private TextView txtProgress;
     private TextView txtInstruction;
     private TextView txtStudyInfo;
+    private TextView txtAutosaveStatus;
     private TextView btnCalculate;
     private TextView btnLock;
     private TextView btnCalibrate;
@@ -68,6 +78,9 @@ public class AnalysisActivity extends Activity {
     private SavedStudyStore.StudyData restoredStudy;
     private boolean restoring = false;
     private Bitmap pendingSaveBitmap;
+    private Bitmap pendingPdfBitmap;
+    private Handler autosaveHandler;
+    private Runnable autosaveRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,6 +158,14 @@ public class AnalysisActivity extends Activity {
         txtProgress = findViewById(R.id.txtProgress);
         txtInstruction = findViewById(R.id.txtInstruction);
         txtStudyInfo = findViewById(R.id.txtStudyInfo);
+        txtAutosaveStatus = findViewById(R.id.txtAutosaveStatus);
+
+        autosaveHandler = new Handler(Looper.getMainLooper());
+        autosaveRunnable = () -> {
+            if (saveStudy(true)) {
+                updateAutosaveStatus(R.string.autosave_saved);
+            }
+        };
         btnCalculate = findViewById(R.id.btnCalculate);
         btnLock = findViewById(R.id.btnLock);
         btnCalibrate = findViewById(R.id.btnCalibrate);
@@ -219,8 +240,21 @@ public class AnalysisActivity extends Activity {
 
     @Override
     protected void onPause() {
+        if (autosaveHandler != null && autosaveRunnable != null) {
+            autosaveHandler.removeCallbacks(autosaveRunnable);
+        }
+        if (saveStudy(true)) {
+            updateAutosaveStatus(R.string.autosave_saved);
+        }
         super.onPause();
-        saveStudy(true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (autosaveHandler != null && autosaveRunnable != null) {
+            autosaveHandler.removeCallbacks(autosaveRunnable);
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -442,7 +476,27 @@ public class AnalysisActivity extends Activity {
         updateLockButton();
 
         if (!restoring) {
-            saveStudy(true);
+            scheduleAutosave();
+        }
+    }
+
+    private void scheduleAutosave() {
+        if (autosaveHandler == null
+                || autosaveRunnable == null
+                || measurementView == null
+                || !measurementView.hasBitmap()
+                || imageUriString == null) {
+            return;
+        }
+
+        updateAutosaveStatus(R.string.autosave_saving);
+        autosaveHandler.removeCallbacks(autosaveRunnable);
+        autosaveHandler.postDelayed(autosaveRunnable, 650L);
+    }
+
+    private void updateAutosaveStatus(int textRes) {
+        if (txtAutosaveStatus != null) {
+            txtAutosaveStatus.setText(textRes);
         }
     }
 
@@ -1009,7 +1063,7 @@ public class AnalysisActivity extends Activity {
         return label;
     }
 
-    private void saveStudy(boolean silent) {
+    private boolean saveStudy(boolean silent) {
         if (measurementView == null
                 || !measurementView.hasBitmap()
                 || imageUriString == null) {
@@ -1022,7 +1076,7 @@ public class AnalysisActivity extends Activity {
                 ).show();
             }
 
-            return;
+            return false;
         }
 
         if (studyId == null) {
@@ -1065,6 +1119,8 @@ public class AnalysisActivity extends Activity {
                 study
         );
 
+        updateAutosaveStatus(R.string.autosave_saved);
+
         if (!silent) {
             Toast.makeText(
                     this,
@@ -1072,6 +1128,8 @@ public class AnalysisActivity extends Activity {
                     Toast.LENGTH_LONG
             ).show();
         }
+
+        return true;
     }
 
     private void promptCalibrationBeforePoints() {

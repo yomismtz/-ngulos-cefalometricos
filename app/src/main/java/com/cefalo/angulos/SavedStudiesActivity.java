@@ -33,10 +33,10 @@ public class SavedStudiesActivity extends Activity {
         header.setPadding(dp(10), dp(10), dp(10), dp(10));
         header.setBackgroundResource(R.drawable.header_gradient);
 
-        TextView back = button("←", 48, R.drawable.button_soft_purple, 0xFFFFFFFF);
+        TextView back = button("←", R.drawable.button_soft_purple, 0xFFFFFFFF);
         back.setTextSize(24f);
         back.setOnClickListener(v -> finish());
-        header.addView(back);
+        header.addView(back, new LinearLayout.LayoutParams(dp(48), dp(48)));
 
         TextView title = new TextView(this);
         title.setText("Mis análisis");
@@ -71,11 +71,16 @@ public class SavedStudiesActivity extends Activity {
 
     private void refresh() {
         listContainer.removeAllViews();
-        List<SavedStudyStore.StudyData> studies = SavedStudyStore.list(this);
+
+        List<SavedStudyStore.StudyData> studies =
+                SavedStudyStore.list(this);
 
         if (studies.isEmpty()) {
             TextView empty = new TextView(this);
-            empty.setText("Todavía no hay análisis guardados.\nAbra una radiografía y el estudio se guardará automáticamente.");
+            empty.setText(
+                    "Todavía no hay análisis guardados.\n" +
+                    "Abra una radiografía y el estudio se guardará automáticamente."
+            );
             empty.setTextColor(0xFF645B73);
             empty.setTextSize(16f);
             empty.setGravity(Gravity.CENTER);
@@ -84,7 +89,11 @@ public class SavedStudiesActivity extends Activity {
             return;
         }
 
-        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+        DateFormat format =
+                DateFormat.getDateTimeInstance(
+                        DateFormat.SHORT,
+                        DateFormat.SHORT
+                );
 
         for (SavedStudyStore.StudyData study : studies) {
             LinearLayout card = new LinearLayout(this);
@@ -94,75 +103,140 @@ public class SavedStudiesActivity extends Activity {
             card.setElevation(dp(2));
 
             TextView name = new TextView(this);
-            String titleText = study.studyName == null || study.studyName.trim().isEmpty()
-                    ? ("VERTEBRAL".equals(study.mode) ? "Estudio vertebral" : "Estudio Steiner")
-                    : study.studyName;
-            name.setText(titleText);
+            name.setText(
+                    study.studyName == null || study.studyName.trim().isEmpty()
+                            ? "Estudio"
+                            : study.studyName
+            );
             name.setTextColor(0xFF5B3FA4);
-            name.setTextSize(17f);
+            name.setTextSize(18f);
             name.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
             card.addView(name);
 
+            TextView patient = new TextView(this);
+            String patientText =
+                    study.patientName == null || study.patientName.trim().isEmpty()
+                            ? "Paciente sin nombre"
+                            : study.patientName;
+
+            if (study.patientAge != null && !study.patientAge.trim().isEmpty()) {
+                patientText += " · " + study.patientAge + " años";
+            }
+
+            patient.setText(patientText);
+            patient.setTextColor(0xFF2C7E86);
+            patient.setTextSize(14f);
+            patient.setPadding(0, dp(3), 0, 0);
+            card.addView(patient);
+
+            TextView type = new TextView(this);
+            type.setText(
+                    "VERTEBRAL".equals(study.mode)
+                            ? "Análisis vertebral / craneocervical"
+                            : "Análisis de Steiner"
+            );
+            type.setTextColor(0xFF4A4652);
+            type.setTextSize(14f);
+            type.setPadding(0, dp(3), 0, 0);
+            card.addView(type);
+
             TextView details = new TextView(this);
-
-            String patient = study.patientName == null ? "" : study.patientName.trim();
-            String age = study.patientAge == null ? "" : study.patientAge.trim();
-
-            String info = "VERTEBRAL".equals(study.mode)
-                    ? "Análisis vertebral / craneocervical"
-                    : "Análisis de Steiner";
-
-            if (!patient.isEmpty()) info += "\nPaciente: " + patient;
-            if (!age.isEmpty()) info += "   ·   Edad: " + age;
-
-            info += "\n" + format.format(new Date(study.updatedAt)) +
-                    "   ·   " + study.placedCount() + "/" + study.labels.size() + " puntos" +
-                    (study.locked ? "   ·   Bloqueado" : "");
-
-            details.setText(info);
-            details.setTextColor(0xFF4A4652);
-            details.setTextSize(14f);
+            details.setText(
+                    format.format(new Date(study.updatedAt)) +
+                    "   ·   " +
+                    study.placedCount() +
+                    "/" +
+                    study.labels.size() +
+                    " puntos" +
+                    (study.locked ? "   ·   🔒" : "")
+            );
+            details.setTextColor(0xFF6A6471);
+            details.setTextSize(13f);
             details.setPadding(0, dp(5), 0, dp(12));
             card.addView(details);
 
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
 
-            TextView open = button("ABRIR", 50, R.drawable.card_steiner, 0xFFFFFFFF);
+            TextView open = button(
+                    "ABRIR",
+                    R.drawable.card_steiner,
+                    0xFFFFFFFF
+            );
+
             open.setOnClickListener(v -> {
-                Intent intent = new Intent(this, AnalysisActivity.class);
+                Intent intent = new Intent(
+                        this,
+                        AnalysisActivity.class
+                );
                 intent.putExtra("STUDY_ID", study.id);
                 startActivity(intent);
             });
-            row.addView(open, new LinearLayout.LayoutParams(0, dp(50), 1f));
 
-            TextView delete = button("ELIMINAR", 50, R.drawable.button_soft_mint, 0xFF15383D);
-            LinearLayout.LayoutParams deleteLp = new LinearLayout.LayoutParams(0, dp(50), 1f);
+            row.addView(
+                    open,
+                    new LinearLayout.LayoutParams(
+                            0,
+                            dp(50),
+                            1f
+                    )
+            );
+
+            TextView delete = button(
+                    "ELIMINAR",
+                    R.drawable.button_soft_mint,
+                    0xFF15383D
+            );
+
+            LinearLayout.LayoutParams deleteLp =
+                    new LinearLayout.LayoutParams(
+                            0,
+                            dp(50),
+                            1f
+                    );
             deleteLp.setMargins(dp(8), 0, 0, 0);
             row.addView(delete, deleteLp);
 
-            delete.setOnClickListener(v -> new AlertDialog.Builder(this)
-                    .setTitle("Eliminar análisis")
-                    .setMessage("¿Desea eliminar este estudio guardado?")
-                    .setNegativeButton("Cancelar", null)
-                    .setPositiveButton("Eliminar", (dialog, which) -> {
-                        SavedStudyStore.delete(this, study.id);
-                        refresh();
-                    })
-                    .show());
+            delete.setOnClickListener(v ->
+                    new AlertDialog.Builder(this)
+                            .setTitle("Eliminar análisis")
+                            .setMessage(
+                                    "¿Desea eliminar "" +
+                                    name.getText() +
+                                    ""?"
+                            )
+                            .setNegativeButton("Cancelar", null)
+                            .setPositiveButton(
+                                    "Eliminar",
+                                    (dialog, which) -> {
+                                        SavedStudyStore.delete(
+                                                this,
+                                                study.id
+                                        );
+                                        refresh();
+                                    }
+                            )
+                            .show()
+            );
 
             card.addView(row);
 
-            LinearLayout.LayoutParams cardLp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            );
+            LinearLayout.LayoutParams cardLp =
+                    new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    );
             cardLp.setMargins(0, 0, 0, dp(12));
+
             listContainer.addView(card, cardLp);
         }
     }
 
-    private TextView button(String text, int heightDp, int bg, int color) {
+    private TextView button(
+            String text,
+            int bg,
+            int color
+    ) {
         TextView view = new TextView(this);
         view.setText(text);
         view.setGravity(Gravity.CENTER);
@@ -177,6 +251,10 @@ public class SavedStudiesActivity extends Activity {
     }
 
     private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
+        return Math.round(
+                value * getResources()
+                        .getDisplayMetrics()
+                        .density
+        );
     }
 }

@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="yom_purple">#6D4BC3</color>
-    <color name="yom_purple_deep">#55339D</color>
-    <color name="yom_turquoise">#22BFC7</color>
-    <color name="yom_mint">#B9F3E6</color>
     <color name="yom_icon_bg">#6842B8</color>
-    <color name="yom_white">#FFFFFF</color>
 </resources>

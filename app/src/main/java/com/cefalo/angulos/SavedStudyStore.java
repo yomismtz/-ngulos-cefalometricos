@@ -68,7 +68,11 @@ public final class SavedStudyStore {
             root.put("patientAge", study.patientAge == null ? "" : study.patientAge);
             root.put("updatedAt", study.updatedAt);
             root.put("locked", study.locked);
-            root.put("mmPerPixel", study.mmPerPixel);
+            if (Double.isNaN(study.mmPerPixel) || Double.isInfinite(study.mmPerPixel)) {
+                root.put("mmPerPixel", JSONObject.NULL);
+            } else {
+                root.put("mmPerPixel", study.mmPerPixel);
+            }
             root.put("calibrationLabel", study.calibrationLabel == null ? "" : study.calibrationLabel);
 
             JSONArray labels = new JSONArray();
@@ -128,7 +132,9 @@ public final class SavedStudyStore {
             study.patientAge = root.optString("patientAge", "");
             study.updatedAt = root.optLong("updatedAt", 0L);
             study.locked = root.optBoolean("locked", false);
-            study.mmPerPixel = root.optDouble("mmPerPixel", Double.NaN);
+            study.mmPerPixel = root.isNull("mmPerPixel")
+                    ? Double.NaN
+                    : root.optDouble("mmPerPixel", Double.NaN);
             study.calibrationLabel = root.optString("calibrationLabel", "");
 
             if (study.studyName == null || study.studyName.trim().isEmpty()) {

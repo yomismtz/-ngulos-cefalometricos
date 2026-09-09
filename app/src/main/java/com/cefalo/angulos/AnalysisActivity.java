@@ -1006,13 +1006,13 @@ public class AnalysisActivity extends Activity {
         if (txtCalibration == null) return;
 
         if (Double.isNaN(mmPerPixel) || mmPerPixel <= 0) {
-            txtCalibration.setText("Medidas lineales: sin calibrar");
+            txtCalibration.setText("PASO 1 · Medidas lineales sin calibrar");
             btnCalibrate.setText("📏 CALIBRAR mm/cm");
             return;
         }
 
         txtCalibration.setText(
-                "Calibrado: " +
+                "✓ PASO 1 CALIBRADO · " +
                 calibrationLabel +
                 " · " +
                 String.format(Locale.US, "%.5f mm/píxel", mmPerPixel)

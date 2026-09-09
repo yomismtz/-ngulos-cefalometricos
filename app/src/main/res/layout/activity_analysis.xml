@@ -322,18 +322,6 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/btnAssisted"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center"
-            android:text="Detección asistida · información"
-            android:textStyle="bold"
-            android:textSize="11sp"
-            android:textColor="#2C7E86"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <TextView
             android:id="@+id/btnCalculate"
             android:layout_width="match_parent"
             android:layout_height="52dp"

@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.media.ExifInterface;
 import android.net.Uri;
@@ -39,21 +40,39 @@ public class AnalysisActivity extends Activity {
     private TextView txtProgress;
     private TextView txtInstruction;
     private TextView btnCalculate;
+    private TextView btnLock;
+    private LinearLayout pointChips;
 
     private List<MeasurementDefinition> definitions;
     private List<String> landmarks;
-    private boolean vertebral;
+
+    private String mode;
+    private String studyId;
+    private String imageUriString;
+    private SavedStudyStore.StudyData restoredStudy;
+    private boolean restoring = false;
 
     private Bitmap pendingSaveBitmap;
-    private int pendingSaveRequest = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        studyId = getIntent().getStringExtra("STUDY_ID");
+        if (studyId != null) {
+            restoredStudy = SavedStudyStore.load(this, studyId);
+        }
+
+        if (restoredStudy != null) {
+            mode = restoredStudy.mode;
+        } else {
+            mode = getIntent().getStringExtra("MODE");
+            if (mode == null) mode = "STEINER";
+        }
+
         setContentView(R.layout.activity_analysis);
 
-        String mode = getIntent().getStringExtra("MODE");
-        vertebral = "VERTEBRAL".equals(mode);
+        boolean vertebral = "VERTEBRAL".equals(mode);
 
         definitions = vertebral
                 ? MeasurementCatalog.vertebral()
@@ -70,6 +89,8 @@ public class AnalysisActivity extends Activity {
         txtProgress = findViewById(R.id.txtProgress);
         txtInstruction = findViewById(R.id.txtInstruction);
         btnCalculate = findViewById(R.id.btnCalculate);
+        btnLock = findViewById(R.id.btnLock);
+        pointChips = findViewById(R.id.pointChips);
 
         measurementView.setLandmarks(landmarks);
         measurementView.setProgressListener(this::updateProgress);
@@ -77,20 +98,52 @@ public class AnalysisActivity extends Activity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnOpen).setOnClickListener(v -> openImage());
         findViewById(R.id.btnUndo).setOnClickListener(v -> measurementView.undo());
-        findViewById(R.id.btnReset).setOnClickListener(v -> measurementView.resetMeasurement());
+        findViewById(R.id.btnReset).setOnClickListener(v -> {
+            if (measurementView.isLocked()) {
+                Toast.makeText(this, "Desbloquee el trazado para borrar puntos.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            new AlertDialog.Builder(this)
+                    .setTitle("Borrar puntos")
+                    .setMessage("¿Desea borrar todos los puntos de este análisis?")
+                    .setNegativeButton("Cancelar", null)
+                    .setPositiveButton("Borrar", (dialog, which) -> measurementView.resetMeasurement())
+                    .show();
+        });
         findViewById(R.id.btnFit).setOnClickListener(v -> measurementView.fitImage());
 
+        findViewById(R.id.btnPrevious).setOnClickListener(v -> measurementView.selectPrevious());
+        findViewById(R.id.btnNext).setOnClickListener(v -> measurementView.selectNext());
+        findViewById(R.id.btnPointHelp).setOnClickListener(v -> showCurrentPointGuide());
+        findViewById(R.id.btnSaveStudy).setOnClickListener(v -> saveStudy(false));
+        findViewById(R.id.btnAssisted).setOnClickListener(v -> showAssistedDetectionInfo());
+
+        btnLock.setOnClickListener(v -> toggleLock());
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
-                "1. Abra la radiografía.\n" +
-                "2. Marque cada punto una sola vez, en el orden indicado.\n" +
-                "3. Puede arrastrar cualquier punto para corregirlo.\n" +
-                "4. Use dos dedos para mover y ampliar.\n" +
-                "5. Al terminar pulse CALCULAR ANÁLISIS."
+                "Mantenga el dedo sobre la radiografía para usar la lupa. " +
+                "Puede elegir cualquier punto en la lista, usar Anterior/Siguiente y volver a marcarlo. " +
+                "Los estudios se guardan dentro de la app."
         );
 
-        updateProgress(0, landmarks.size(), landmarks.isEmpty() ? null : landmarks.get(0));
+        refreshPointChips();
+
+        if (restoredStudy != null) {
+            restoreStudy(restoredStudy);
+        } else {
+            updateProgress(
+                    measurementView.getPlacedCount(),
+                    landmarks.size(),
+                    measurementView.getCurrentLabel()
+            );
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveStudy(true);
     }
 
     private List<String> buildLandmarkList(List<MeasurementDefinition> defs) {
@@ -105,25 +158,236 @@ public class AnalysisActivity extends Activity {
         return new ArrayList<>(ordered);
     }
 
-    private void updateProgress(int placed, int total, String nextLabel) {
+    private void restoreStudy(SavedStudyStore.StudyData study) {
+        if (study.imageUri == null) return;
+
+        restoring = true;
+        imageUriString = study.imageUri;
+
+        try {
+            Uri uri = Uri.parse(imageUriString);
+            Bitmap bitmap = decodeSampledBitmap(uri, 4096);
+
+            if (bitmap == null) throw new IOException("Bitmap nulo");
+
+            bitmap = applyExifRotation(uri, bitmap);
+            measurementView.setBitmap(bitmap);
+            measurementView.setPoints(mapSavedPoints(study));
+            measurementView.setLocked(study.locked);
+            updateLockButton();
+
+            updateProgress(
+                    measurementView.getPlacedCount(),
+                    landmarks.size(),
+                    measurementView.getCurrentLabel()
+            );
+
+        } catch (Exception e) {
+            Toast.makeText(
+                    this,
+                    "No se pudo volver a abrir la radiografía guardada.",
+                    Toast.LENGTH_LONG
+            ).show();
+        } finally {
+            restoring = false;
+        }
+    }
+
+    private List<PointF> mapSavedPoints(SavedStudyStore.StudyData study) {
+        List<PointF> mapped = new ArrayList<>();
+
+        for (String currentLabel : landmarks) {
+            int savedIndex = study.labels.indexOf(currentLabel);
+
+            if (savedIndex >= 0 && savedIndex < study.points.size()) {
+                PointF p = study.points.get(savedIndex);
+                mapped.add(p == null ? null : new PointF(p.x, p.y));
+            } else {
+                mapped.add(null);
+            }
+        }
+
+        return mapped;
+    }
+
+    private void updateProgress(int placed, int total, String currentLabel) {
+        refreshPointChips();
+
         if (total == 0) {
             txtProgress.setText("No hay puntos definidos.");
             btnCalculate.setAlpha(0.45f);
             return;
         }
 
+        int selected = measurementView.getSelectedIndex();
+        boolean selectedPlaced = measurementView.hasPointAt(selected);
+
         if (placed >= total) {
             txtProgress.setText(
                     "✓ Puntos completos: " + placed + " / " + total +
-                    "\nRevise los puntos y pulse CALCULAR ANÁLISIS."
+                    "\nSeleccionado: " + currentLabel +
+                    (measurementView.isLocked()
+                            ? "   ·   🔒 trazado bloqueado"
+                            : "   ·   puede corregirlo")
             );
             btnCalculate.setAlpha(1f);
         } else {
             txtProgress.setText(
-                    "Punto " + (placed + 1) + " de " + total +
-                    ":  " + nextLabel
+                    "Puntos: " + placed + " / " + total +
+                    "\n" + (selectedPlaced ? "Corregir: " : "Marcar: ") + currentLabel
             );
             btnCalculate.setAlpha(0.55f);
+        }
+
+        if (!restoring) {
+            saveStudy(true);
+        }
+    }
+
+    private void refreshPointChips() {
+        if (pointChips == null || landmarks == null) return;
+
+        pointChips.removeAllViews();
+        int selected = measurementView == null ? -1 : measurementView.getSelectedIndex();
+
+        for (int i = 0; i < landmarks.size(); i++) {
+            final int index = i;
+            String label = landmarks.get(i);
+            boolean placed = measurementView != null && measurementView.hasPointAt(i);
+            boolean isSelected = i == selected;
+
+            TextView chip = new TextView(this);
+            chip.setText(label + (placed ? "  ✓" : "  —"));
+            chip.setTextSize(13f);
+            chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            chip.setGravity(Gravity.CENTER);
+            chip.setPadding(dp(12), dp(8), dp(12), dp(8));
+            chip.setClickable(true);
+            chip.setFocusable(true);
+
+            if (isSelected) {
+                chip.setBackgroundResource(R.drawable.card_steiner);
+                chip.setTextColor(Color.WHITE);
+            } else if (placed) {
+                chip.setBackgroundResource(R.drawable.button_soft_mint);
+                chip.setTextColor(0xFF15383D);
+            } else {
+                chip.setBackgroundResource(R.drawable.button_soft_purple);
+                chip.setTextColor(0xFF5B3FA4);
+            }
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    dp(42)
+            );
+            lp.setMargins(0, 0, dp(7), 0);
+            chip.setLayoutParams(lp);
+
+            chip.setOnClickListener(v -> {
+                measurementView.setSelectedIndex(index, true);
+                showPointGuide(landmarks.get(index));
+            });
+
+            pointChips.addView(chip);
+        }
+    }
+
+    private void showCurrentPointGuide() {
+        String label = measurementView.getCurrentLabel();
+
+        if (label == null) {
+            Toast.makeText(this, "No hay un punto seleccionado.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        showPointGuide(label);
+    }
+
+    private void showPointGuide(String label) {
+        String status = measurementView.hasPointAt(landmarks.indexOf(label))
+                ? "\n\nEste punto ya está colocado. Puede arrastrarlo o tocar otra posición para reemplazarlo."
+                : "\n\nEste punto todavía no está colocado.";
+
+        new AlertDialog.Builder(this)
+                .setTitle("¿Dónde está " + label + "?")
+                .setMessage(PointGuide.description(label) + status)
+                .setPositiveButton("Entendido", null)
+                .show();
+    }
+
+    private void showAssistedDetectionInfo() {
+        new AlertDialog.Builder(this)
+                .setTitle("Detección asistida")
+                .setMessage(
+                        "La detección automática de puntos queda preparada como función futura. " +
+                        "Cuando se incorpore, la app solo propondrá la posición: cada punto tendrá que ser confirmado o corregido antes de calcular el análisis.\n\n" +
+                        "En esta versión, la ayuda disponible es la lupa de precisión y la guía anatómica de cada punto."
+                )
+                .setPositiveButton("Entendido", null)
+                .show();
+    }
+
+    private void toggleLock() {
+        if (!measurementView.isLocked() && !measurementView.isComplete()) {
+            Toast.makeText(
+                    this,
+                    "Complete todos los puntos antes de bloquear el trazado.",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        measurementView.setLocked(!measurementView.isLocked());
+        updateLockButton();
+        saveStudy(true);
+    }
+
+    private void updateLockButton() {
+        if (measurementView.isLocked()) {
+            btnLock.setText("🔒 DESBLOQUEAR");
+            btnLock.setBackgroundResource(R.drawable.button_soft_mint);
+            btnLock.setTextColor(0xFF15383D);
+        } else {
+            btnLock.setText("🔓 BLOQUEAR TRAZADO");
+            btnLock.setBackgroundResource(R.drawable.button_soft_purple);
+            btnLock.setTextColor(0xFF5B3FA4);
+        }
+    }
+
+    private void saveStudy(boolean silent) {
+        if (measurementView == null
+                || !measurementView.hasBitmap()
+                || imageUriString == null) {
+            if (!silent) {
+                Toast.makeText(
+                        this,
+                        "Abra una radiografía antes de guardar el estudio.",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+            return;
+        }
+
+        if (studyId == null) {
+            studyId = SavedStudyStore.newId();
+        }
+
+        SavedStudyStore.StudyData study = new SavedStudyStore.StudyData();
+        study.id = studyId;
+        study.mode = mode;
+        study.imageUri = imageUriString;
+        study.locked = measurementView.isLocked();
+        study.labels = new ArrayList<>(landmarks);
+        study.points = measurementView.getPointsSnapshot();
+
+        SavedStudyStore.save(this, study);
+
+        if (!silent) {
+            Toast.makeText(
+                    this,
+                    "Estudio guardado en Mis análisis.",
+                    Toast.LENGTH_LONG
+            ).show();
         }
     }
 
@@ -134,15 +398,16 @@ public class AnalysisActivity extends Activity {
         }
 
         if (!measurementView.isComplete()) {
-            String next = measurementView.getNextLabel();
+            String next = measurementView.getCurrentLabel();
             Toast.makeText(
                     this,
-                    "Faltan puntos. Siguiente: " + (next == null ? "—" : next),
+                    "Faltan puntos. Seleccionado: " + (next == null ? "—" : next),
                     Toast.LENGTH_LONG
             ).show();
             return;
         }
 
+        saveStudy(true);
         showResultsDialog();
     }
 
@@ -158,7 +423,7 @@ public class AnalysisActivity extends Activity {
         TextView intro = new TextView(this);
         intro.setText(
                 "Resultados calculados con los mismos puntos anatómicos. " +
-                "Puede corregir un punto y volver a calcular."
+                "Puede cerrar esta ventana, desbloquear el trazado, corregir un punto y volver a calcular."
         );
         intro.setTextSize(14f);
         intro.setTextColor(0xFF4A4652);
@@ -203,6 +468,7 @@ public class AnalysisActivity extends Activity {
                 Toast.makeText(this, "No se pudo preparar la imagen.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             startSaveImage(
                     annotated,
                     "YomCephalometrics_radiografia_puntos.png",
@@ -222,9 +488,10 @@ public class AnalysisActivity extends Activity {
                 Toast.makeText(this, "No se pudo preparar el informe.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             startSaveImage(
                     report,
-                    vertebral
+                    "VERTEBRAL".equals(mode)
                             ? "YomCephalometrics_informe_vertebral.png"
                             : "YomCephalometrics_informe_steiner.png",
                     REQ_SAVE_REPORT
@@ -233,7 +500,7 @@ public class AnalysisActivity extends Activity {
         container.addView(saveReport);
 
         new AlertDialog.Builder(this)
-                .setTitle(vertebral
+                .setTitle("VERTEBRAL".equals(mode)
                         ? "Resultados · Vertebral"
                         : "Resultados · Steiner")
                 .setView(scroll)
@@ -309,7 +576,9 @@ public class AnalysisActivity extends Activity {
 
         canvas.drawText("YomCephalometrics", margin, 72, titlePaint);
         canvas.drawText(
-                vertebral ? "Informe de análisis vertebral / craneocervical" : "Informe de análisis de Steiner",
+                "VERTEBRAL".equals(mode)
+                        ? "Informe de análisis vertebral / craneocervical"
+                        : "Informe de análisis de Steiner",
                 margin,
                 120,
                 subtitlePaint
@@ -326,7 +595,9 @@ public class AnalysisActivity extends Activity {
             float right = width - margin;
             float bottom = y + rowHeight - 18;
 
-            android.graphics.RectF rect = new android.graphics.RectF(left, top, right, bottom);
+            android.graphics.RectF rect =
+                    new android.graphics.RectF(left, top, right, bottom);
+
             canvas.drawRoundRect(rect, 30f, 30f, cardPaint);
             canvas.drawRoundRect(rect, 30f, 30f, strokePaint);
 
@@ -338,6 +609,7 @@ public class AnalysisActivity extends Activity {
                     value,
                     def.normText
             );
+
             canvas.drawText(valueLine, left + 30, top + 91, valuePaint);
 
             drawWrappedText(
@@ -356,6 +628,7 @@ public class AnalysisActivity extends Activity {
         Paint footerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         footerPaint.setColor(Color.rgb(100, 91, 115));
         footerPaint.setTextSize(24f);
+
         canvas.drawText(
                 "Resultados angulares calculados a partir de los puntos marcados en la radiografía.",
                 margin,
@@ -386,7 +659,8 @@ public class AnalysisActivity extends Activity {
                     ? word
                     : line + " " + word;
 
-            if (x + paint.measureText(test) > maxRight && line.length() > 0) {
+            if (x + paint.measureText(test) > maxRight
+                    && line.length() > 0) {
                 canvas.drawText(line.toString(), x, currentY, paint);
                 line = new StringBuilder(word);
                 currentY += lineHeight;
@@ -400,9 +674,12 @@ public class AnalysisActivity extends Activity {
         }
     }
 
-    private void startSaveImage(Bitmap bitmap, String suggestedName, int requestCode) {
+    private void startSaveImage(
+            Bitmap bitmap,
+            String suggestedName,
+            int requestCode
+    ) {
         pendingSaveBitmap = bitmap;
-        pendingSaveRequest = requestCode;
 
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -416,14 +693,27 @@ public class AnalysisActivity extends Activity {
         if (pendingSaveBitmap == null || uri == null) return;
 
         try (OutputStream out = getContentResolver().openOutputStream(uri)) {
-            if (out == null) throw new IOException("No se pudo abrir el archivo de salida.");
+            if (out == null) {
+                throw new IOException("No se pudo abrir el archivo de salida.");
+            }
 
-            boolean ok = pendingSaveBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            boolean ok = pendingSaveBitmap.compress(
+                    Bitmap.CompressFormat.PNG,
+                    100,
+                    out
+            );
+
             out.flush();
 
-            if (!ok) throw new IOException("No se pudo codificar PNG.");
+            if (!ok) {
+                throw new IOException("No se pudo codificar PNG.");
+            }
 
-            Toast.makeText(this, "Imagen guardada correctamente.", Toast.LENGTH_LONG).show();
+            Toast.makeText(
+                    this,
+                    "Imagen guardada correctamente.",
+                    Toast.LENGTH_LONG
+            ).show();
 
         } catch (Exception e) {
             Toast.makeText(
@@ -433,11 +723,12 @@ public class AnalysisActivity extends Activity {
             ).show();
 
         } finally {
-            if (pendingSaveBitmap != null && !pendingSaveBitmap.isRecycled()) {
+            if (pendingSaveBitmap != null
+                    && !pendingSaveBitmap.isRecycled()) {
                 pendingSaveBitmap.recycle();
             }
+
             pendingSaveBitmap = null;
-            pendingSaveRequest = -1;
         }
     }
 
@@ -453,18 +744,25 @@ public class AnalysisActivity extends Activity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(
+            int requestCode,
+            int resultCode,
+            Intent data
+    ) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQ_SAVE_ANNOTATED || requestCode == REQ_SAVE_REPORT) {
-            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == REQ_SAVE_ANNOTATED
+                || requestCode == REQ_SAVE_REPORT) {
+            if (resultCode == RESULT_OK
+                    && data != null
+                    && data.getData() != null) {
                 writePendingBitmap(data.getData());
             } else {
-                if (pendingSaveBitmap != null && !pendingSaveBitmap.isRecycled()) {
+                if (pendingSaveBitmap != null
+                        && !pendingSaveBitmap.isRecycled()) {
                     pendingSaveBitmap.recycle();
                 }
                 pendingSaveBitmap = null;
-                pendingSaveRequest = -1;
             }
             return;
         }
@@ -494,7 +792,16 @@ public class AnalysisActivity extends Activity {
             }
 
             bitmap = applyExifRotation(uri, bitmap);
+
+            measurementView.setLocked(false);
+            updateLockButton();
             measurementView.setBitmap(bitmap);
+            measurementView.resetMeasurement();
+
+            imageUriString = uri.toString();
+            if (studyId == null) studyId = SavedStudyStore.newId();
+
+            saveStudy(true);
 
         } catch (Exception e) {
             Toast.makeText(
@@ -505,11 +812,15 @@ public class AnalysisActivity extends Activity {
         }
     }
 
-    private Bitmap decodeSampledBitmap(Uri uri, int maxDimension) throws IOException {
+    private Bitmap decodeSampledBitmap(
+            Uri uri,
+            int maxDimension
+    ) throws IOException {
         BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;
 
-        try (InputStream in = getContentResolver().openInputStream(uri)) {
+        try (InputStream in =
+                     getContentResolver().openInputStream(uri)) {
             BitmapFactory.decodeStream(in, null, bounds);
         }
 
@@ -524,13 +835,16 @@ public class AnalysisActivity extends Activity {
         opts.inSampleSize = sample;
         opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
-        try (InputStream in = getContentResolver().openInputStream(uri)) {
+        try (InputStream in =
+                     getContentResolver().openInputStream(uri)) {
             return BitmapFactory.decodeStream(in, null, opts);
         }
     }
 
     private Bitmap applyExifRotation(Uri uri, Bitmap bitmap) {
-        try (InputStream in = getContentResolver().openInputStream(uri)) {
+        try (InputStream in =
+                     getContentResolver().openInputStream(uri)) {
+
             ExifInterface exif = new ExifInterface(in);
 
             int orientation = exif.getAttributeInt(

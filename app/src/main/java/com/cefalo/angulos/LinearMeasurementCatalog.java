@@ -193,10 +193,10 @@ public final class LinearMeasurementCatalog {
                 "6 años: 7.02±3.7 · 16 años: 14.56±4.70", "", "Referencia dependiente de edad", ""));
         list.add(m("Faringe superior", DISTANCE, RANGE,
                 p("Faringe sup ant.", "Faringe sup post."), Double.NaN, Double.NaN,
-                "F: 17.4±3.4 · M: 17.4±4.3", "", "Referencia dependiente de sexo", ""));
+                "H: 17.4±3.4 · M: 17.4±4.3", "", "Referencia dependiente de sexo", ""));
         list.add(m("Faringe posterior o inferior", DISTANCE, RANGE,
                 p("Faringe inf ant.", "Faringe inf post."), Double.NaN, Double.NaN,
-                "F: 11.3±3.3 · M: 13.5±4.3", "", "Referencia dependiente de sexo", ""));
+                "H: 13.5±3.3 · M: 11.3±4.3", "", "Referencia dependiente de sexo", ""));
 
         return list;
     }

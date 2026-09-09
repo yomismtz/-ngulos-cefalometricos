@@ -142,7 +142,7 @@ public class SavedStudiesActivity extends Activity {
             } else if ("TWEED".equals(study.mode)) {
                 typeText = "Análisis de Tweed";
             } else if ("LEVANDOSKI".equals(study.mode)) {
-                typeText = "Análisis de Levandoski";
+                typeText = "Análisis panorámico de Levandoski";
             } else if ("AIRWAY".equals(study.mode)) {
                 typeText = "Análisis de vía aérea";
             } else {

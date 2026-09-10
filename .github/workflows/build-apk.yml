@@ -19,6 +19,11 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/prepare-test-build.py
 
+      - name: Normalize precision pad dimensions
+        if: startsWith(github.ref_name, 'redesign/')
+        run: |
+          sed -i 's/dp(1\.6f)/dp(2)/g; s/dp(5f)/dp(5)/g' app/src/main/java/com/cefalo/angulos/AnalysisActivity.java
+
       - name: Read app version
         id: app_version
         shell: bash

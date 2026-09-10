@@ -108,7 +108,7 @@ public class CephalometricReferenceTest {
         assertEquals(30.0, fma.normalMax, 0.001);
 
         assertEquals(60.0, fmia.normalMin, 0.001);
-        assertEquals(70.0, fmia.normalMax, 0.001);
+        assertEquals(75.0, fmia.normalMax, 0.001);
 
         assertEquals(85.0, impa.normalMin, 0.001);
         assertEquals(95.0, impa.normalMax, 0.001);

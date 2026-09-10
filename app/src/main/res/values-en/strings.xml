@@ -44,4 +44,10 @@
     <string name="export_annotated">SAVE RADIOGRAPH WITH POINTS AND LINES</string>
     <string name="educational_footer">Educational use · Does not replace professional assessment</string>
     <string name="back_accessibility">Back</string>
+
+    <string name="trace_mode_enter">⛶ TRACE</string>
+    <string name="trace_mode_exit">EXIT ⛶</string>
+    <string name="trace_mode_hint">Tracing mode: one finger moves the landmark with fine precision; two fingers pan or zoom the radiograph.</string>
+    <string name="trace_undo">↶</string>
+    <string name="trace_undo_accessibility">Undo previous landmark</string>
 </resources>

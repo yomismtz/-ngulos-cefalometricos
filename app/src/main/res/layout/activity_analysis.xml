@@ -7,6 +7,7 @@
     android:background="@drawable/bg_home">
 
     <LinearLayout
+        android:id="@+id/analysisHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -116,16 +117,17 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/traceNavRow"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp">
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
 
         <TextView
             android:id="@+id/btnPrevious"
-            android:layout_width="64dp"
+            android:layout_width="56dp"
             android:layout_height="48dp"
             android:gravity="center"
             android:text="@string/previous"
@@ -135,6 +137,22 @@
             android:background="@drawable/button_soft_purple_centered"
             android:clickable="true"
             android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnTraceUndo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="@string/trace_undo"
+            android:contentDescription="@string/trace_undo_accessibility"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:textColor="@color/brand_purple"
+            android:background="@drawable/button_soft_purple_centered"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp" />
 
         <TextView
             android:id="@+id/txtProgress"
@@ -153,7 +171,7 @@
 
         <TextView
             android:id="@+id/btnNext"
-            android:layout_width="64dp"
+            android:layout_width="54dp"
             android:layout_height="48dp"
             android:gravity="center"
             android:text="@string/next"
@@ -161,6 +179,22 @@
             android:textSize="9.5sp"
             android:textColor="@color/brand_purple"
             android:background="@drawable/button_soft_purple_centered"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginRight="4dp" />
+
+        <TextView
+            android:id="@+id/btnTraceMode"
+            android:layout_width="62dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:text="@string/trace_mode_enter"
+            android:textStyle="bold"
+            android:textSize="9sp"
+            android:maxLines="2"
+            android:textColor="@color/mint_text"
+            android:background="@drawable/button_soft_mint_centered"
             android:clickable="true"
             android:focusable="true" />
     </LinearLayout>
@@ -195,6 +229,7 @@
         android:background="@drawable/panel_dark" />
 
     <LinearLayout
+        android:id="@+id/pointStrip"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:orientation="vertical"
@@ -235,6 +270,7 @@
     </LinearLayout>
 
     <HorizontalScrollView
+        android:id="@+id/bottomControlsScroll"
         android:layout_width="match_parent"
         android:layout_height="58dp"
         android:fillViewport="false"

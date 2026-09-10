@@ -59,6 +59,9 @@ public class MeasurementView extends View {
     private boolean editingPoint = false;
     private boolean editingPointWasMissing = false;
     private PointF editingPointOriginal = null;
+    private float lastFineTouchX;
+    private float lastFineTouchY;
+    private static final float FINE_DRAG_FACTOR = 0.34f;
 
     private boolean magnifierActive = false;
     private PointF magnifierImagePoint;
@@ -540,7 +543,7 @@ public class MeasurementView extends View {
         if (bitmap == null || magnifierImagePoint == null) return;
 
         float available = Math.min(getWidth(), getHeight());
-        float radius = Math.min(dp(132), available * 0.36f);
+        float radius = Math.min(dp(150), available * 0.40f);
         float margin = dp(16);
 
         PointF touchScreen = imageToScreen(magnifierImagePoint);
@@ -624,6 +627,8 @@ public class MeasurementView extends View {
                 downY = event.getY();
                 lastPanX = downX;
                 lastPanY = downY;
+                lastFineTouchX = downX;
+                lastFineTouchY = downY;
                 moved = false;
                 editingPoint = false;
                 editingPointOriginal = null;
@@ -670,17 +675,46 @@ public class MeasurementView extends View {
                 float y = event.getY();
 
                 if (editingPoint) {
-                    PointF movePoint = screenToImage(x, y);
+                    PointF current = points.get(selectedIndex);
 
-                    if (insideImage(movePoint)) {
-                        points.set(
-                                selectedIndex,
-                                new PointF(movePoint.x, movePoint.y)
-                        );
+                    if (current != null) {
+                        float scale = getCurrentMatrixScale();
+                        float dxImage =
+                                (x - lastFineTouchX)
+                                        / scale
+                                        * FINE_DRAG_FACTOR;
+                        float dyImage =
+                                (y - lastFineTouchY)
+                                        / scale
+                                        * FINE_DRAG_FACTOR;
+
+                        PointF adjusted =
+                                new PointF(
+                                        clamp(
+                                                current.x + dxImage,
+                                                0f,
+                                                bitmap.getWidth()
+                                        ),
+                                        clamp(
+                                                current.y + dyImage,
+                                                0f,
+                                                bitmap.getHeight()
+                                        )
+                                );
+
+                        points.set(selectedIndex, adjusted);
                         magnifierImagePoint =
-                                new PointF(movePoint.x, movePoint.y);
+                                new PointF(
+                                        adjusted.x,
+                                        adjusted.y
+                                );
                         magnifierActive = true;
                     }
+
+                    autoPanNearEdges(x, y);
+
+                    lastFineTouchX = x;
+                    lastFineTouchY = y;
 
                     invalidate();
                     return true;
@@ -715,19 +749,6 @@ public class MeasurementView extends View {
 
             case MotionEvent.ACTION_UP:
                 if (editingPoint) {
-                    PointF upPoint =
-                            screenToImage(
-                                    event.getX(),
-                                    event.getY()
-                            );
-
-                    if (insideImage(upPoint)) {
-                        points.set(
-                                selectedIndex,
-                                new PointF(upPoint.x, upPoint.y)
-                        );
-                    }
-
                     performClick();
 
                     if (editingPointWasMissing) {
@@ -790,6 +811,57 @@ public class MeasurementView extends View {
         editingPointOriginal = null;
         editingPointWasMissing = false;
         invalidate();
+    }
+
+    private float getCurrentMatrixScale() {
+        float[] values = new float[9];
+        matrix.getValues(values);
+
+        float scale = (float) Math.sqrt(
+                values[Matrix.MSCALE_X] * values[Matrix.MSCALE_X]
+                        + values[Matrix.MSKEW_Y] * values[Matrix.MSKEW_Y]
+        );
+
+        return scale > 0f ? scale : 1f;
+    }
+
+    private void autoPanNearEdges(float x, float y) {
+        if (bitmap == null || getWidth() <= 0 || getHeight() <= 0) {
+            return;
+        }
+
+        float threshold = dp(56);
+        float maxStep = dp(13);
+        float panX = 0f;
+        float panY = 0f;
+
+        if (x < threshold) {
+            panX = maxStep * (1f - Math.max(0f, x) / threshold);
+        } else if (x > getWidth() - threshold) {
+            float distance =
+                    Math.max(0f, getWidth() - x);
+            panX = -maxStep * (1f - distance / threshold);
+        }
+
+        if (y < threshold) {
+            panY = maxStep * (1f - Math.max(0f, y) / threshold);
+        } else if (y > getHeight() - threshold) {
+            float distance =
+                    Math.max(0f, getHeight() - y);
+            panY = -maxStep * (1f - distance / threshold);
+        }
+
+        if (panX == 0f && panY == 0f) {
+            return;
+        }
+
+        matrix.postTranslate(panX, panY);
+        constrainImageToViewport();
+        updateInverse();
+    }
+
+    private float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     private boolean handleCalibrationTouch(MotionEvent event) {

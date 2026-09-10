@@ -215,12 +215,12 @@ public class AnalysisActivity extends AppCompatActivity {
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
-                "Seleccione un punto en la barra inferior para ver aquí dónde se localiza."
+                "Un dedo: coloca y arrastra el punto con la lupa. Dos dedos: mueve o amplía la radiografía."
         );
 
         if (linearDefinitions.isEmpty()) {
-            btnCalibrate.setVisibility(android.view.View.GONE);
-            txtCalibration.setVisibility(android.view.View.GONE);
+            findViewById(R.id.calibrationRow)
+                    .setVisibility(android.view.View.GONE);
         }
 
         refreshPointChips();

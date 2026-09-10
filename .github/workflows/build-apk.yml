@@ -15,6 +15,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare current test build
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/prepare-test-build.py
+
       - name: Read app version
         id: app_version
         shell: bash

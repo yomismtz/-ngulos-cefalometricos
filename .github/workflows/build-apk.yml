@@ -1,4 +1,4 @@
-name: Build Yom Análisis Radiográficos APK and Bundle
+name: Build YOM Análisis Radiográficos APK and Bundle
 
 on:
   workflow_dispatch:
@@ -134,23 +134,49 @@ jobs:
       - name: Build test APK
         run: gradle --no-daemon :app:assembleDebug
 
+      - name: Enable KVM for launch test
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Verify APK really opens on Android
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: true
+          script: |
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb logcat -c
+            adb shell am force-stop com.yomceph.app
+            adb shell am start -W -n com.yomceph.app/com.cefalo.angulos.MainActivity
+            sleep 4
+            PID=$(adb shell pidof com.yomceph.app | tr -d '\r')
+            if [ -z "$PID" ]; then
+              echo "Launcher process exited after opening. Recent AndroidRuntime log:"
+              adb logcat -d -t 500 | grep -E "FATAL EXCEPTION|AndroidRuntime|com.yomceph.app" || true
+              exit 1
+            fi
+            echo "Launcher smoke test passed with PID $PID"
+
       - name: Build release App Bundle
         run: gradle --no-daemon :app:bundleRelease
 
       - name: Rename artifacts
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk "Yom-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-test.apk"
-          cp app/build/outputs/bundle/release/app-release.aab "Yom-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab"
+          cp app/build/outputs/apk/debug/app-debug.apk "YOM-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-test.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "YOM-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab"
 
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: Yom-Analisis-Radiograficos-Test-APK-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
-          path: Yom-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-test.apk
+          name: YOM-Analisis-Radiograficos-Test-APK-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
+          path: YOM-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-test.apk
           if-no-files-found: error
 
       - name: Upload unsigned App Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: Yom-Analisis-Radiograficos-Unsigned-AAB-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
-          path: Yom-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab
+          name: YOM-Analisis-Radiograficos-Unsigned-AAB-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
+          path: YOM-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab

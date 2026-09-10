@@ -27,10 +27,10 @@ jobs:
       - name: Create brand assets
         run: python desktop/create_brand_assets.py
 
-      - name: Build EXE HiDPI with brand icon
+      - name: Build EXE HiDPI with guided cervical tangents
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_hidpi_brand.py
+          pyinstaller --noconfirm --clean --onefile --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_hidpi_guided_tangents.py
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4

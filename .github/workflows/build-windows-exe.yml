@@ -27,10 +27,10 @@ jobs:
       - name: Create brand assets
         run: python desktop/create_brand_assets.py
 
-      - name: Build EXE HiDPI extended analyses
+      - name: Build EXE HiDPI with Powell and extended analyses
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_v06_extended.py
+          pyinstaller --noconfirm --clean --onefile --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_v07_powell.py
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4

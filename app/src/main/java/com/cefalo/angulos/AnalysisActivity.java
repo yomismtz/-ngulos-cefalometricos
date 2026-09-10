@@ -1385,7 +1385,9 @@ public class AnalysisActivity extends AppCompatActivity {
         note.setText(calibrationInstructions());
         note.setTextSize(12.5f);
         note.setTextColor(getColor(R.color.brand_teal));
-        note.setBackgroundResource(R.drawable.button_soft_mint);
+        note.setGravity(Gravity.CENTER);
+        note.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        note.setBackgroundResource(R.drawable.button_soft_mint_centered);
         note.setPadding(dp(12), dp(10), dp(12), dp(10));
         content.addView(note);
 
@@ -1737,7 +1739,7 @@ public class AnalysisActivity extends AppCompatActivity {
 
         TextView heading = new TextView(this);
         heading.setText(
-                studyName +
+                (studyName.trim().isEmpty() ? "Estudio sin nombre" : studyName) +
                 "\n" +
                 (
                         patientName.trim().isEmpty()
@@ -1759,6 +1761,8 @@ public class AnalysisActivity extends AppCompatActivity {
         );
         heading.setTextColor(getColor(R.color.brand_purple));
         heading.setTextSize(15f);
+        heading.setGravity(Gravity.CENTER);
+        heading.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         heading.setTypeface(
                 Typeface.DEFAULT,
                 Typeface.BOLD
@@ -1778,6 +1782,8 @@ public class AnalysisActivity extends AppCompatActivity {
         );
         intro.setTextSize(13f);
         intro.setTextColor(getColor(R.color.text_primary));
+        intro.setGravity(Gravity.CENTER);
+        intro.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         intro.setPadding(
                 0,
                 0,
@@ -1871,6 +1877,8 @@ public class AnalysisActivity extends AppCompatActivity {
             linearTitle.setTextColor(getColor(R.color.brand_purple));
             linearTitle.setTextSize(15f);
             linearTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            linearTitle.setGravity(Gravity.CENTER);
+            linearTitle.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
             linearTitle.setPadding(0, dp(8), 0, dp(8));
             container.addView(linearTitle);
 
@@ -1881,7 +1889,9 @@ public class AnalysisActivity extends AppCompatActivity {
                 );
                 warning.setTextColor(getColor(R.color.warning_text));
                 warning.setTextSize(14f);
-                warning.setBackgroundResource(R.drawable.button_soft_mint);
+                warning.setGravity(Gravity.CENTER);
+                warning.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+                warning.setBackgroundResource(R.drawable.button_soft_mint_centered);
                 warning.setPadding(dp(14), dp(12), dp(14), dp(12));
                 container.addView(warning);
 
@@ -1895,6 +1905,8 @@ public class AnalysisActivity extends AppCompatActivity {
                 );
                 calibration.setTextColor(getColor(R.color.brand_teal));
                 calibration.setTextSize(13f);
+                calibration.setGravity(Gravity.CENTER);
+                calibration.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
                 calibration.setPadding(0, 0, 0, dp(8));
                 container.addView(calibration);
 
@@ -2092,11 +2104,11 @@ public class AnalysisActivity extends AppCompatActivity {
                     return "McNamara: ≤5 mm = indicador de posible compromiso; la dimensión aumenta con la edad";
                 }
 
-                return "McNamara: adulto ≈17.4 mm; ≤5 mm = indicador de posible compromiso";
+                return "McNamara adulto: mujeres 17.4±3.4 mm · hombres 17.4±4.3 mm; ≤5 mm = posible compromiso";
             }
 
             if (def.name.startsWith("Faringe posterior")) {
-                return "McNamara: promedio ≈10–12 mm; >15 mm puede sugerir lengua anterior/tonsilas aumentadas";
+                return "McNamara adulto: mujeres 11.3±3.3 mm · hombres 13.5±4.3 mm; >15 mm puede sugerir lengua anterior/tonsilas aumentadas";
             }
 
             return def.normText;
@@ -2293,12 +2305,51 @@ public class AnalysisActivity extends AppCompatActivity {
             description = "FMA elevado respecto al intervalo central clásico.";
         }
 
+        MeasurementDefinition fmiaDef = null;
+        MeasurementDefinition impaDef = null;
+
+        for (MeasurementDefinition def : definitions) {
+            if ("FMIA".equals(def.name)) fmiaDef = def;
+            if ("IMPA".equals(def.name)) impaDef = def;
+        }
+
+        Double fmia =
+                fmiaDef == null
+                        ? null
+                        : measurementView.calculate(fmiaDef);
+
+        Double impa =
+                impaDef == null
+                        ? null
+                        : measurementView.calculate(impaDef);
+
+        String targetText;
+        if (fma <= 20.0) {
+            targetText = "Tweed: con FMA ≤20°, IMPA no debería exceder aproximadamente 92°.";
+        } else if (fma < 30.0) {
+            targetText = "Tweed: con FMA entre 21° y 29°, el objetivo histórico de FMIA es aproximadamente 68°.";
+        } else {
+            targetText = "Tweed: con FMA ≥30°, el objetivo histórico de FMIA es aproximadamente 65°.";
+        }
+
+        String geometryText = "";
+        if (fmia != null && impa != null) {
+            double sum = fma + fmia + impa;
+            geometryText =
+                    "\nControl geométrico: FMA + FMIA + IMPA = " +
+                    String.format(Locale.US, "%.1f°", sum) +
+                    " (debe aproximarse a 180°).";
+        }
+
         TextView summary = new TextView(this);
 
         summary.setText(
                 "Triángulo de Tweed · referencia histórica\n" +
                 String.format(Locale.US, "FMA %.1f° · %s", fma, description) +
-                "\nFMA, FMIA e IMPA deben interpretarse en conjunto; no se muestra un «pronóstico» clínico automático."
+                "\n" +
+                targetText +
+                geometryText +
+                "\nInterpretar siempre el triángulo completo; no se genera un pronóstico clínico automático."
         );
 
         summary.setTextSize(13.5f);
@@ -2348,6 +2399,8 @@ public class AnalysisActivity extends AppCompatActivity {
         title.setTextSize(16f);
         title.setTextColor(getColor(R.color.brand_purple));
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setGravity(Gravity.CENTER);
+        title.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
         title.setPadding(0, dp(8), 0, dp(6));
         container.addView(title);
 
@@ -2416,7 +2469,7 @@ public class AnalysisActivity extends AppCompatActivity {
         row.setTextColor(getColor(R.color.text_primary));
         row.setGravity(Gravity.CENTER);
         row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
-        row.setBackgroundResource(R.drawable.button_soft_mint);
+        row.setBackgroundResource(R.drawable.button_soft_mint_centered);
         row.setPadding(dp(10), dp(9), dp(10), dp(9));
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(

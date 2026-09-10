@@ -180,6 +180,10 @@ public class AnalysisActivity extends AppCompatActivity {
         btnTraceMode = findViewById(R.id.btnTraceMode);
         pointChips = findViewById(R.id.pointChips);
 
+        if (btnTraceMode == null) {
+            tracingFullscreen = false;
+        }
+
         measurementView.setLandmarks(landmarks);
         measurementView.setProgressListener(this::updateProgress);
 

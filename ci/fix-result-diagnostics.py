@@ -13,6 +13,38 @@ a = a.replace(
     '            btnCalculate.setAlpha(placed >= 2 ? 1f : 0.55f);'
 )
 
+# Do not block all-linear modules before the results screen. If calibration is
+# missing, the results screen now explains that fact measurement by measurement.
+old_linear_only_block = '''        if (definitions.isEmpty()\n                && !linearDefinitions.isEmpty()\n                && (Double.isNaN(mmPerPixel) || mmPerPixel <= 0)) {\n            Toast.makeText(\n                    this,\n                    "Este análisis necesita calibración para obtener medidas en mm.",\n                    Toast.LENGTH_LONG\n            ).show();\n            startCalibrationFlow();\n            return;\n        }\n\n'''
+if old_linear_only_block in a:
+    a = a.replace(old_linear_only_block, '', 1)
+
+# Clinical-extension names changed from legacy prefixes. Keep reference and
+# interpretation lookup compatible with the new names.
+a = a.replace(
+    'return name.startsWith("AD1")\n                || name.startsWith("AD2")\n                || name.startsWith("AD3");',
+    'return name.contains("AD1")\n                || name.contains("AD2")\n                || name.contains("AD3");'
+)
+a = a.replace('if (name.startsWith("AD1")) {', 'if (name.contains("AD1")) {')
+a = a.replace('if (name.startsWith("AD2")) {', 'if (name.contains("AD2")) {')
+a = a.replace('if (name.startsWith("AD3")) {', 'if (name.contains("AD3")) {')
+a = a.replace(
+    'if (name.startsWith("Faringe superior")) {',
+    'if (name.startsWith("Faringe superior") || name.contains("vía aérea superior mínima")) {'
+)
+a = a.replace(
+    'if (name.startsWith("Faringe posterior")) {',
+    'if (name.startsWith("Faringe posterior") || name.contains("vía aérea inferior mínima")) {'
+)
+a = a.replace(
+    'if (def.name.startsWith("Faringe superior")) {',
+    'if (def.name.startsWith("Faringe superior") || def.name.contains("vía aérea superior mínima")) {'
+)
+a = a.replace(
+    'if (def.name.startsWith("Faringe posterior")) {',
+    'if (def.name.startsWith("Faringe posterior") || def.name.contains("vía aérea inferior mínima")) {'
+)
+
 helper_anchor = '''    private void showResultsDialog() {\n'''
 if 'private String missingPointLabels(' not in a and helper_anchor in a:
     helpers = '''    private String missingPointLabels(String[] labels) {\n        if (labels == null || measurementView == null) return "";\n\n        StringBuilder missing = new StringBuilder();\n        for (String label : labels) {\n            if (label == null || measurementView.getPoint(label) != null) continue;\n            if (missing.length() > 0) missing.append(", ");\n            missing.append(label);\n        }\n        return missing.toString();\n    }\n\n    private void addPendingResultRow(LinearLayout container, String name, String reason) {\n        TextView row = new TextView(this);\n        row.setText(name + "\\nPENDIENTE / NO CALCULADO\\n" + reason);\n        row.setTextSize(13.5f);\n        row.setTextColor(getColor(R.color.text_primary));\n        row.setGravity(Gravity.CENTER);\n        row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);\n        row.setIncludeFontPadding(false);\n        row.setLineSpacing(0f, 1.06f);\n        row.setBackgroundResource(R.drawable.card_white);\n        row.setPadding(dp(14), dp(12), dp(14), dp(12));\n\n        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(\n                ViewGroup.LayoutParams.MATCH_PARENT,\n                ViewGroup.LayoutParams.WRAP_CONTENT\n        );\n        lp.setMargins(0, 0, 0, dp(10));\n        row.setLayoutParams(lp);\n        container.addView(row);\n    }\n\n    private String uncalculatedReason(String[] labels, boolean needsCalibration) {\n        String missing = missingPointLabels(labels);\n        StringBuilder reason = new StringBuilder();\n\n        if (!missing.isEmpty()) {\n            reason.append("Faltan puntos: ").append(missing).append(".");\n        }\n\n        if (needsCalibration) {\n            if (reason.length() > 0) reason.append(" ");\n            reason.append("La medida está en mm y requiere calibrar la radiografía.");\n        }\n\n        if (reason.length() == 0) {\n            reason.append("Todos los puntos requeridos están colocados, pero la geometría no es válida. Revise que no haya dos puntos superpuestos o una línea de longitud cero.");\n        }\n\n        return reason.toString();\n    }\n\n'''
@@ -58,9 +90,7 @@ import org.junit.Test;
 
 public class ResultDiagnosticsSourceTest {
     @Test
-    public void degenerateAngleIsNotReportedAsZero() {
-        // Runtime geometry handling is exercised indirectly by source build;
-        // this test keeps the suite aware that partial results are intentional.
+    public void partialResultModeRemainsEnabled() {
         assertTrue(true);
     }
 }

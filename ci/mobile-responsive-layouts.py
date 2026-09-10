@@ -27,4 +27,25 @@ if bad in a:
     a = a.replace(bad, good, 1)
 activity.write_text(a, encoding='utf-8')
 
-print('Dedicated tablet layout generated and mobile Java template normalized.')
+# Keep the new radiographic home strings complete in English so Lint can verify
+# both language sets. These are generated earlier by final-radiographic-audit.py.
+en = Path('app/src/main/res/values-en/strings.xml')
+if en.exists():
+    e = en.read_text(encoding='utf-8')
+    translations = {
+        'section_lateral': 'LATERAL SKULL RADIOGRAPH',
+        'section_panoramic': 'PANORAMIC RADIOGRAPH',
+        'analysis_cvm': 'CERVICAL MATURATION · C2–C4 · CS1–CS6',
+        'analysis_nolla': 'DENTAL DEVELOPMENT · NOLLA',
+        'analysis_resorption': 'PRIMARY ROOT RESORPTION',
+        'analysis_panoramic_review': 'COMPREHENSIVE PANORAMIC REVIEW',
+    }
+    additions = []
+    for key, value in translations.items():
+        if f'name="{key}"' not in e:
+            additions.append(f'    <string name="{key}">{value}</string>')
+    if additions:
+        e = e.replace('</resources>', '\n'.join(additions) + '\n</resources>')
+    en.write_text(e, encoding='utf-8')
+
+print('Dedicated tablet layout generated, mobile Java normalized, and English radiographic strings completed.')

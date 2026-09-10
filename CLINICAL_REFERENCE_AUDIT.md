@@ -25,8 +25,8 @@ Fuentes de contraste:
 ## Tweed
 
 Referencias centrales:
-- FMA: 25° (intervalo educativo central usado por la app: 20–30°).
-- FMIA: 65° ± 5°.
+- FMA: 25°; la app usa 20–30° como intervalo central 25° ± 5° y muestra además el rango histórico publicado 16–35°.
+- FMIA: valor de referencia 65°; rango histórico publicado 60–75° (algunas tablas contemporáneas lo expresan como 65° ± 5°).
 - IMPA: 90° ± 5°.
 
 Reglas históricas de relación:

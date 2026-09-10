@@ -219,8 +219,15 @@ public class AnalysisActivity extends AppCompatActivity {
         );
 
         if (linearDefinitions.isEmpty()) {
-            findViewById(R.id.calibrationRow)
-                    .setVisibility(android.view.View.GONE);
+            android.view.View calibrationRow =
+                    findViewById(R.id.calibrationRow);
+
+            if (calibrationRow != null) {
+                calibrationRow.setVisibility(android.view.View.GONE);
+            } else {
+                btnCalibrate.setVisibility(android.view.View.GONE);
+                txtCalibration.setVisibility(android.view.View.GONE);
+            }
         }
 
         refreshPointChips();

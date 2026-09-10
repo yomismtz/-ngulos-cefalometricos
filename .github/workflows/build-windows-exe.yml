@@ -1,0 +1,37 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - desktop-exe-vertebral
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/build-windows-exe.yml'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r desktop/requirements.txt
+
+      - name: Build EXE
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --onefile --windowed --name YomCeph_Desktop desktop/yomceph_desktop.py
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: YomCeph_Desktop_Windows
+          path: dist/YomCeph_Desktop.exe
+          if-no-files-found: error

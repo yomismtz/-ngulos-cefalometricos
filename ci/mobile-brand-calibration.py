@@ -1,13 +1,14 @@
 from pathlib import Path
 import re
 
-# Branding shared by the complete and Steiner-only builds.
+# Branding shared by the complete and Steiner-only builds before the
+# Steiner-only transform applies its own final product name.
 for rel in ['app/src/main/res/values/strings.xml', 'app/src/main/res/values-en/strings.xml']:
     path = Path(rel)
     if not path.exists():
         continue
     s = path.read_text(encoding='utf-8')
-    s = re.sub(r'<string name="app_name">.*?</string>', '<string name="app_name">Yom Análisis Radiográficos</string>', s)
+    s = re.sub(r'<string name="app_name">.*?</string>', '<string name="app_name">YOM Análisis Radiográficos</string>', s)
     if 'values-en' in rel:
         s = re.sub(r'<string name="app_slogan">.*?</string>', '<string name="app_slogan">Cephalometrics and radiographic analysis</string>', s)
     else:
@@ -20,12 +21,12 @@ for rel in ['app/src/main/res/values/strings.xml', 'app/src/main/res/values-en/s
             '</resources>')
     path.write_text(s, encoding='utf-8')
 
-# Distinct build version for this mobile polish.
+# Distinct build version after launcher-stability and naming corrections.
 gradle = Path('app/build.gradle')
 if gradle.exists():
     g = gradle.read_text(encoding='utf-8')
-    g = re.sub(r'versionCode\s+\d+', 'versionCode 25', g, count=1)
-    g = re.sub(r"versionName\s+'[^']+'", "versionName '1.24'", g, count=1)
+    g = re.sub(r'versionCode\s+\d+', 'versionCode 26', g, count=1)
+    g = re.sub(r"versionName\s+'[^']+'", "versionName '1.25'", g, count=1)
     gradle.write_text(g, encoding='utf-8')
 
 # Portrait layout: add a separate calibration verification action and a visible
@@ -218,51 +219,36 @@ if 'private void startCalibrationVerification()' not in a and verify_anchor in a
                 .create();
         dialog.setOnShowListener(ignored ->
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-                    double expected;
+                    String raw = input.getText() == null ? "" : input.getText().toString().trim().replace(',', '.');
+                    double known;
                     try {
-                        expected = Double.parseDouble(input.getText().toString().trim().replace(',', '.'));
-                    } catch (Exception e) {
-                        input.setError("Introduzca una longitud válida en mm");
+                        known = Double.parseDouble(raw);
+                    } catch (NumberFormatException ex) {
+                        input.setError("Introduzca una longitud válida");
                         return;
                     }
-                    if (expected <= 0.0) {
+                    if (known <= 0.0) {
                         input.setError("La longitud debe ser mayor que 0");
                         return;
                     }
                     double measured = pixelDistance * mmPerPixel;
-                    double difference = measured - expected;
-                    double percent = Math.abs(difference) / expected * 100.0;
+                    double diff = measured - known;
+                    double error = Math.abs(diff) / known * 100.0;
                     dialog.dismiss();
                     new AlertDialog.Builder(this)
-                            .setTitle("Resultado de verificación")
+                            .setTitle("Verificación de calibración")
                             .setMessage(String.format(Locale.US,
-                                    "Esperado: %.3f mm\\nMedido: %.3f mm\\nDiferencia: %+.3f mm\\nError absoluto: %.2f %%\\n\\nNo se aplica un límite de aceptación automático. Si la discrepancia no es adecuada para su protocolo, recalibre.",
-                                    expected, measured, difference, percent))
-                            .setNegativeButton("Cerrar", null)
-                            .setPositiveButton("RECALIBRAR", (d, w) -> startCalibrationFlow())
+                                    "Esperado: %.3f mm\\nMedido: %.3f mm\\nDiferencia: %+.3f mm\\nError absoluto: %.2f%%\\nEscala activa: %.6f mm/px",
+                                    known, measured, diff, error, mmPerPixel))
+                            .setPositiveButton("ACEPTAR", null)
                             .show();
                 }));
         dialog.show();
     }
 
 '''
-    a = a.replace(verify_anchor, methods + verify_anchor, 1)
+    idx = a.find(verify_anchor)
+    a = a[:idx] + methods + a[idx:]
 
 activity.write_text(a, encoding='utf-8')
-
-# Fix the existing Lint WrongConstant in the radiographic assessment picker.
-ra = Path('app/src/main/java/com/cefalo/angulos/RadiographicAssessmentActivity.java')
-if ra.exists():
-    s = ra.read_text(encoding='utf-8')
-    s = s.replace(
-        '''            int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            getContentResolver().takePersistableUriPermission(uri, flags & Intent.FLAG_GRANT_READ_URI_PERMISSION);''',
-        '''            int flags = data.getFlags();
-            if ((flags & Intent.FLAG_GRANT_READ_URI_PERMISSION) != 0) {
-                getContentResolver().takePersistableUriPermission(
-                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-                );
-            }''')
-    ra.write_text(s, encoding='utf-8')
-
-print('Yom branding and improved calibration assistant applied.')
+print('YOM branding and improved calibration assistant applied.')

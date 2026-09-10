@@ -8,4 +8,42 @@
         <item name="android:windowLightStatusBar">@bool/yom_light_system_bars</item>
         <item name="android:windowBackground">@drawable/bg_home</item>
     </style>
+
+    <style name="HomePrimaryButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:background">@drawable/button_primary_centered</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:elevation">3dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <style name="HomeSecondaryButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:background">@drawable/button_secondary_centered</item>
+        <item name="android:textColor">@color/mint_text</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:elevation">3dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
 </resources>

@@ -59,7 +59,7 @@ public class AnalysisActivity extends AppCompatActivity {
     private TextView btnLock;
     private TextView btnCalibrate;
     private TextView txtCalibration;
-    private LandmarkFlowLayout pointChips;
+    private ViewGroup pointChips;
 
     private List<MeasurementDefinition> definitions;
     private List<LinearMeasurementDefinition> linearDefinitions = new ArrayList<>();

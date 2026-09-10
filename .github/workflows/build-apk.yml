@@ -1,4 +1,4 @@
-name: Build Android APK and Bundle
+name: Build Yom Análisis Radiográficos APK and Bundle
 
 on:
   workflow_dispatch:
@@ -19,11 +19,10 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/prepare-test-build.py
 
-      - name: Normalize precision pad dimensions and tangent help
+      - name: Normalize tangent help
         if: startsWith(github.ref_name, 'redesign/')
         shell: bash
         run: |
-          sed -i 's/dp(1\.6f)/dp(2)/g; s/dp(5f)/dp(5)/g' app/src/main/java/com/cefalo/angulos/AnalysisActivity.java
           python3 - <<'PY'
           from pathlib import Path
           path = Path('app/src/main/java/com/cefalo/angulos/PointGuide.java')
@@ -59,7 +58,7 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/augment-mcgregor-guide.py
 
-      - name: Diagnose uncalculated measurements
+      - name: Keep only calculable partial results
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/fix-result-diagnostics.py
 
@@ -70,6 +69,22 @@ jobs:
       - name: Refine radiographic assessment logic
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/refine-radiographic-logic.py
+
+      - name: Apply branding and calibration assistant
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/mobile-brand-calibration.py
+
+      - name: Apply exact fine adjustment
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/mobile-fine-adjust.py
+
+      - name: Refine per-landmark visual guides
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/mobile-guide-polish.py
+
+      - name: Generate dedicated tablet layout
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/mobile-responsive-layouts.py
 
       - name: Read app version
         id: app_version
@@ -83,7 +98,7 @@ jobs:
           echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -103,7 +118,18 @@ jobs:
         run: gradle --no-daemon :app:testDebugUnitTest
 
       - name: Run Android lint
-        run: gradle --no-daemon :app:lintDebug :app:lintRelease
+        shell: bash
+        run: |
+          set +e
+          gradle --no-daemon :app:lintDebug :app:lintRelease
+          STATUS=$?
+          if [ $STATUS -ne 0 ]; then
+            echo "===== DEBUG LINT ERRORS ====="
+            test -f app/build/reports/lint-results-debug.txt && grep -n -A4 -B2 "Error:" app/build/reports/lint-results-debug.txt || true
+            echo "===== RELEASE LINT ERRORS ====="
+            test -f app/build/reports/lint-results-release.txt && grep -n -A4 -B2 "Error:" app/build/reports/lint-results-release.txt || true
+            exit $STATUS
+          fi
 
       - name: Build test APK
         run: gradle --no-daemon :app:assembleDebug
@@ -113,18 +139,18 @@ jobs:
 
       - name: Rename artifacts
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk "YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-test.apk"
-          cp app/build/outputs/bundle/release/app-release.aab "YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab"
+          cp app/build/outputs/apk/debug/app-debug.apk "Yom-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-test.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "Yom-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab"
 
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph-Test-APK-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
-          path: YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-test.apk
+          name: Yom-Analisis-Radiograficos-Test-APK-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
+          path: Yom-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-test.apk
           if-no-files-found: error
 
       - name: Upload unsigned App Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph-Unsigned-AAB-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
-          path: YomCeph-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab
+          name: Yom-Analisis-Radiograficos-Unsigned-AAB-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
+          path: Yom-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab

@@ -218,6 +218,13 @@ public class AnalysisActivity extends AppCompatActivity {
         findViewById(R.id.btnNext)
                 .setOnClickListener(v -> measurementView.selectNext());
 
+        View btnTraceUndo = findViewById(R.id.btnTraceUndo);
+        if (btnTraceUndo != null) {
+            btnTraceUndo.setOnClickListener(v ->
+                    measurementView.undo()
+            );
+        }
+
         if (btnTraceMode != null) {
             btnTraceMode.setOnClickListener(v ->
                     setTracingFullscreen(!tracingFullscreen)

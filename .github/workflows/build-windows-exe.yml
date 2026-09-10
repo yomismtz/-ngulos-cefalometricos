@@ -27,7 +27,7 @@ jobs:
       - name: Build EXE
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --name YomCeph_Desktop desktop/yomceph_desktop.py
+          pyinstaller --noconfirm --clean --onefile --windowed --name YomCeph_Desktop desktop/yomceph_desktop_lila.py
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4

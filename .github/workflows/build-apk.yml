@@ -51,6 +51,10 @@ jobs:
           path.write_text(s, encoding='utf-8')
           PY
 
+      - name: Apply clinical extensions and visual guides
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/extend-clinical-build.py
+
       - name: Read app version
         id: app_version
         shell: bash

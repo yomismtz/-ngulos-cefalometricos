@@ -59,6 +59,10 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/augment-mcgregor-guide.py
 
+      - name: Diagnose uncalculated measurements
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/fix-result-diagnostics.py
+
       - name: Read app version
         id: app_version
         shell: bash

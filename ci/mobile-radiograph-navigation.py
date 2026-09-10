@@ -213,7 +213,7 @@ def wrap_measurement_view(path: Path):
 {indent}        android:paddingLeft="8dp"
 {indent}        android:paddingRight="8dp"
 {indent}        android:progressTint="@color/brand_purple"
-{indent}        android:progressBackgroundTint="@color/divider"
+{indent}        android:progressBackgroundTint="@color/text_secondary"
 {indent}        android:thumbTint="@color/brand_teal"
 {indent}        android:contentDescription="@string/radiograph_pan_horizontal" />
 
@@ -230,7 +230,7 @@ def wrap_measurement_view(path: Path):
 {indent}        android:paddingLeft="8dp"
 {indent}        android:paddingRight="8dp"
 {indent}        android:progressTint="@color/brand_purple"
-{indent}        android:progressBackgroundTint="@color/divider"
+{indent}        android:progressBackgroundTint="@color/text_secondary"
 {indent}        android:thumbTint="@color/brand_teal"
 {indent}        android:contentDescription="@string/radiograph_pan_vertical" />
 {indent}</FrameLayout>'''

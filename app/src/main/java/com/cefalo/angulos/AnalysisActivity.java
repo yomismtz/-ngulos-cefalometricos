@@ -169,6 +169,7 @@ public class AnalysisActivity extends AppCompatActivity {
             linearDefinitions = LinearMeasurementCatalog.airway();
         } else {
             definitions = MeasurementCatalog.steiner();
+            linearDefinitions = LinearMeasurementCatalog.cephalometric();
         }
 
         landmarks = buildLandmarkList(definitions, linearDefinitions);
@@ -1645,6 +1646,26 @@ public class AnalysisActivity extends AppCompatActivity {
             ) * mmPerPixel;
         }
 
+        if (def.type == LinearMeasurementDefinition.Type.AXIAL_PROJECTION) {
+            PointF a = measurementView.getPoint(def.pointLabels[0]);
+            PointF b = measurementView.getPoint(def.pointLabels[1]);
+            PointF p = measurementView.getPoint(def.pointLabels[2]);
+
+            if (a == null || b == null || p == null) return null;
+
+            double dx = b.x - a.x;
+            double dy = b.y - a.y;
+            double length = Math.hypot(dx, dy);
+            if (length == 0.0) return null;
+
+            double axialPixels =
+                    ((p.x - a.x) * dx + (p.y - a.y) * dy) / length;
+
+            // SL y SE son longitudes S-L / S-E sobre el eje SN, no distancias
+            // perpendiculares. Se informa la magnitud de la proyección construida.
+            return Math.abs(axialPixels) * mmPerPixel;
+        }
+
         PointF a = measurementView.getPoint(def.pointLabels[0]);
         PointF b = measurementView.getPoint(def.pointLabels[1]);
         PointF p = measurementView.getPoint(def.pointLabels[2]);
@@ -1734,21 +1755,12 @@ public class AnalysisActivity extends AppCompatActivity {
             return;
         }
 
-        if (!measurementView.isComplete()) {
-            String next =
-                    measurementView.getCurrentLabel();
-
+        if (measurementView.getPlacedCount() < 2) {
             Toast.makeText(
                     this,
-                    "Faltan puntos. Seleccionado: " +
-                    (
-                            next == null
-                                    ? "—"
-                                    : next
-                    ),
+                    "Coloque los puntos necesarios para al menos una medición.",
                     Toast.LENGTH_LONG
             ).show();
-
             return;
         }
 

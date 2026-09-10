@@ -751,15 +751,6 @@ public class MeasurementView extends View {
                 if (editingPoint) {
                     performClick();
 
-                    if (editingPointWasMissing) {
-                        int nextMissing =
-                                nextMissingIndex(selectedIndex);
-
-                        if (nextMissing >= 0) {
-                            selectedIndex = nextMissing;
-                        }
-                    }
-
                     editingPoint = false;
                     editingPointOriginal = null;
                     editingPointWasMissing = false;

@@ -16,11 +16,15 @@ import android.graphics.Typeface;
 import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -59,7 +63,9 @@ public class AnalysisActivity extends AppCompatActivity {
     private TextView btnLock;
     private TextView btnCalibrate;
     private TextView txtCalibration;
+    private TextView btnTraceMode;
     private ViewGroup pointChips;
+    private boolean tracingFullscreen = false;
 
     private List<MeasurementDefinition> definitions;
     private List<LinearMeasurementDefinition> linearDefinitions = new ArrayList<>();
@@ -88,6 +94,7 @@ public class AnalysisActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             studyId = savedInstanceState.getString("STUDY_ID");
+            tracingFullscreen = savedInstanceState.getBoolean("TRACING_FULLSCREEN", false);
         }
 
         if (studyId == null) {
@@ -170,6 +177,7 @@ public class AnalysisActivity extends AppCompatActivity {
         btnLock = findViewById(R.id.btnLock);
         btnCalibrate = findViewById(R.id.btnCalibrate);
         txtCalibration = findViewById(R.id.txtCalibration);
+        btnTraceMode = findViewById(R.id.btnTraceMode);
         pointChips = findViewById(R.id.pointChips);
 
         measurementView.setLandmarks(landmarks);
@@ -206,6 +214,12 @@ public class AnalysisActivity extends AppCompatActivity {
         findViewById(R.id.btnNext)
                 .setOnClickListener(v -> measurementView.selectNext());
 
+        if (btnTraceMode != null) {
+            btnTraceMode.setOnClickListener(v ->
+                    setTracingFullscreen(!tracingFullscreen)
+            );
+        }
+
         findViewById(R.id.btnSaveStudy)
                 .setOnClickListener(v -> showStudyDetailsDialog(false));
 
@@ -215,7 +229,7 @@ public class AnalysisActivity extends AppCompatActivity {
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
-                "Un dedo: coloca y arrastra el punto con la lupa. Dos dedos: mueve o amplía la radiografía."
+                "Un dedo: coloca y arrastra el punto con precisión fina. Dos dedos: mueve o amplía la radiografía."
         );
 
         if (linearDefinitions.isEmpty()) {
@@ -242,6 +256,10 @@ public class AnalysisActivity extends AppCompatActivity {
                     landmarks.size(),
                     measurementView.getCurrentLabel()
             );
+        }
+
+        if (tracingFullscreen && btnTraceMode != null) {
+            setTracingFullscreen(true);
         }
     }
 
@@ -277,6 +295,118 @@ public class AnalysisActivity extends AppCompatActivity {
         outState.putString("PATIENT_SEX", patientSex);
         outState.putDouble("MM_PER_PIXEL", mmPerPixel);
         outState.putString("CALIBRATION_LABEL", calibrationLabel);
+        outState.putBoolean("TRACING_FULLSCREEN", tracingFullscreen);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (tracingFullscreen) {
+            setTracingFullscreen(false);
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus && tracingFullscreen) {
+            setSystemBarsHidden(true);
+        }
+    }
+
+    private void setTracingFullscreen(boolean enabled) {
+        if (btnTraceMode == null) {
+            tracingFullscreen = false;
+            return;
+        }
+
+        tracingFullscreen = enabled;
+
+        setViewVisible(R.id.analysisHeader, !enabled);
+        if (txtStudyInfo != null) {
+            txtStudyInfo.setVisibility(enabled ? View.GONE : View.VISIBLE);
+        }
+        if (txtAutosaveStatus != null) {
+            txtAutosaveStatus.setVisibility(enabled ? View.GONE : View.VISIBLE);
+        }
+
+        View calibrationRow = findViewById(R.id.calibrationRow);
+        if (calibrationRow != null) {
+            boolean showCalibration =
+                    !enabled && !linearDefinitions.isEmpty();
+            calibrationRow.setVisibility(
+                    showCalibration ? View.VISIBLE : View.GONE
+            );
+        }
+
+        if (txtInstruction != null) {
+            txtInstruction.setVisibility(enabled ? View.GONE : View.VISIBLE);
+        }
+
+        setViewVisible(R.id.pointStrip, !enabled);
+        setViewVisible(R.id.bottomControlsScroll, !enabled);
+
+        btnTraceMode.setText(
+                enabled
+                        ? R.string.trace_mode_exit
+                        : R.string.trace_mode_enter
+        );
+
+        if (enabled) {
+            Toast.makeText(
+                    this,
+                    R.string.trace_mode_hint,
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+
+        setSystemBarsHidden(enabled);
+
+        if (measurementView != null) {
+            measurementView.post(() -> measurementView.fitImage());
+        }
+    }
+
+    private void setViewVisible(int id, boolean visible) {
+        View view = findViewById(id);
+        if (view != null) {
+            view.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void setSystemBarsHidden(boolean hidden) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController controller =
+                    getWindow().getInsetsController();
+
+            if (controller != null) {
+                if (hidden) {
+                    controller.hide(WindowInsets.Type.systemBars());
+                    controller.setSystemBarsBehavior(
+                            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    );
+                } else {
+                    controller.show(WindowInsets.Type.systemBars());
+                }
+            }
+        } else {
+            View decor = getWindow().getDecorView();
+
+            if (hidden) {
+                decor.setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                );
+            } else {
+                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
+        }
     }
 
     private String modeTitle() {

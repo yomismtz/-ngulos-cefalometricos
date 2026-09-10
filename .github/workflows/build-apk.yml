@@ -55,6 +55,10 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/extend-clinical-build.py
 
+      - name: Expand McGregor cranio-cervical guide
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/augment-mcgregor-guide.py
+
       - name: Read app version
         id: app_version
         shell: bash

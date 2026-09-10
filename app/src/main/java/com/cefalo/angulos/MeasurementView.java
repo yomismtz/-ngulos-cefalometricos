@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,7 @@ public class MeasurementView extends View {
     private PointF editingPointOriginal = null;
     private float lastFineTouchX;
     private float lastFineTouchY;
+    private Runnable longPressRunnable;
     private static final float FINE_DRAG_FACTOR = 0.34f;
 
     private boolean magnifierActive = false;
@@ -376,20 +378,30 @@ public class MeasurementView extends View {
     public void undo() {
         if (locked || points.isEmpty()) return;
 
-        int start = selectedIndex - 1;
-        if (start < 0) start = points.size() - 1;
-
+        // With explicit landmark selection, undo the selected landmark first.
+        // If it has not been placed, fall back to the previous editable point.
         int found = -1;
-        for (int step = 0; step < points.size(); step++) {
-            int i = (start - step + points.size()) % points.size();
-            if (points.get(i) != null && !isPointLocked(i)) {
-                found = i;
-                break;
+        if (selectedIndex >= 0
+                && selectedIndex < points.size()
+                && points.get(selectedIndex) != null
+                && !isPointLocked(selectedIndex)) {
+            found = selectedIndex;
+        } else {
+            int start = selectedIndex - 1;
+            if (start < 0) start = points.size() - 1;
+
+            for (int step = 0; step < points.size(); step++) {
+                int i = (start - step + points.size()) % points.size();
+                if (points.get(i) != null && !isPointLocked(i)) {
+                    found = i;
+                    break;
+                }
             }
         }
 
         if (found >= 0) {
             points.set(found, null);
+            pointLocks.set(found, false);
             selectedIndex = found;
         }
 
@@ -608,6 +620,8 @@ public class MeasurementView extends View {
         }
 
         if (event.getPointerCount() >= 2) {
+            cancelPendingLongPress();
+
             if (editingPoint) {
                 restoreEditingPoint();
                 editingPoint = false;
@@ -633,40 +647,9 @@ public class MeasurementView extends View {
                 editingPoint = false;
                 editingPointOriginal = null;
                 editingPointWasMissing = false;
+                magnifierActive = false;
 
-                PointF initial = screenToImage(downX, downY);
-
-                if (!locked
-                        && insideImage(initial)
-                        && selectedIndex >= 0
-                        && selectedIndex < points.size()
-                        && !isPointLocked(selectedIndex)) {
-
-                    PointF previous = points.get(selectedIndex);
-                    editingPointWasMissing = previous == null;
-                    editingPointOriginal =
-                            previous == null
-                                    ? null
-                                    : new PointF(previous.x, previous.y);
-
-                    editingPoint = true;
-                    points.set(
-                            selectedIndex,
-                            new PointF(initial.x, initial.y)
-                    );
-
-                    magnifierImagePoint =
-                            new PointF(initial.x, initial.y);
-                    magnifierActive = true;
-                    invalidate();
-                    return true;
-                }
-
-                if (insideImage(initial)) {
-                    magnifierImagePoint = initial;
-                    magnifierActive = true;
-                }
-
+                scheduleLongPressForSelectedPoint();
                 invalidate();
                 return true;
 
@@ -690,104 +673,140 @@ public class MeasurementView extends View {
 
                         PointF adjusted =
                                 new PointF(
-                                        clamp(
-                                                current.x + dxImage,
-                                                0f,
-                                                bitmap.getWidth()
-                                        ),
-                                        clamp(
-                                                current.y + dyImage,
-                                                0f,
-                                                bitmap.getHeight()
-                                        )
+                                        clamp(current.x + dxImage, 0f, bitmap.getWidth()),
+                                        clamp(current.y + dyImage, 0f, bitmap.getHeight())
                                 );
 
                         points.set(selectedIndex, adjusted);
-                        magnifierImagePoint =
-                                new PointF(
-                                        adjusted.x,
-                                        adjusted.y
-                                );
+                        magnifierImagePoint = new PointF(adjusted.x, adjusted.y);
                         magnifierActive = true;
                     }
 
                     autoPanNearEdges(x, y);
-
                     lastFineTouchX = x;
                     lastFineTouchY = y;
-
                     invalidate();
                     return true;
                 }
 
-                if (Math.hypot(x - downX, y - downY) > dp(6)) {
+                if (Math.hypot(x - downX, y - downY) > dp(7)) {
                     moved = true;
+                    cancelPendingLongPress();
                 }
 
                 if (moved && !scaleDetector.isInProgress()) {
-                    float dx = x - lastPanX;
-                    float dy = y - lastPanY;
-
-                    matrix.postTranslate(dx, dy);
+                    matrix.postTranslate(x - lastPanX, y - lastPanY);
                     constrainImageToViewport();
                     updateInverse();
                     magnifierActive = false;
-                } else {
-                    PointF movePoint = screenToImage(x, y);
-
-                    if (insideImage(movePoint)) {
-                        magnifierImagePoint = movePoint;
-                        magnifierActive = true;
-                    }
                 }
 
                 lastPanX = x;
                 lastPanY = y;
-
                 invalidate();
                 return true;
 
             case MotionEvent.ACTION_UP:
+                cancelPendingLongPress();
+
                 if (editingPoint) {
                     performClick();
-
-                    if (editingPointWasMissing) {
-                        int nextMissing =
-                                nextMissingIndex(selectedIndex);
-
-                        if (nextMissing >= 0) {
-                            selectedIndex = nextMissing;
-                        }
-                    }
-
                     editingPoint = false;
                     editingPointOriginal = null;
                     editingPointWasMissing = false;
                     magnifierActive = false;
-
                     notifyProgress();
                     invalidate();
                     return true;
                 }
 
+                PointF upPoint = screenToImage(event.getX(), event.getY());
+
+                // A short tap places only a missing selected landmark. Once a
+                // point exists, moving it requires a long press on that point.
+                if (!moved
+                        && !locked
+                        && insideImage(upPoint)
+                        && selectedIndex >= 0
+                        && selectedIndex < points.size()
+                        && points.get(selectedIndex) == null
+                        && !isPointLocked(selectedIndex)) {
+                    performClick();
+                    points.set(selectedIndex, new PointF(upPoint.x, upPoint.y));
+                    notifyProgress();
+                }
+
+                // Deliberately keep selectedIndex unchanged: the operator must
+                // explicitly choose the next landmark chip/button.
                 magnifierActive = false;
                 invalidate();
                 return true;
 
             case MotionEvent.ACTION_CANCEL:
+                cancelPendingLongPress();
                 if (editingPoint) {
                     restoreEditingPoint();
                     editingPoint = false;
                     editingPointOriginal = null;
                     editingPointWasMissing = false;
                 }
-
                 magnifierActive = false;
                 invalidate();
                 return true;
         }
 
         return true;
+    }
+
+    private void scheduleLongPressForSelectedPoint() {
+        cancelPendingLongPress();
+
+        if (locked
+                || selectedIndex < 0
+                || selectedIndex >= points.size()
+                || points.get(selectedIndex) == null
+                || isPointLocked(selectedIndex)) {
+            return;
+        }
+
+        PointF selected = points.get(selectedIndex);
+        PointF selectedScreen = imageToScreen(selected);
+
+        if (Math.hypot(selectedScreen.x - downX, selectedScreen.y - downY) > dp(38)) {
+            return;
+        }
+
+        final int targetIndex = selectedIndex;
+        longPressRunnable = () -> {
+            if (moved
+                    || locked
+                    || targetIndex != selectedIndex
+                    || targetIndex < 0
+                    || targetIndex >= points.size()
+                    || points.get(targetIndex) == null
+                    || isPointLocked(targetIndex)) {
+                return;
+            }
+
+            PointF current = points.get(targetIndex);
+            editingPoint = true;
+            editingPointWasMissing = false;
+            editingPointOriginal = new PointF(current.x, current.y);
+            lastFineTouchX = downX;
+            lastFineTouchY = downY;
+            magnifierImagePoint = new PointF(current.x, current.y);
+            magnifierActive = true;
+            invalidate();
+        };
+
+        postDelayed(longPressRunnable, ViewConfiguration.getLongPressTimeout());
+    }
+
+    private void cancelPendingLongPress() {
+        if (longPressRunnable != null) {
+            removeCallbacks(longPressRunnable);
+            longPressRunnable = null;
+        }
     }
 
     private void restoreEditingPoint() {

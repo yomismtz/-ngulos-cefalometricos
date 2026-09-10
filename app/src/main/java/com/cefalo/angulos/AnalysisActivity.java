@@ -257,7 +257,7 @@ public class AnalysisActivity extends AppCompatActivity {
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
-                "Un dedo: coloca y arrastra el punto con precisión fina. Dos dedos: mueve o amplía la radiografía."
+                "Toque para colocar el punto seleccionado. Arrastre con un dedo para navegar; pellizque para zoom. Mantenga presionado un punto ya colocado para moverlo con lupa."
         );
 
         if (linearDefinitions.isEmpty()) {
@@ -288,6 +288,13 @@ public class AnalysisActivity extends AppCompatActivity {
 
         if (tracingFullscreen && btnTraceMode != null) {
             setTracingFullscreen(true);
+        }
+
+        // New-study flow: analysis -> image -> identification -> calibration -> points.
+        if (savedInstanceState == null
+                && restoredStudy == null
+                && imageUriString == null) {
+            measurementView.post(this::openImage);
         }
     }
 
@@ -632,7 +639,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 selectedLocked
                         ? "Bloqueado: "
                         : selectedPlaced
-                                ? "Corregir: "
+                                ? "Ajustar (mantén pulsado): "
                                 : "Marcar: ";
 
         if (placed >= total) {
@@ -659,7 +666,9 @@ public class AnalysisActivity extends AppCompatActivity {
                     currentLabel
             );
 
-            btnCalculate.setAlpha(0.55f);
+            btnCalculate.setAlpha(
+                    countAvailableMeasurements() > 0 ? 1f : 0.55f
+            );
         }
 
         updateLockButton();
@@ -821,6 +830,9 @@ public class AnalysisActivity extends AppCompatActivity {
             case "II ápice": return "IIa";
             case "Oclusal 1": return "Oc1";
             case "Oclusal 2": return "Oc2";
+            case "Cv2tg": return "C2tg";
+            case "Cv2ip": return "C2ip";
+            case "Cv4ip": return "C4ip";
             case "CVT sup.": return "CVTs";
             case "CVT inf.": return "CVTi";
             case "OPT sup.": return "OPTs";
@@ -888,21 +900,24 @@ public class AnalysisActivity extends AppCompatActivity {
                 dp(6)
         );
 
-        ImageView image = new ImageView(this);
-        image.setImageResource(
-                R.drawable.tooth_ruler_mascot
-        );
-        image.setScaleType(
-                ImageView.ScaleType.CENTER_INSIDE
-        );
-
+        LandmarkDiagramView diagram = new LandmarkDiagramView(this);
+        diagram.setLandmark(label);
         box.addView(
-                image,
+                diagram,
                 new LinearLayout.LayoutParams(
-                        dp(96),
-                        dp(74)
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(190)
                 )
         );
+
+        TextView diagramNotice = new TextView(this);
+        diagramNotice.setText("Esquema orientativo y no a escala. Use la definición anatómica escrita para colocar el punto sobre la radiografía.");
+        diagramNotice.setTextSize(11.5f);
+        diagramNotice.setTextColor(getColor(R.color.text_secondary));
+        diagramNotice.setGravity(Gravity.CENTER);
+        diagramNotice.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        diagramNotice.setPadding(0, dp(6), 0, dp(4));
+        box.addView(diagramNotice);
 
         TextView description = new TextView(this);
 
@@ -910,7 +925,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 measurementView.hasPointAt(
                         landmarks.indexOf(label)
                 )
-                        ? "\n\n✓ Ya está colocado. Para corregirlo, seleccione su recuadro y toque la nueva posición en la radiografía."
+                        ? "\n\n✓ Ya está colocado. Para corregirlo, seleccione su recuadro, mantenga presionado el punto en la radiografía y arrástrelo con la lupa."
                         : "\n\n— Todavía no está colocado.";
 
         description.setText(
@@ -1722,38 +1737,61 @@ public class AnalysisActivity extends AppCompatActivity {
             return;
         }
 
-        if (definitions.isEmpty()
-                && !linearDefinitions.isEmpty()
-                && (Double.isNaN(mmPerPixel) || mmPerPixel <= 0)) {
+        int available = countAvailableMeasurements();
+
+        if (available == 0) {
+            if (!linearDefinitions.isEmpty()
+                    && definitions.isEmpty()
+                    && (Double.isNaN(mmPerPixel) || mmPerPixel <= 0)) {
+                Toast.makeText(
+                        this,
+                        "Este análisis necesita calibración para calcular medidas lineales.",
+                        Toast.LENGTH_LONG
+                ).show();
+                startCalibrationFlow();
+                return;
+            }
+
             Toast.makeText(
                     this,
-                    "Este análisis necesita calibración para obtener medidas en mm.",
+                    "Aún no hay suficientes puntos para formar una medida. Coloque los puntos de al menos un ángulo o distancia y vuelva a generar el análisis.",
                     Toast.LENGTH_LONG
             ).show();
-            startCalibrationFlow();
             return;
         }
 
         if (!measurementView.isComplete()) {
-            String next =
-                    measurementView.getCurrentLabel();
-
             Toast.makeText(
                     this,
-                    "Faltan puntos. Seleccionado: " +
-                    (
-                            next == null
-                                    ? "—"
-                                    : next
-                    ),
+                    "Análisis parcial: se incluirán " + available +
+                    (available == 1 ? " medida disponible." : " medidas disponibles.") +
+                    " Las que aún no tengan todos sus puntos se omitirán.",
                     Toast.LENGTH_LONG
             ).show();
-
-            return;
         }
 
         saveStudy(true);
         showResultsDialog();
+    }
+
+    private int countAvailableMeasurements() {
+        int count = 0;
+
+        for (MeasurementDefinition def : definitions) {
+            if (measurementView.calculate(def) != null) {
+                count++;
+            }
+        }
+
+        if (!Double.isNaN(mmPerPixel) && mmPerPixel > 0) {
+            for (LinearMeasurementDefinition def : linearDefinitions) {
+                if (calculateLinear(def) != null) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     private void showResultsDialog() {
@@ -1999,39 +2037,51 @@ public class AnalysisActivity extends AppCompatActivity {
             addTweedSummary(container);
         }
 
-        TextView saveAnnotated =
+        TextView savePoints =
                 createDialogButton(
-                        getString(R.string.export_annotated),
+                        getString(R.string.export_points),
                         R.drawable.button_soft_mint,
                         getColor(R.color.mint_text)
                 );
 
-        saveAnnotated.setOnClickListener(v -> {
-            Bitmap annotated =
-                    measurementView
-                            .renderAnnotatedBitmap(definitions, linearDefinitions);
+        savePoints.setOnClickListener(v -> {
+            Bitmap pointsOnly = measurementView.renderAnnotatedBitmap();
 
-            if (annotated == null) {
-                Toast.makeText(
-                        this,
-                        "No se pudo preparar la imagen.",
-                        Toast.LENGTH_SHORT
-                ).show();
-
+            if (pointsOnly == null) {
+                Toast.makeText(this, "No se pudo preparar la imagen.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             startSaveImage(
-                    annotated,
-                    safeFileName(
-                            studyName +
-                            "_puntos.png"
-                    ),
+                    pointsOnly,
+                    safeFileName(studyName + "_puntos.png"),
                     REQ_SAVE_ANNOTATED
             );
         });
+        container.addView(savePoints);
 
-        container.addView(saveAnnotated);
+        TextView saveTracing =
+                createDialogButton(
+                        getString(R.string.export_tracing),
+                        R.drawable.button_soft_purple,
+                        getColor(R.color.brand_purple)
+                );
+
+        saveTracing.setOnClickListener(v -> {
+            Bitmap tracing = measurementView.renderAnnotatedBitmap(definitions, linearDefinitions);
+
+            if (tracing == null) {
+                Toast.makeText(this, "No se pudo preparar el trazado.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            startSaveImage(
+                    tracing,
+                    safeFileName(studyName + "_trazado.png"),
+                    REQ_SAVE_ANNOTATED
+            );
+        });
+        container.addView(saveTracing);
 
         TextView saveReport =
                 createDialogButton(
@@ -2105,7 +2155,7 @@ public class AnalysisActivity extends AppCompatActivity {
 
     private String resultsSafetyNotice() {
         if ("AIRWAY".equals(mode)) {
-            return "Interpretación cefalométrica orientativa. La telerradiografía lateral es una imagen 2D tomada despierto y no puede confirmar ni excluir obstrucción de vía aérea o apnea del sueño. Los valores se comparan con referencias publicadas o, cuando se indica, con la tabla docente aportada.";
+            return "Interpretación cefalométrica orientativa. La telerradiografía lateral es una imagen 2D tomada despierto y no puede confirmar ni excluir obstrucción de vía aérea o apnea del sueño. AD1 y AD2 se presentan como medidas geométricas publicadas sin umbral diagnóstico automático.";
         }
 
         if ("LEVANDOSKI".equals(mode)) {
@@ -2113,12 +2163,6 @@ public class AnalysisActivity extends AppCompatActivity {
         }
 
         return "Interpretación cefalométrica orientativa. Los intervalos son referencias de análisis y poblaciones concretas; no sustituyen historia clínica, examen físico ni valoración profesional. Una sola medida no debe utilizarse como diagnóstico independiente.";
-    }
-
-    private boolean isProvidedAirwayTableReference(String name) {
-        return name.startsWith("AD1")
-                || name.startsWith("AD2")
-                || name.startsWith("AD3");
     }
 
     private String linearSectionTitle() {
@@ -2136,25 +2180,25 @@ public class AnalysisActivity extends AppCompatActivity {
             return def.normText;
         }
 
+        if (def.name.startsWith("AD1") || def.name.startsWith("AD2")) {
+            return def.normText;
+        }
+
         AirwayRef ref = airwayReference(def.name);
 
         if (ref == null) {
-            if (isProvidedAirwayTableReference(def.name)) {
-                return "Tabla docente aportada: referencia disponible solo para edades específicas";
-            }
-
             if (def.name.startsWith("Faringe superior")) {
                 int age = patientAgeYears();
 
                 if (age > 0 && age < 18) {
-                    return "McNamara: ≤5 mm = indicador de posible compromiso; la dimensión aumenta con la edad";
+                    return "McNamara: ≤5 mm se describió como indicador de posible compromiso; la dimensión cambia con la edad";
                 }
 
                 return "McNamara adulto: mujeres 17.4±3.4 mm · hombres 17.4±4.3 mm; ≤5 mm = posible compromiso";
             }
 
             if (def.name.startsWith("Faringe posterior")) {
-                return "McNamara adulto: mujeres 11.3±3.3 mm · hombres 13.5±4.3 mm; >15 mm puede sugerir lengua anterior/tonsilas aumentadas";
+                return "McNamara adulto: mujeres 11.3±3.3 mm · hombres 13.5±4.3 mm; >15 mm puede asociarse con lengua anterior/tonsilas aumentadas";
             }
 
             return def.normText;
@@ -2162,12 +2206,9 @@ public class AnalysisActivity extends AppCompatActivity {
 
         return String.format(
                 Locale.US,
-                "%.2f ± %.2f mm%s",
+                "%.2f ± %.2f mm · referencia McNamara",
                 ref.mean,
-                ref.sd,
-                isProvidedAirwayTableReference(def.name)
-                        ? " · tabla docente aportada"
-                        : " · referencia McNamara"
+                ref.sd
         );
     }
 
@@ -2179,43 +2220,26 @@ public class AnalysisActivity extends AppCompatActivity {
             return def.diagnosis(value);
         }
 
-        AirwayRef ref = airwayReference(def.name);
-
-        if (isProvidedAirwayTableReference(def.name)) {
-            if (ref == null) {
-                return "Medida obtenida sin clasificación automática. Los valores AD1/AD2/AD3 conservan la tabla docente aportada, pero no se encontró evidencia suficiente para usarlos como umbrales diagnósticos individuales.";
-            }
-
-            double min = ref.mean - ref.sd;
-            double max = ref.mean + ref.sd;
-
-            String position =
-                    value < min
-                            ? "por debajo"
-                            : value > max
-                                    ? "por encima"
-                                    : "dentro";
-
-            return "La medida está " +
-                    position +
-                    " de ±1 DE de la referencia tabular aportada. " +
-                    "No debe interpretarse como diagnóstico de hipertrofia adenoidea, obstrucción ni apnea del sueño.";
+        if (def.name.startsWith("AD1") || def.name.startsWith("AD2")) {
+            return "Medida geométrica obtenida. YomCeph no aplica un umbral automático a AD1/AD2 porque su dimensión depende de edad, población y protocolo; correlacione con la evaluación clínica.";
         }
+
+        AirwayRef ref = airwayReference(def.name);
 
         if (def.name.startsWith("Faringe superior")) {
             if (value <= 5.0) {
                 return "≤5 mm: McNamara lo describió únicamente como indicador de posible compromiso de vía aérea superior. Requiere valoración clínica/otorrinolaringológica; no es un diagnóstico.";
             }
 
-            return "Mayor de 5 mm. McNamara no considera esta medida aislada suficiente para diagnosticar normalidad respiratoria; una telerradiografía 2D tampoco confirma ni excluye apnea del sueño.";
+            return "Mayor de 5 mm. Esta medida aislada no diagnostica normalidad respiratoria; una telerradiografía 2D tampoco confirma ni excluye apnea del sueño.";
         }
 
         if (def.name.startsWith("Faringe posterior")) {
             if (value > 15.0) {
-                return ">15 mm: McNamara indicó que puede sugerir posición anterior de la lengua y/o aumento tonsilar. Es una asociación cefalométrica, no un diagnóstico.";
+                return ">15 mm: puede asociarse con posición anterior de la lengua y/o aumento tonsilar según la descripción de McNamara. Es una asociación cefalométrica, no un diagnóstico.";
             }
 
-            return "≤15 mm. McNamara señaló que una medida inferior al promedio en esta región no es, por sí sola, un hallazgo diagnóstico. Correlacionar clínicamente.";
+            return "≤15 mm. Una medida aislada en esta región no establece un diagnóstico respiratorio. Correlacionar clínicamente.";
         }
 
         if (ref == null) {
@@ -2229,13 +2253,8 @@ public class AnalysisActivity extends AppCompatActivity {
             return "Dentro de ±1 DE de la referencia disponible. Esto no descarta un trastorno respiratorio.";
         }
 
-        return (
-                value < min
-                        ? "Por debajo"
-                        : "Por encima"
-        ) +
-                " de ±1 DE de la referencia disponible. " +
-                "Una telerradiografía lateral 2D no establece un diagnóstico respiratorio.";
+        return (value < min ? "Por debajo" : "Por encima") +
+                " de ±1 DE de la referencia disponible. Una telerradiografía lateral 2D no establece un diagnóstico respiratorio.";
     }
 
     private int patientAgeYears() {
@@ -2249,56 +2268,11 @@ public class AnalysisActivity extends AppCompatActivity {
 
     private AirwayRef airwayReference(String name) {
         int age = patientAgeYears();
-
         boolean female = "Femenino".equals(patientSex);
         boolean male = "Masculino".equals(patientSex);
 
-        // AD1/AD2/AD3: se conservan únicamente como referencias de la tabla
-        // docente aportada por la usuaria; no se usan para diagnóstico.
-        if (name.startsWith("AD1")) {
-            if (!female && !male) return null;
-
-            if (age == 6) {
-                return female
-                        ? new AirwayRef(20.66, 5.50)
-                        : new AirwayRef(14.74, 5.69);
-            }
-
-            if (age == 16) {
-                return female
-                        ? new AirwayRef(26.48, 4.45)
-                        : new AirwayRef(26.32, 4.28);
-            }
-
-            return null;
-        }
-
-        if (name.startsWith("AD2")) {
-            if (!female && !male) return null;
-
-            if (age == 6) {
-                return female
-                        ? new AirwayRef(15.89, 3.53)
-                        : new AirwayRef(14.93, 3.52);
-            }
-
-            if (age == 16) {
-                return female
-                        ? new AirwayRef(22.44, 4.26)
-                        : new AirwayRef(21.78, 4.67);
-            }
-
-            return null;
-        }
-
-        if (name.startsWith("AD3")) {
-            if (age == 6) return new AirwayRef(7.02, 3.70);
-            if (age == 16) return new AirwayRef(14.56, 4.70);
-            return null;
-        }
-
-        // McNamara: mujeres primero en la tabla original (17.4±3.4;
-        // 11.3±3.3) y hombres (17.4±4.3; 13.5±4.3).
+        // Adult descriptive values from McNamara. Pediatric AD1/AD2 are not
+        // assigned automatic thresholds in YomCeph.
         if (name.startsWith("Faringe superior")) {
             if (age < 18) return null;
             if (male) return new AirwayRef(17.4, 4.3);
@@ -2422,7 +2396,7 @@ public class AnalysisActivity extends AppCompatActivity {
     private void addLevandoskiSummary(LinearLayout container) {
         TextView note = new TextView(this);
         note.setText(
-                "Líneas medias: la tabla proporcionada indica observación de coincidencia, no una medida en mm. " +
+                "Líneas medias: este módulo compara referencias homólogas derecha/izquierda y no asigna por sí solo un umbral diagnóstico. " +
                 "YomCeph no asigna un umbral automático. Las panorámicas tienen magnificación y distorsión no uniformes; " +
                 "las diferencias derecha/izquierda son orientativas y una asimetría relevante debe confirmarse clínicamente o con imagen apropiada."
         );
@@ -2600,12 +2574,19 @@ public class AnalysisActivity extends AppCompatActivity {
         final int rowHeight = 270;
         final int footerHeight = 155;
 
-        int linearCount =
-                (!linearDefinitions.isEmpty()
-                        && !Double.isNaN(mmPerPixel)
-                        && mmPerPixel > 0)
-                        ? linearDefinitions.size()
-                        : 0;
+        int angularCount = 0;
+        for (MeasurementDefinition def : definitions) {
+            if (measurementView.calculate(def) != null) angularCount++;
+        }
+
+        int linearCount = 0;
+        if (!linearDefinitions.isEmpty()
+                && !Double.isNaN(mmPerPixel)
+                && mmPerPixel > 0) {
+            for (LinearMeasurementDefinition def : linearDefinitions) {
+                if (calculateLinear(def) != null) linearCount++;
+            }
+        }
 
         Bitmap annotated =
                 measurementView.renderAnnotatedBitmap(
@@ -2627,7 +2608,7 @@ public class AnalysisActivity extends AppCompatActivity {
         int height =
                 headerHeight +
                 imageSectionHeight +
-                ((definitions.size() + linearCount) * rowHeight) +
+                ((angularCount + linearCount) * rowHeight) +
                 (linearCount > 0 ? 60 : 0) +
                 footerHeight;
 

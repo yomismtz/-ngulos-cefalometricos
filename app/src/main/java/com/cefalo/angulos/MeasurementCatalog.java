@@ -242,10 +242,10 @@ public final class MeasurementCatalog {
         list.add(m(
                 "SN / CVT",
                 TWO_LINES,
-                p("S","N","CVT sup.","CVT inf."),
+                p("S","N","Cv2tg","Cv4ip"),
                 96,102,
                 "96°–102° · rango del protocolo",
-                "Marque S-N y luego dos puntos de la tangente cervical CVT.",
+                "Marque S-N; después Cv2tg y Cv4ip para construir la tangente CVT.",
                 "Valor menor al rango del protocolo; interpretación postural orientativa y dependiente de la posición natural de la cabeza.",
                 "Dentro del rango del protocolo; no implica normalidad clínica por sí solo.",
                 "Valor mayor al rango del protocolo; interpretación postural orientativa y dependiente de la posición natural de la cabeza.",
@@ -255,28 +255,16 @@ public final class MeasurementCatalog {
         list.add(m(
                 "SN / OPT",
                 TWO_LINES,
-                p("S","N","OPT sup.","OPT inf."),
+                p("S","N","Cv2tg","Cv2ip"),
                 94,100,
                 "94°–100° · rango del protocolo",
-                "Marque S-N y luego dos puntos de la tangente del proceso odontoideo OPT.",
+                "Marque S-N; después Cv2tg y Cv2ip para construir la tangente OPT.",
                 "Valor menor al rango del protocolo; interpretación postural orientativa.",
                 "Dentro del rango del protocolo; no implica normalidad clínica por sí solo.",
                 "Valor mayor al rango del protocolo; interpretación postural orientativa.",
                 true
         ));
 
-        list.add(m(
-                "McGregor–C4",
-                TWO_LINES,
-                p("Occipital","ENP","C4-1","C4-2"),
-                100,110,
-                "100°–110° · referencia del protocolo aportado",
-                "Use Occipital-ENP como plano de McGregor y después marque dos puntos que definan la referencia de C4.",
-                "Valor por debajo del rango del protocolo. La evidencia externa para un umbral diagnóstico aislado es limitada.",
-                "Dentro del rango del protocolo. No debe interpretarse como diagnóstico independiente.",
-                "Valor por encima del rango del protocolo. La evidencia externa para un umbral diagnóstico aislado es limitada.",
-                true
-        ));
 
         list.add(m(
                 "Ángulo posteroinferior (API) · McGregor / OP",
@@ -401,12 +389,12 @@ public final class MeasurementCatalog {
         List<MeasurementDefinition> list = new ArrayList<>();
 
         list.add(m(
-                "Ba-S-NA",
+                "Ba-S-N",
                 THREE_POINTS,
                 p("Ba","S","N"),
                 Double.NaN,
                 Double.NaN,
-                "Tabla docente aportada: 126° · sin umbral diagnóstico automático",
+                "Ángulo de base craneal · referencia descriptiva, sin umbral diagnóstico automático",
                 "Marque Ba, S y N. S es el vértice.",
                 "",
                 "Medida del ángulo de la base craneal. La literatura muestra variación por edad, sexo y población; no permite clasificar por sí sola «buen» o «mal desarrollo» ni diagnosticar vía aérea.",
@@ -420,10 +408,10 @@ public final class MeasurementCatalog {
                 p("Ba","S","ENP"),
                 Double.NaN,
                 Double.NaN,
-                "Tabla docente aportada: 63° · sin umbral diagnóstico automático",
+                "Medida estructural · referencia descriptiva, sin umbral diagnóstico automático",
                 "Marque Ba, S y ENP. S es el vértice.",
                 "",
-                "Medida estructural cefalométrica. No se encontró evidencia suficiente para convertir 63° en un umbral diagnóstico de vía aérea adecuada/inadecuada; se muestra solo como referencia docente.",
+                "Medida estructural cefalométrica. No se usa un valor aislado como umbral diagnóstico de vía aérea adecuada o inadecuada.",
                 "",
                 false
         ));

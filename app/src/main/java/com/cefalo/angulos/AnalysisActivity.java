@@ -750,6 +750,9 @@ public class AnalysisActivity extends AppCompatActivity {
                     Typeface.BOLD
             );
             chip.setGravity(Gravity.CENTER);
+            chip.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            chip.setIncludeFontPadding(false);
+            chip.setMinWidth(dp(48));
 
             chip.setPadding(
                     dp(8),
@@ -769,13 +772,13 @@ public class AnalysisActivity extends AppCompatActivity {
 
             } else if (placed) {
                 chip.setBackgroundResource(
-                        R.drawable.button_soft_mint
+                        R.drawable.button_soft_mint_centered
                 );
                 chip.setTextColor(getColor(R.color.mint_text));
 
             } else {
                 chip.setBackgroundResource(
-                        R.drawable.button_soft_purple
+                        R.drawable.button_soft_purple_centered
                 );
                 chip.setTextColor(getColor(R.color.brand_purple));
             }
@@ -786,7 +789,7 @@ public class AnalysisActivity extends AppCompatActivity {
                             dp(48)
                     );
 
-            lp.setMargins(0, 0, 0, 0);
+            lp.setMargins(dp(2), 0, dp(2), 0);
 
             chip.setLayoutParams(lp);
 

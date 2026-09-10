@@ -1,6 +1,6 @@
 # Auditoría de referencias cefalométricas de YomCeph
 
-Última revisión: 2026-09-09.
+Última revisión: 2026-09-10.
 
 YomCeph es una herramienta educativa. Los valores de referencia dependen del análisis, edad, sexo, población, técnica radiográfica y protocolo. Ninguna medición aislada equivale a un diagnóstico.
 
@@ -91,7 +91,7 @@ Valores adultos mostrados:
 
 La telerradiografía lateral es una representación 2D obtenida en vigilia y no diagnostica apnea del sueño ni obstrucción respiratoria por sí sola.
 
-Los valores AD1/AD2/AD3 de YomCeph permanecen identificados explícitamente como tabla docente aportada y no se convierten en umbrales diagnósticos automáticos.
+AD1 y AD2 permanecen como medidas geométricas sin umbral diagnóstico automático. Se retiró AD3 Uptp–Adenoides porque la construcción previa dependía de una tabla no incluida en la app y no pudo verificarse de forma reproducible con las fuentes revisadas. Las convenciones de colocación se documentan en LANDMARK_PLACEMENT_GUIDE.md.
 
 ## Control de consistencia
 
@@ -101,3 +101,12 @@ El build de YomCeph ejecuta pruebas unitarias para:
 - proteger los valores centrales de Steiner y Tweed;
 - proteger los límites de profundidad cervical;
 - comprobar que la referencia H-H′ publicada siga visible.
+
+
+## Revisión de puntos y flujo 2026-09-10
+
+- OPT se construye con Cv2tg–Cv2ip y CVT con Cv2tg–Cv4ip, compartiendo Cv2tg para evitar duplicación del mismo punto anatómico.
+- Se retiró la medición McGregor–C4 que dependía de C4-1/C4-2 sin definición reproducible.
+- El análisis parcial ahora omite únicamente las medidas cuyos puntos estén incompletos.
+- Se separan las exportaciones de radiografía con puntos y radiografía con trazado.
+- La guía visual integrada es un esquema original, no a escala y no interviene en los cálculos.

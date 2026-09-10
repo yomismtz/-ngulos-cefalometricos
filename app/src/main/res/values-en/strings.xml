@@ -42,12 +42,14 @@
     <string name="export_pdf">SAVE REPORT AS PDF</string>
     <string name="export_report_image">SAVE REPORT AS IMAGE</string>
     <string name="export_annotated">SAVE RADIOGRAPH WITH POINTS AND LINES</string>
+    <string name="export_points">SAVE RADIOGRAPH WITH POINTS</string>
+    <string name="export_tracing">SAVE RADIOGRAPH WITH TRACING</string>
     <string name="educational_footer">Educational use · Does not replace professional assessment</string>
     <string name="back_accessibility">Back</string>
 
     <string name="trace_mode_enter">⛶ TRACE</string>
     <string name="trace_mode_exit">EXIT ⛶</string>
-    <string name="trace_mode_hint">Tracing mode: one finger moves the landmark with fine precision; two fingers pan or zoom the radiograph.</string>
+    <string name="trace_mode_hint">Tracing: tap to place the selected landmark; drag with one finger to pan, pinch to zoom, and long-press a placed landmark to move it with the magnifier.</string>
     <string name="trace_undo">↶</string>
     <string name="trace_undo_accessibility">Undo previous landmark</string>
     <string name="previous_short">‹ PREV.</string>

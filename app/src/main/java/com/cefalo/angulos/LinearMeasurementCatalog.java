@@ -179,18 +179,13 @@ public final class LinearMeasurementCatalog {
 
         list.add(m("AD1 · ENP-AD1", DISTANCE, RANGE,
                 p("ENP", "AD1"), Double.NaN, Double.NaN,
-                "Referencia docente aportada para 6 y 16 años", "",
-                "Se muestra como referencia tabular; no usar como diagnóstico de obstrucción/adenoides.", ""));
+                "ENP–AD1 sobre la línea ENP–Ba · sin umbral diagnóstico automático", "",
+                "Medida geométrica publicada; interpretar con edad y contexto clínico, no como diagnóstico de obstrucción/adenoides.", ""));
 
         list.add(m("AD2 · ENP-AD2", DISTANCE, RANGE,
                 p("ENP", "AD2"), Double.NaN, Double.NaN,
-                "Referencia docente aportada para 6 y 16 años", "",
-                "Se muestra como referencia tabular; no usar como diagnóstico de obstrucción/adenoides.", ""));
-
-        list.add(m("AD3 · Uptp-Adenoides", DISTANCE, RANGE,
-                p("Uptp", "Adenoides"), Double.NaN, Double.NaN,
-                "Tabla aportada: 6 a 7.02±3.70 · 16 a 14.56±4.70 mm", "",
-                "Se muestra como referencia tabular; no usar como diagnóstico respiratorio.", ""));
+                "ENP–AD2 sobre la perpendicular a S–Ba por ENP · sin umbral diagnóstico automático", "",
+                "Medida geométrica publicada; interpretar con edad y contexto clínico, no como diagnóstico de obstrucción/adenoides.", ""));
 
         list.add(m("Faringe superior", DISTANCE, RANGE,
                 p("Faringe sup ant.", "Faringe sup post."), Double.NaN, Double.NaN,

@@ -1,0 +1,57 @@
+name: Final clinical wording check
+
+on:
+  push:
+    branches:
+      - yomceph-flow-redesign-2026-09-10
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: ${{ !contains(github.event.head_commit.message, '[basion-fixed]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: yomceph-flow-redesign-2026-09-10
+          fetch-depth: 0
+
+      - name: Correct Basion definition
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/src/main/java/com/cefalo/angulos/PointGuide.java')
+          s = p.read_text(encoding='utf-8')
+          old = 'Basion (Ba): punto medio del borde anterior del foramen magno, sobre la línea media; seleccione el punto más inferior de ese borde visible en la telerradiografía.'
+          new = 'Basion (Ba): punto más inferior y posterior del borde anterior del foramen magno, en el plano sagital medio.'
+          if old not in s:
+              raise SystemExit('Basion wording target not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Verify project
+        run: |
+          gradle --no-daemon :app:testDebugUnitTest
+          gradle --no-daemon :app:lintDebug
+          gradle --no-daemon :app:assembleDebug
+
+      - name: Commit verified wording
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/final-clinical-wording.yml
+          git add -A
+          git commit -m "docs: correct Basion placement definition [basion-fixed]"
+          git push origin HEAD:yomceph-flow-redesign-2026-09-10

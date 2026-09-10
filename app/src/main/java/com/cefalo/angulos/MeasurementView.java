@@ -56,6 +56,9 @@ public class MeasurementView extends View {
     private float lastPanX, lastPanY;
     private boolean moved = false;
     private boolean locked = false;
+    private boolean editingPoint = false;
+    private boolean editingPointWasMissing = false;
+    private PointF editingPointOriginal = null;
 
     private boolean magnifierActive = false;
     private PointF magnifierImagePoint;
@@ -537,7 +540,7 @@ public class MeasurementView extends View {
         if (bitmap == null || magnifierImagePoint == null) return;
 
         float available = Math.min(getWidth(), getHeight());
-        float radius = Math.min(dp(92), available * 0.28f);
+        float radius = Math.min(dp(132), available * 0.36f);
         float margin = dp(16);
 
         PointF touchScreen = imageToScreen(magnifierImagePoint);
@@ -560,7 +563,7 @@ public class MeasurementView extends View {
 
         if (currentScale <= 0f) currentScale = 1f;
 
-        float magnification = 4.2f;
+        float magnification = 4.8f;
         float magnifierScale = currentScale * magnification;
 
         canvas.save();
@@ -602,6 +605,11 @@ public class MeasurementView extends View {
         }
 
         if (event.getPointerCount() >= 2) {
+            if (editingPoint) {
+                restoreEditingPoint();
+                editingPoint = false;
+            }
+
             moved = true;
             magnifierActive = false;
             handleTwoFingerPan(event);
@@ -617,8 +625,38 @@ public class MeasurementView extends View {
                 lastPanX = downX;
                 lastPanY = downY;
                 moved = false;
+                editingPoint = false;
+                editingPointOriginal = null;
+                editingPointWasMissing = false;
 
                 PointF initial = screenToImage(downX, downY);
+
+                if (!locked
+                        && insideImage(initial)
+                        && selectedIndex >= 0
+                        && selectedIndex < points.size()
+                        && !isPointLocked(selectedIndex)) {
+
+                    PointF previous = points.get(selectedIndex);
+                    editingPointWasMissing = previous == null;
+                    editingPointOriginal =
+                            previous == null
+                                    ? null
+                                    : new PointF(previous.x, previous.y);
+
+                    editingPoint = true;
+                    points.set(
+                            selectedIndex,
+                            new PointF(initial.x, initial.y)
+                    );
+
+                    magnifierImagePoint =
+                            new PointF(initial.x, initial.y);
+                    magnifierActive = true;
+                    invalidate();
+                    return true;
+                }
+
                 if (insideImage(initial)) {
                     magnifierImagePoint = initial;
                     magnifierActive = true;
@@ -631,13 +669,28 @@ public class MeasurementView extends View {
                 float x = event.getX();
                 float y = event.getY();
 
+                if (editingPoint) {
+                    PointF movePoint = screenToImage(x, y);
+
+                    if (insideImage(movePoint)) {
+                        points.set(
+                                selectedIndex,
+                                new PointF(movePoint.x, movePoint.y)
+                        );
+                        magnifierImagePoint =
+                                new PointF(movePoint.x, movePoint.y);
+                        magnifierActive = true;
+                    }
+
+                    invalidate();
+                    return true;
+                }
+
                 if (Math.hypot(x - downX, y - downY) > dp(6)) {
                     moved = true;
                 }
 
                 if (moved && !scaleDetector.isInProgress()) {
-                    // Arrastrar con un dedo siempre desplaza la radiografía.
-                    // Nunca se selecciona ni se mueve un punto tocándolo sobre la imagen.
                     float dx = x - lastPanX;
                     float dy = y - lastPanY;
 
@@ -661,27 +714,39 @@ public class MeasurementView extends View {
                 return true;
 
             case MotionEvent.ACTION_UP:
-                PointF upPoint = screenToImage(event.getX(), event.getY());
+                if (editingPoint) {
+                    PointF upPoint =
+                            screenToImage(
+                                    event.getX(),
+                                    event.getY()
+                            );
 
-                if (!locked
-                        && !moved
-                        && insideImage(upPoint)
-                        && selectedIndex >= 0
-                        && selectedIndex < points.size()
-                        && !isPointLocked(selectedIndex)) {
-
-                    // La edición de un punto solo afecta al punto seleccionado
-                    // desde su recuadro/chip. Tocar otro punto en la radiografía
-                    // nunca cambia la selección.
-                    points.set(selectedIndex, upPoint);
-                    performClick();
-
-                    int nextMissing = nextMissingIndex(selectedIndex);
-                    if (nextMissing >= 0) {
-                        selectedIndex = nextMissing;
+                    if (insideImage(upPoint)) {
+                        points.set(
+                                selectedIndex,
+                                new PointF(upPoint.x, upPoint.y)
+                        );
                     }
 
+                    performClick();
+
+                    if (editingPointWasMissing) {
+                        int nextMissing =
+                                nextMissingIndex(selectedIndex);
+
+                        if (nextMissing >= 0) {
+                            selectedIndex = nextMissing;
+                        }
+                    }
+
+                    editingPoint = false;
+                    editingPointOriginal = null;
+                    editingPointWasMissing = false;
+                    magnifierActive = false;
+
                     notifyProgress();
+                    invalidate();
+                    return true;
                 }
 
                 magnifierActive = false;
@@ -689,12 +754,42 @@ public class MeasurementView extends View {
                 return true;
 
             case MotionEvent.ACTION_CANCEL:
+                if (editingPoint) {
+                    restoreEditingPoint();
+                    editingPoint = false;
+                    editingPointOriginal = null;
+                    editingPointWasMissing = false;
+                }
+
                 magnifierActive = false;
                 invalidate();
                 return true;
         }
 
         return true;
+    }
+
+    private void restoreEditingPoint() {
+        if (selectedIndex < 0
+                || selectedIndex >= points.size()) {
+            return;
+        }
+
+        if (editingPointOriginal == null) {
+            points.set(selectedIndex, null);
+        } else {
+            points.set(
+                    selectedIndex,
+                    new PointF(
+                            editingPointOriginal.x,
+                            editingPointOriginal.y
+                    )
+            );
+        }
+
+        editingPointOriginal = null;
+        editingPointWasMissing = false;
+        invalidate();
     }
 
     private boolean handleCalibrationTouch(MotionEvent event) {

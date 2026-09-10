@@ -59,7 +59,7 @@ public class AnalysisActivity extends AppCompatActivity {
     private TextView btnLock;
     private TextView btnCalibrate;
     private TextView txtCalibration;
-    private LandmarkFlowLayout pointChips;
+    private ViewGroup pointChips;
 
     private List<MeasurementDefinition> definitions;
     private List<LinearMeasurementDefinition> linearDefinitions = new ArrayList<>();
@@ -215,12 +215,19 @@ public class AnalysisActivity extends AppCompatActivity {
         btnCalculate.setOnClickListener(v -> calculateFullAnalysis());
 
         txtInstruction.setText(
-                "Seleccione un punto en la barra inferior para ver aquí dónde se localiza."
+                "Un dedo: coloca y arrastra el punto con la lupa. Dos dedos: mueve o amplía la radiografía."
         );
 
         if (linearDefinitions.isEmpty()) {
-            btnCalibrate.setVisibility(android.view.View.GONE);
-            txtCalibration.setVisibility(android.view.View.GONE);
+            android.view.View calibrationRow =
+                    findViewById(R.id.calibrationRow);
+
+            if (calibrationRow != null) {
+                calibrationRow.setVisibility(android.view.View.GONE);
+            } else {
+                btnCalibrate.setVisibility(android.view.View.GONE);
+                txtCalibration.setVisibility(android.view.View.GONE);
+            }
         }
 
         refreshPointChips();

@@ -17,7 +17,7 @@ public final class PointGuide {
         GUIDE.put("ENA", "Espina nasal anterior (ENA): extremo anterior de la espina nasal anterior.");
         GUIDE.put("ENP", "Espina nasal posterior (ENP): extremo posterior del paladar duro.");
         GUIDE.put("Ar", "Articulare (Ar): punto construido en la intersección del borde posterior de la rama mandibular con la base del cráneo.");
-        GUIDE.put("Go", "Gonion (Go): punto del ángulo mandibular determinado por la zona posteroinferior de la mandíbula.");
+        GUIDE.put("Go", "Gonion (Go): punto construido en el ángulo mandibular, sobre la bisectriz entre la tangente al borde posterior de la rama y la tangente al borde inferior del cuerpo mandibular.");
         GUIDE.put("Me", "Menton (Me): punto más inferior de la sínfisis mandibular.");
         GUIDE.put("Gn", "Gnathion (Gn): punto más anteroinferior del contorno de la sínfisis mandibular.");
         GUIDE.put("IS borde", "Borde del incisivo superior: marque el borde incisal del incisivo central superior usado para el trazado.");
@@ -30,7 +30,7 @@ public final class PointGuide {
         GUIDE.put("CVT inf.", "CVT inferior: punto inferior utilizado por su protocolo para construir la tangente cervical CVT.");
         GUIDE.put("OPT sup.", "OPT superior: punto superior utilizado para construir la tangente del proceso odontoideo OPT.");
         GUIDE.put("OPT inf.", "OPT inferior: punto inferior utilizado para construir la tangente del proceso odontoideo OPT.");
-        GUIDE.put("Occipital", "Occipital: punto de la base del occipital utilizado para formar el plano de McGregor.");
+        GUIDE.put("Occipital", "Occipital: punto más caudal de la curva occipital. Junto con ENP/PNS define la línea de McGregor.");
         GUIDE.put("C4-1", "C4-1: primer punto de referencia de C4 según el protocolo con el que trace McGregor–C4.");
         GUIDE.put("C4-2", "C4-2: segundo punto de referencia de C4 según el protocolo con el que trace McGregor–C4.");
         GUIDE.put("Odontoides ápice", "Ápice de la odontoides: punto más superior del proceso odontoideo de C2.");
@@ -54,10 +54,10 @@ public final class PointGuide {
         GUIDE.put("AD2", "AD2: punto más cercano del tejido adenoideo sobre una línea desde ENP perpendicular a S-Ba.");
         GUIDE.put("Uptp", "Uptp: punto de referencia superior utilizado en la medición AD3 de la tabla proporcionada.");
         GUIDE.put("Adenoides", "Adenoides: punto del tejido adenoideo usado para la medición AD3.");
-        GUIDE.put("Faringe sup ant.", "Faringe superior anterior: punto sobre el contorno posterior del paladar blando.");
-        GUIDE.put("Faringe sup post.", "Faringe superior posterior: punto más cercano de la pared faríngea posterior.");
-        GUIDE.put("Faringe inf ant.", "Faringe inferior anterior: intersección del borde posterior de la lengua con el borde inferior mandibular.");
-        GUIDE.put("Faringe inf post.", "Faringe inferior posterior: punto más cercano de la pared faríngea posterior.");
+        GUIDE.put("Faringe sup ant.", "Faringe superior anterior (McNamara): punto en el contorno posterior del paladar blando, aproximadamente a mitad de su longitud, desde donde se mide la distancia más corta a la pared faríngea posterior.");
+        GUIDE.put("Faringe sup post.", "Faringe superior posterior (McNamara): punto de la pared faríngea posterior más cercano al punto anterior del paladar blando.");
+        GUIDE.put("Faringe inf ant.", "Faringe inferior anterior (McNamara): intersección del borde posterior de la lengua con el borde inferior de la mandíbula.");
+        GUIDE.put("Faringe inf post.", "Faringe inferior posterior (McNamara): punto más cercano de la pared faríngea posterior a la altura del punto anterior inferior.");
         GUIDE.put("LM sup.", "Levandoski: punto superior de la línea media maxilar, sobre el septum nasal.");
         GUIDE.put("LM inf.", "Levandoski: punto inferior de la línea media maxilar, sobre la referencia central inferior.");
         GUIDE.put("LM mandibular", "Levandoski: punto de la línea media mandibular para compararlo con la línea media maxilar.");

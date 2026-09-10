@@ -68,19 +68,19 @@ public class LinearMeasurementDefinition {
         }
 
         if (interpretation == Interpretation.CERVICAL_DEPTH) {
-            if (valueMm < 0.0) {
-                return "Valor negativo: curvatura cifótica según la referencia de Penning/Rocabado; requiere correlación clínica.";
+            if (valueMm < 2.0) {
+                return "Profundidad <2 mm: curvatura cifótica/invertida según la referencia Penning/Rocabado; requiere correlación clínica.";
             }
 
             if (valueMm < 8.0) {
-                return "Profundidad de 0 a <8 mm: rectificación de la curvatura cervical según la referencia empleada.";
+                return "Profundidad de 2 a <8 mm: rectificación de la curvatura cervical según la referencia Penning/Rocabado.";
             }
 
             if (valueMm <= 12.0) {
-                return "Profundidad de 8 a 12 mm: dentro del intervalo de referencia empleado.";
+                return "Profundidad de 8 a 12 mm: dentro del intervalo de referencia Penning/Rocabado.";
             }
 
-            return "Profundidad >12 mm: curvatura lordótica aumentada según la referencia empleada; correlacionar clínicamente.";
+            return "Profundidad >12 mm: lordosis cervical aumentada según la referencia Penning/Rocabado; correlacionar clínicamente.";
         }
 
         if (Double.isNaN(normalMin) || Double.isNaN(normalMax)) {

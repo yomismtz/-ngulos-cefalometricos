@@ -55,4 +55,6 @@
     <string name="trace_mode_hint">Modo trazado: un dedo mueve el punto con precisión fina; dos dedos mueven o amplían la radiografía.</string>
     <string name="trace_undo">↶</string>
     <string name="trace_undo_accessibility">Deshacer punto anterior</string>
+    <string name="previous_short">‹ ANT.</string>
+    <string name="next_short">SIG. ›</string>
 </resources>

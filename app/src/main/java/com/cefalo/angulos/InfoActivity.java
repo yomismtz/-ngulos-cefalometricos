@@ -123,6 +123,8 @@ public class InfoActivity extends AppCompatActivity {
         view.setTextColor(getColor(R.color.text_primary));
         view.setTextSize(14f);
         view.setLineSpacing(0f, 1.08f);
+        view.setGravity(Gravity.CENTER);
+        view.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
         view.setBackgroundResource(R.drawable.card_white);
         view.setPadding(dp(14), dp(12), dp(14), dp(12));
 

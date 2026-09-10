@@ -68,10 +68,18 @@ if assessment.exists():
         r = r.replace(old, new, 1)
     assessment.write_text(r, encoding='utf-8')
 
+# Distinct installable build for the compact viewport-navigation revision.
+gradle = Path('app/build.gradle')
+if gradle.exists():
+    g = gradle.read_text(encoding='utf-8')
+    g = g.replace('versionCode 26', 'versionCode 27', 1)
+    g = g.replace("versionName '1.25'", "versionName '1.26'", 1)
+    gradle.write_text(g, encoding='utf-8')
+
 # Apply the final phone/tablet navigation pass after all layouts above exist.
 navigation = Path('ci/mobile-radiograph-navigation.py')
 if navigation.exists():
     namespace = {'__name__': '__main__'}
     exec(compile(navigation.read_text(encoding='utf-8'), str(navigation), 'exec'), namespace)
 
-print('Dedicated tablet layout generated, mobile Java normalized, English strings completed, URI permission lint fixed, and radiograph navigation applied.')
+print('Dedicated tablet layout generated, mobile Java normalized, English strings completed, URI permission lint fixed, radiograph navigation applied, and build version set to 1.26.')

@@ -60,6 +60,9 @@ jobs:
           echo "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/yomceph-upload.jks"
           chmod 600 "$RUNNER_TEMP/yomceph-upload.jks"
 
+      - name: Run unit tests
+        run: gradle --no-daemon :app:testDebugUnitTest
+
       - name: Lint and build signed AAB
         env:
           YOMCEPH_KEYSTORE_PATH: ${{ runner.temp }}/yomceph-upload.jks

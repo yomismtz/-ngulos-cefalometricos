@@ -152,13 +152,8 @@ jobs:
             adb shell am force-stop com.yomceph.app
             adb shell am start -W -n com.yomceph.app/com.cefalo.angulos.MainActivity
             sleep 4
-            PID=$(adb shell pidof com.yomceph.app | tr -d '\r')
-            if [ -z "$PID" ]; then
-              echo "Launcher process exited after opening. Recent AndroidRuntime log:"
-              adb logcat -d -t 500 | grep -E "FATAL EXCEPTION|AndroidRuntime|com.yomceph.app" || true
-              exit 1
-            fi
-            echo "Launcher smoke test passed with PID $PID"
+            test -n "$(adb shell pidof com.yomceph.app | tr -d '\r')"
+            echo "Launcher remained alive after cold start"
 
       - name: Build release App Bundle
         run: gradle --no-daemon :app:bundleRelease

@@ -21,7 +21,7 @@ public final class PointGuide {
         GUIDE.put("Or", "Orbitale (Or): punto más inferior del reborde orbitario.");
         GUIDE.put("ENA", "Espina nasal anterior (ENA/ANS): extremo más anterior de la espina nasal anterior.");
         GUIDE.put("ENP", "Espina nasal posterior (ENP/PNS): extremo más posterior del paladar duro, en la espina nasal posterior.");
-        GUIDE.put("Ba", "Basion (Ba): punto medio del borde anterior del foramen magno, sobre la línea media; seleccione el punto más inferior de ese borde visible en la telerradiografía.");
+        GUIDE.put("Ba", "Basion (Ba): punto más inferior y posterior del borde anterior del foramen magno, en el plano sagital medio.");
         GUIDE.put("Ar", "Articulare (Ar): punto construido en la intersección del borde posterior de la rama mandibular con el contorno inferior de la base craneal.");
         GUIDE.put("Go", "Gonion (Go): punto construido sobre el ángulo mandibular, en la bisectriz entre la tangente al borde posterior de la rama y la tangente al borde inferior del cuerpo mandibular.");
         GUIDE.put("Me", "Menton (Me): punto más inferior del contorno de la sínfisis mandibular.");

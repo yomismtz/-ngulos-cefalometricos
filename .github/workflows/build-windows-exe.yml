@@ -1,4 +1,4 @@
-name: Build Windows EXE
+name: Build Windows Installer
 
 on:
   workflow_dispatch:
@@ -21,20 +21,37 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r desktop/requirements.txt
 
       - name: Create brand assets
         run: python desktop/create_brand_assets.py
 
-      - name: Build EXE HiDPI with visual measurement help
+      - name: Validate v0.11 source
+        run: python -m py_compile desktop/yomceph_desktop_v11_database.py
+
+      - name: Build installed application folder
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_v10_visual_help.py
+          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_v11_database.py
 
-      - name: Upload EXE
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path installer | Out-Null
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (!(Test-Path $iscc)) {
+            $iscc = (Get-Command ISCC.exe -ErrorAction Stop).Source
+          }
+          & $iscc "desktop\YomCeph_v011.iss"
+
+      - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph_Desktop_Windows
-          path: dist/YomCeph_Desktop.exe
+          name: YomCeph_Desktop_Installer_v0.11
+          path: installer/YomCeph_Desktop_Setup_v0.11.exe
           if-no-files-found: error

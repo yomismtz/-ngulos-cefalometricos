@@ -100,6 +100,7 @@ public class SavedStudiesActivity extends AppCompatActivity {
         for (SavedStudyStore.StudyData study : studies) {
             LinearLayout card = new LinearLayout(this);
             card.setOrientation(LinearLayout.VERTICAL);
+            card.setGravity(Gravity.CENTER_HORIZONTAL);
             card.setBackgroundResource(R.drawable.card_white);
             card.setPadding(dp(16), dp(14), dp(16), dp(14));
             card.setElevation(dp(2));
@@ -113,6 +114,8 @@ public class SavedStudiesActivity extends AppCompatActivity {
             name.setTextColor(getColor(R.color.brand_purple));
             name.setTextSize(18f);
             name.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            name.setGravity(Gravity.CENTER);
+            name.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
             card.addView(name);
 
             TextView patient = new TextView(this);
@@ -132,6 +135,8 @@ public class SavedStudiesActivity extends AppCompatActivity {
             patient.setText(patientText);
             patient.setTextColor(getColor(R.color.brand_teal));
             patient.setTextSize(14f);
+            patient.setGravity(Gravity.CENTER);
+            patient.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
             patient.setPadding(0, dp(3), 0, 0);
             card.addView(patient);
 
@@ -153,6 +158,8 @@ public class SavedStudiesActivity extends AppCompatActivity {
             type.setText(typeText);
             type.setTextColor(getColor(R.color.text_primary));
             type.setTextSize(14f);
+            type.setGravity(Gravity.CENTER);
+            type.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
             type.setPadding(0, dp(3), 0, 0);
             card.addView(type);
 
@@ -168,6 +175,8 @@ public class SavedStudiesActivity extends AppCompatActivity {
             );
             details.setTextColor(getColor(R.color.text_secondary));
             details.setTextSize(13f);
+            details.setGravity(Gravity.CENTER);
+            details.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
             details.setPadding(0, dp(5), 0, dp(12));
             card.addView(details);
 

@@ -48,4 +48,24 @@ if en.exists():
         e = e.replace('</resources>', '\n'.join(additions) + '\n</resources>')
     en.write_text(e, encoding='utf-8')
 
-print('Dedicated tablet layout generated, mobile Java normalized, and English radiographic strings completed.')
+# Android Lint rejects passing a masked integer that may evaluate to 0 into
+# takePersistableUriPermission(). The app only needs persistent READ access, so
+# call the API with the explicit allowed constant when the provider granted it.
+assessment = Path('app/src/main/java/com/cefalo/angulos/RadiographicAssessmentActivity.java')
+if assessment.exists():
+    r = assessment.read_text(encoding='utf-8')
+    old = '''        try {
+            int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(uri, flags & Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } catch (Exception ignored) {'''
+    new = '''        try {
+            int flags = data.getFlags();
+            if ((flags & Intent.FLAG_GRANT_READ_URI_PERMISSION) == Intent.FLAG_GRANT_READ_URI_PERMISSION) {
+                getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+        } catch (Exception ignored) {'''
+    if old in r:
+        r = r.replace(old, new, 1)
+    assessment.write_text(r, encoding='utf-8')
+
+print('Dedicated tablet layout generated, mobile Java normalized, English strings completed, and URI permission lint fixed.')

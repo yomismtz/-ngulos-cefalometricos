@@ -19,10 +19,37 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/prepare-test-build.py
 
-      - name: Normalize precision pad dimensions
+      - name: Normalize precision pad dimensions and tangent help
         if: startsWith(github.ref_name, 'redesign/')
+        shell: bash
         run: |
           sed -i 's/dp(1\.6f)/dp(2)/g; s/dp(5f)/dp(5)/g' app/src/main/java/com/cefalo/angulos/AnalysisActivity.java
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('app/src/main/java/com/cefalo/angulos/PointGuide.java')
+          s = path.read_text(encoding='utf-8')
+          s = s.replace(
+              'GUIDE.put("Go", "Gonion (Go): punto construido sobre el ángulo mandibular, en la bisectriz formada por la tangente al borde posterior de la rama y la tangente al borde inferior del cuerpo mandibular.");',
+              'GUIDE.put("Go", "Gonion (Go): punto construido sobre el ángulo mandibular. Para construirlo geométricamente trace 2 tangentes: una al borde posterior de la rama y otra al borde inferior del cuerpo mandibular. Cada tangente se define con 2 puntos de apoyo/contacto sobre su contorno; después se obtiene la bisectriz del ángulo formado por ambas tangentes y se localiza Go según el protocolo cefalométrico.");'
+          )
+          s = s.replace(
+              'GUIDE.put("CVT sup.", "CVT superior (etiqueta heredada): corresponde a CV2tg, punto de tangencia superoposterior de la odontoides de C2.");',
+              'GUIDE.put("CVT sup.", "CVT superior (etiqueta heredada): corresponde a CV2tg. Es un landmark, no una tangente completa. En el protocolo adoptado, CVT se forma con 2 puntos: CV2tg + CV4ip.");'
+          )
+          s = s.replace(
+              'GUIDE.put("CVT inf.", "CVT inferior (etiqueta heredada): corresponde a CV4ip, punto más inferoposterior del cuerpo de C4.");',
+              'GUIDE.put("CVT inf.", "CVT inferior (etiqueta heredada): corresponde a CV4ip, segundo landmark de CVT. La línea CVT se forma con 2 puntos: CV2tg + CV4ip.");'
+          )
+          s = s.replace(
+              'GUIDE.put("OPT sup.", "OPT superior (etiqueta heredada): corresponde a CV2tg, punto de tangencia superoposterior de la odontoides de C2.");',
+              'GUIDE.put("OPT sup.", "OPT superior (etiqueta heredada): corresponde a CV2tg. Es un landmark, no una tangente completa. OPT se forma con 2 puntos: CV2tg + CV2ip.");'
+          )
+          s = s.replace(
+              'GUIDE.put("OPT inf.", "OPT inferior (etiqueta heredada): corresponde a CV2ip, punto más inferoposterior del cuerpo de C2.");',
+              'GUIDE.put("OPT inf.", "OPT inferior (etiqueta heredada): corresponde a CV2ip, segundo landmark de OPT. La línea OPT se forma con 2 puntos: CV2tg + CV2ip.");'
+          )
+          path.write_text(s, encoding='utf-8')
+          PY
 
       - name: Read app version
         id: app_version

@@ -639,7 +639,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 selectedLocked
                         ? "Bloqueado: "
                         : selectedPlaced
-                                ? "Corregir: "
+                                ? "Ajustar (mantén pulsado): "
                                 : "Marcar: ";
 
         if (placed >= total) {
@@ -666,7 +666,9 @@ public class AnalysisActivity extends AppCompatActivity {
                     currentLabel
             );
 
-            btnCalculate.setAlpha(0.55f);
+            btnCalculate.setAlpha(
+                    countAvailableMeasurements() > 0 ? 1f : 0.55f
+            );
         }
 
         updateLockButton();
@@ -828,6 +830,9 @@ public class AnalysisActivity extends AppCompatActivity {
             case "II ápice": return "IIa";
             case "Oclusal 1": return "Oc1";
             case "Oclusal 2": return "Oc2";
+            case "Cv2tg": return "C2tg";
+            case "Cv2ip": return "C2ip";
+            case "Cv4ip": return "C4ip";
             case "CVT sup.": return "CVTs";
             case "CVT inf.": return "CVTi";
             case "OPT sup.": return "OPTs";
@@ -920,7 +925,7 @@ public class AnalysisActivity extends AppCompatActivity {
                 measurementView.hasPointAt(
                         landmarks.indexOf(label)
                 )
-                        ? "\n\n✓ Ya está colocado. Para corregirlo, seleccione su recuadro y toque la nueva posición en la radiografía."
+                        ? "\n\n✓ Ya está colocado. Para corregirlo, seleccione su recuadro, mantenga presionado el punto en la radiografía y arrástrelo con la lupa."
                         : "\n\n— Todavía no está colocado.";
 
         description.setText(

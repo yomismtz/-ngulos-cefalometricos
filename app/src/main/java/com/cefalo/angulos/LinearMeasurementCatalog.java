@@ -77,7 +77,7 @@ public final class LinearMeasurementCatalog {
                 p("C3", "RGn", "H"),
                 Double.NaN,
                 Double.NaN,
-                "Positivo: H debajo de C3-RGn",
+                "H-H′ 4.80 ± 4.64 mm · Bibby/Preston; signo positivo: H debajo de C3-RGn",
                 "",
                 "",
                 ""

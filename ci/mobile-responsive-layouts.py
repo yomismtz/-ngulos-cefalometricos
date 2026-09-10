@@ -82,4 +82,12 @@ if navigation.exists():
     namespace = {'__name__': '__main__'}
     exec(compile(navigation.read_text(encoding='utf-8'), str(navigation), 'exec'), namespace)
 
-print('Dedicated tablet layout generated, mobile Java normalized, English strings completed, URI permission lint fixed, radiograph navigation applied, and build version set to 1.27.')
+# The vertical SeekBar needs a post-navigation correction because its custom
+# touch handler changes progress programmatically. This pass also compacts the
+# landmark buttons and advances the UI build to 1.28.
+vertical_fix = Path('ci/fix-vertical-pan-and-compact-points.py')
+if vertical_fix.exists():
+    namespace = {'__name__': '__main__'}
+    exec(compile(vertical_fix.read_text(encoding='utf-8'), str(vertical_fix), 'exec'), namespace)
+
+print('Dedicated tablet layout generated, radiograph navigation corrected, compact landmark controls applied, and build version set to 1.28.')

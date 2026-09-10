@@ -1425,6 +1425,8 @@ public class AnalysisActivity extends AppCompatActivity {
         note.setTextColor(getColor(R.color.brand_teal));
         note.setGravity(Gravity.CENTER);
         note.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        note.setIncludeFontPadding(false);
+        note.setLineSpacing(0f, 1.06f);
         note.setBackgroundResource(R.drawable.button_soft_mint_centered);
         note.setPadding(dp(12), dp(10), dp(12), dp(10));
         content.addView(note);
@@ -1836,6 +1838,8 @@ public class AnalysisActivity extends AppCompatActivity {
         evidenceNotice.setTextColor(getColor(R.color.warning_text));
         evidenceNotice.setGravity(Gravity.CENTER);
         evidenceNotice.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        evidenceNotice.setIncludeFontPadding(false);
+        evidenceNotice.setLineSpacing(0f, 1.06f);
         evidenceNotice.setBackgroundResource(R.drawable.button_soft_mint_centered);
         evidenceNotice.setPadding(dp(12), dp(10), dp(12), dp(10));
 
@@ -1874,6 +1878,8 @@ public class AnalysisActivity extends AppCompatActivity {
             row.setTextColor(getColor(R.color.text_primary));
             row.setGravity(Gravity.CENTER);
             row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+            row.setIncludeFontPadding(false);
+            row.setLineSpacing(0f, 1.06f);
 
             row.setTypeface(
                     Typeface.DEFAULT,
@@ -1966,6 +1972,8 @@ public class AnalysisActivity extends AppCompatActivity {
                     row.setTextColor(getColor(R.color.text_primary));
                     row.setGravity(Gravity.CENTER);
                     row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+                    row.setIncludeFontPadding(false);
+                    row.setLineSpacing(0f, 1.06f);
                     row.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
                     row.setBackgroundResource(R.drawable.card_white);
                     row.setPadding(dp(14), dp(12), dp(14), dp(12));
@@ -2395,6 +2403,8 @@ public class AnalysisActivity extends AppCompatActivity {
         summary.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         summary.setGravity(Gravity.CENTER);
         summary.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        summary.setIncludeFontPadding(false);
+        summary.setLineSpacing(0f, 1.06f);
         summary.setBackgroundResource(R.drawable.button_soft_mint_centered);
         summary.setPadding(dp(12), dp(10), dp(12), dp(10));
 
@@ -2507,6 +2517,8 @@ public class AnalysisActivity extends AppCompatActivity {
         row.setTextColor(getColor(R.color.text_primary));
         row.setGravity(Gravity.CENTER);
         row.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+        row.setIncludeFontPadding(false);
+        row.setLineSpacing(0f, 1.06f);
         row.setBackgroundResource(R.drawable.button_soft_mint_centered);
         row.setPadding(dp(10), dp(9), dp(10), dp(9));
 

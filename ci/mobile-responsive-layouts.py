@@ -13,4 +13,18 @@ s = s.replace('android:textSize="9sp" android:textColor="@color/text_primary"',
               'android:textSize="10.5sp" android:textColor="@color/text_primary"', 1)
 tablet.parent.mkdir(parents=True, exist_ok=True)
 tablet.write_text(s, encoding='utf-8')
-print('Dedicated tablet two-column tracing layout generated.')
+
+# mobile-fine-adjust.py writes a human-readable line break into its generated
+# Java template. Normalize it to a Java escape sequence before compilation.
+activity = Path('app/src/main/java/com/cefalo/angulos/AnalysisActivity.java')
+a = activity.read_text(encoding='utf-8')
+bad = '''help.setText("Punto: " + measurementView.getCurrentLabel() +
+                "
+El paso se expresa en píxeles de la imagen y no cambia con el zoom.");'''
+good = '''help.setText("Punto: " + measurementView.getCurrentLabel() +
+                "\\nEl paso se expresa en píxeles de la imagen y no cambia con el zoom.");'''
+if bad in a:
+    a = a.replace(bad, good, 1)
+activity.write_text(a, encoding='utf-8')
+
+print('Dedicated tablet layout generated and mobile Java template normalized.')

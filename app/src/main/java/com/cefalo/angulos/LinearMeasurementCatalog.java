@@ -258,21 +258,26 @@ public final class LinearMeasurementCatalog {
     /**
      * Vía aérea superior. Las dimensiones 2D se presentan como evaluación cefalométrica,
      * no como diagnóstico de obstrucción, hipertrofia adenoidea o apnea del sueño.
+     *
+     * Los nombres empiezan por "Adenoides ·" de forma deliberada: una versión antigua
+     * de AnalysisActivity asociaba cualquier nombre que empezara por AD1/AD2/AD3 a una
+     * tabla docente por edad. La auditoría actual evita que esa tabla se aplique hasta
+     * que se documente su fuente primaria y población.
      */
     public static List<LinearMeasurementDefinition> airway() {
         List<LinearMeasurementDefinition> list = new ArrayList<>();
 
-        list.add(m("AD1 · ENP-AD1", DISTANCE, RANGE,
+        list.add(m("Adenoides · AD1 · ENP-AD1", DISTANCE, RANGE,
                 p("ENP", "AD1"), Double.NaN, Double.NaN,
                 "Construcción: ENP/PNS-Ba hasta el contorno adenoideo/pared faríngea posterior · referencia dependiente de edad y población", "",
                 "Medida anatómica reproducible. No se aplica un umbral automático único para hipertrofia u obstrucción.", ""));
 
-        list.add(m("AD2 · ENP-AD2", DISTANCE, RANGE,
+        list.add(m("Adenoides · AD2 · ENP-AD2", DISTANCE, RANGE,
                 p("ENP", "AD2"), Double.NaN, Double.NaN,
                 "Construcción: desde ENP/PNS sobre una perpendicular a S-Ba hasta el contorno adenoideo/pared faríngea posterior", "",
                 "Medida anatómica reproducible. No se aplica un umbral automático único; interpretar según edad y protocolo de referencia.", ""));
 
-        list.add(m("AD3 · tu-ad3", DISTANCE, RANGE,
+        list.add(m("Adenoides · AD3 · tu-ad3", DISTANCE, RANGE,
                 p("tu", "AD3"), Double.NaN, Double.NaN,
                 "Solow et al.: distancia desde tu a la adenoides/pared faríngea dorsal más cercana · sin umbral diagnóstico automático", "",
                 "AD3 se informa como diámetro cefalométrico descriptivo. La nomenclatura y los valores dependen del protocolo; no diagnostica por sí sola hipertrofia adenoidea ni obstrucción.", ""));
@@ -289,7 +294,7 @@ public final class LinearMeasurementCatalog {
 
         list.add(m("MP-H · hioides a plano mandibular", PERPENDICULAR_ABS, RANGE,
                 p("Go", "Me", "H"), 12.4, 18.4,
-                "15.4 ± 3 mm · referencia cefalométrica clásica de vía aérea", 
+                "15.4 ± 3 mm · referencia cefalométrica clásica de vía aérea",
                 "MP-H por debajo del intervalo de referencia adoptado; describe una posición relativamente más próxima del hioides al plano mandibular.",
                 "MP-H dentro del intervalo 15.4 ± 3 mm de la referencia adoptada.",
                 "MP-H por encima del intervalo de referencia adoptado; describe un hioides relativamente más alejado/inferior respecto al plano mandibular. No diagnostica apnea por sí solo."

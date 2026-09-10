@@ -63,6 +63,14 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/fix-result-diagnostics.py
 
+      - name: Apply final radiographic audit
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/final-radiographic-audit.py
+
+      - name: Refine radiographic assessment logic
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/refine-radiographic-logic.py
+
       - name: Read app version
         id: app_version
         shell: bash

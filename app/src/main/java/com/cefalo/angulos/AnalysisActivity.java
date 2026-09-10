@@ -1,6 +1,7 @@
 package com.cefalo.angulos;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.activity.OnBackPressedCallback;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -136,6 +137,20 @@ public class AnalysisActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_analysis);
+
+        getOnBackPressedDispatcher().addCallback(
+                this,
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        if (tracingFullscreen) {
+                            setTracingFullscreen(false);
+                        } else {
+                            finish();
+                        }
+                    }
+                }
+        );
 
         definitions = new ArrayList<>();
         linearDefinitions = new ArrayList<>();
@@ -307,15 +322,6 @@ public class AnalysisActivity extends AppCompatActivity {
         outState.putDouble("MM_PER_PIXEL", mmPerPixel);
         outState.putString("CALIBRATION_LABEL", calibrationLabel);
         outState.putBoolean("TRACING_FULLSCREEN", tracingFullscreen);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (tracingFullscreen) {
-            setTracingFullscreen(false);
-            return;
-        }
-        super.onBackPressed();
     }
 
     @Override

@@ -24,10 +24,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r desktop/requirements.txt
 
-      - name: Build EXE
+      - name: Build EXE HiDPI
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onefile --windowed --name YomCeph_Desktop desktop/yomceph_desktop_lila.py
+          pyinstaller --noconfirm --clean --onefile --windowed --manifest desktop/yomceph.manifest --name YomCeph_Desktop desktop/yomceph_desktop_hidpi.py
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4

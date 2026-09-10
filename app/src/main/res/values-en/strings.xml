@@ -2,12 +2,12 @@
 <resources>
     <string name="app_name">YomCeph</string>
     <string name="app_slogan">Trace. Measure. Learn.</string>
-    <string name="analysis_steiner">STEINER ANALYSIS</string>
-    <string name="analysis_vertebral">CERVICAL / ROCABADO ANALYSIS</string>
-    <string name="analysis_powell">POWELL ANALYSIS</string>
-    <string name="analysis_tweed">TWEED ANALYSIS</string>
-    <string name="analysis_levandoski">LEVANDOSKI PANORAMIC ANALYSIS</string>
-    <string name="analysis_airway">AIRWAY ANALYSIS</string>
+    <string name="analysis_steiner">CEPHALOMETRIC ANALYSIS</string>
+    <string name="analysis_vertebral">CRANIOCERVICAL POSTURE</string>
+    <string name="analysis_powell">FACIAL PROFILE</string>
+    <string name="analysis_tweed">DENTOFACIAL TRIANGLE</string>
+    <string name="analysis_levandoski">PANORAMIC SYMMETRY</string>
+    <string name="analysis_airway">UPPER AIRWAY</string>
     <string name="my_analyses">MY ANALYSES</string>
     <string name="back_arrow">←</string>
     <string name="analysis_title_placeholder">Analysis</string>

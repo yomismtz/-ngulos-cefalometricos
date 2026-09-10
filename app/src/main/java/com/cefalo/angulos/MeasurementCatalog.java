@@ -362,9 +362,9 @@ public final class MeasurementCatalog {
                 20,30,
                 "25° ± 5° · rango histórico publicado 16°–35°",
                 "Plano de Frankfort Po-Or con plano mandibular Go-Me.",
-                "FMA menor al intervalo clásico; patrón mandibular relativamente hipodivergente.",
-                "FMA dentro del intervalo clásico de referencia.",
-                "FMA mayor al intervalo clásico; patrón mandibular relativamente hiperdivergente.",
+                "FMA menor al intervalo central 25° ± 5°; patrón mandibular relativamente hipodivergente.",
+                "FMA dentro del intervalo central 25° ± 5°.",
+                "FMA mayor al intervalo central 25° ± 5°; patrón mandibular relativamente hiperdivergente.",
                 true
         ));
 
@@ -372,8 +372,8 @@ public final class MeasurementCatalog {
                 "FMIA",
                 TWO_LINES,
                 p("Po","Or","II borde","II ápice"),
-                60,70,
-                "65° ± 5° · objetivo clásico; Tweed lo relaciona con FMA",
+                60,75,
+                "65° · rango histórico 60°–75°; Tweed lo relaciona con FMA",
                 "Plano de Frankfort Po-Or con eje axial del incisivo inferior.",
                 "FMIA por debajo del rango de referencia; interpretar junto con FMA e IMPA.",
                 "FMIA dentro del rango de referencia publicado.",

@@ -68,4 +68,10 @@ if assessment.exists():
         r = r.replace(old, new, 1)
     assessment.write_text(r, encoding='utf-8')
 
-print('Dedicated tablet layout generated, mobile Java normalized, English strings completed, and URI permission lint fixed.')
+# Apply the final phone/tablet navigation pass after all layouts above exist.
+navigation = Path('ci/mobile-radiograph-navigation.py')
+if navigation.exists():
+    namespace = {'__name__': '__main__'}
+    exec(compile(navigation.read_text(encoding='utf-8'), str(navigation), 'exec'), namespace)
+
+print('Dedicated tablet layout generated, mobile Java normalized, English strings completed, URI permission lint fixed, and radiograph navigation applied.')

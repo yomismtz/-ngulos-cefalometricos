@@ -195,6 +195,8 @@ public class AnalysisActivity extends AppCompatActivity {
         btnTraceMode = findViewById(R.id.btnTraceMode);
         pointChips = findViewById(R.id.pointChips);
 
+        polishStaticTextAlignment();
+
         if (btnTraceMode == null) {
             tracingFullscreen = false;
         }
@@ -422,6 +424,39 @@ public class AnalysisActivity extends AppCompatActivity {
                 );
             } else {
                 decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
+        }
+    }
+
+    private void polishStaticTextAlignment() {
+        int[] ids = {
+                R.id.btnBack,
+                R.id.btnOpen,
+                R.id.txtStudyInfo,
+                R.id.txtAutosaveStatus,
+                R.id.txtCalibration,
+                R.id.btnCalibrate,
+                R.id.btnPrevious,
+                R.id.txtProgress,
+                R.id.btnNext,
+                R.id.txtInstruction,
+                R.id.btnUndo,
+                R.id.btnReset,
+                R.id.btnFit,
+                R.id.btnSaveStudy,
+                R.id.btnLock,
+                R.id.btnCalculate,
+                R.id.btnTraceMode,
+                R.id.btnTraceUndo
+        };
+
+        for (int id : ids) {
+            View view = findViewById(id);
+            if (view instanceof TextView) {
+                TextView textView = (TextView) view;
+                textView.setGravity(Gravity.CENTER);
+                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                textView.setIncludeFontPadding(false);
             }
         }
     }

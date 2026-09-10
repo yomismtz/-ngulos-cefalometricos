@@ -49,12 +49,12 @@ public class CephalometricReferenceTest {
         assertEquals(4.0, anb.normalMax, 0.001);
 
         MeasurementDefinition mpSn = angular(defs, "SN / Go-Gn");
-        assertEquals(28.0, mpSn.normalMin, 0.001);
-        assertEquals(36.0, mpSn.normalMax, 0.001);
+        assertEquals(27.0, mpSn.normalMin, 0.001);
+        assertEquals(37.0, mpSn.normalMax, 0.001);
 
         MeasurementDefinition upperNa = angular(defs, "Incisivo superior / NA · angular");
-        assertEquals(16.0, upperNa.normalMin, 0.001);
-        assertEquals(28.0, upperNa.normalMax, 0.001);
+        assertEquals(20.0, upperNa.normalMin, 0.001);
+        assertEquals(24.0, upperNa.normalMax, 0.001);
 
         MeasurementDefinition lowerNb = angular(defs, "Incisivo inferior / NB · angular");
         assertEquals(21.0, lowerNb.normalMin, 0.001);
@@ -67,6 +67,11 @@ public class CephalometricReferenceTest {
         MeasurementDefinition interincisal = angular(defs, "Ángulo interincisal");
         assertEquals(127.0, interincisal.normalMin, 0.001);
         assertEquals(135.0, interincisal.normalMax, 0.001);
+
+        MeasurementDefinition snFh = angular(defs, "Inclinación SN / Frankfort");
+        assertTrue(Double.isNaN(snFh.normalMin));
+        assertTrue(Double.isNaN(snFh.normalMax));
+        assertArrayEquals(new String[]{"S", "N", "Po", "Or"}, snFh.pointLabels);
     }
 
     @Test
@@ -82,8 +87,16 @@ public class CephalometricReferenceTest {
         LinearMeasurementDefinition se = linear(defs, "Segmento SE");
         assertEquals(LinearMeasurementDefinition.Type.AXIAL_PROJECTION, se.type);
         assertArrayEquals(new String[]{"S", "N", "Cóndilo posterior"}, se.pointLabels);
-        assertEquals(19.0, se.normalMin, 0.001);
-        assertEquals(25.0, se.normalMax, 0.001);
+        assertEquals(20.0, se.normalMin, 0.001);
+        assertEquals(24.0, se.normalMax, 0.001);
+
+        LinearMeasurementDefinition upper = linear(defs, "Incisivo superior a NA · lineal");
+        assertEquals(2.0, upper.normalMin, 0.001);
+        assertEquals(6.0, upper.normalMax, 0.001);
+
+        LinearMeasurementDefinition lower = linear(defs, "Incisivo inferior a NB · lineal");
+        assertEquals(3.0, lower.normalMin, 0.001);
+        assertEquals(5.0, lower.normalMax, 0.001);
     }
 
     @Test
@@ -108,12 +121,12 @@ public class CephalometricReferenceTest {
         MeasurementDefinition fmia = angular(defs, "FMIA");
         MeasurementDefinition impa = angular(defs, "IMPA");
 
-        assertEquals(20.0, fma.normalMin, 0.001);
-        assertEquals(30.0, fma.normalMax, 0.001);
-        assertEquals(60.0, fmia.normalMin, 0.001);
-        assertEquals(70.0, fmia.normalMax, 0.001);
-        assertEquals(85.0, impa.normalMin, 0.001);
-        assertEquals(95.0, impa.normalMax, 0.001);
+        assertEquals(21.0, fma.normalMin, 0.001);
+        assertEquals(29.0, fma.normalMax, 0.001);
+        assertEquals(61.0, fmia.normalMin, 0.001);
+        assertEquals(69.0, fmia.normalMax, 0.001);
+        assertEquals(86.0, impa.normalMin, 0.001);
+        assertEquals(94.0, impa.normalMax, 0.001);
     }
 
     @Test

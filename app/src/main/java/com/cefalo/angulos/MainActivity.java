@@ -33,18 +33,29 @@ public class MainActivity extends AppCompatActivity {
         TextView btnTweed = findViewById(R.id.btnTweed);
         TextView btnLevandoski = findViewById(R.id.btnLevandoski);
         TextView btnAirway = findViewById(R.id.btnAirway);
+        TextView btnCvm = findViewById(R.id.btnCvm);
+        TextView btnNolla = findViewById(R.id.btnNolla);
+        TextView btnResorption = findViewById(R.id.btnResorption);
+        TextView btnPanoramicReview = findViewById(R.id.btnPanoramicReview);
         TextView btnStudies = findViewById(R.id.btnStudies);
         TextView btnInfo = findViewById(R.id.btnInfo);
         TextView btnTheme = findViewById(R.id.btnTheme);
 
         updateThemeButton(btnTheme);
 
+        // Lateral skull radiograph modules.
         btnSteiner.setOnClickListener(v -> openAnalysis("STEINER"));
         btnVertebral.setOnClickListener(v -> openAnalysis("VERTEBRAL"));
-        btnPowell.setOnClickListener(v -> openAnalysis("POWELL"));
-        btnTweed.setOnClickListener(v -> openAnalysis("TWEED"));
-        btnLevandoski.setOnClickListener(v -> openAnalysis("LEVANDOSKI"));
         btnAirway.setOnClickListener(v -> openAnalysis("AIRWAY"));
+        btnTweed.setOnClickListener(v -> openAnalysis("TWEED"));
+        btnPowell.setOnClickListener(v -> openAnalysis("POWELL"));
+        btnCvm.setOnClickListener(v -> openAssessment(RadiographicAssessmentActivity.MODE_CVM));
+
+        // Panoramic radiograph modules.
+        btnLevandoski.setOnClickListener(v -> openAnalysis("LEVANDOSKI"));
+        btnNolla.setOnClickListener(v -> openAssessment(RadiographicAssessmentActivity.MODE_NOLLA));
+        btnResorption.setOnClickListener(v -> openAssessment(RadiographicAssessmentActivity.MODE_RESORPTION));
+        btnPanoramicReview.setOnClickListener(v -> openAssessment(RadiographicAssessmentActivity.MODE_PANO_REVIEW));
 
         btnStudies.setOnClickListener(v ->
                 startActivity(new Intent(this, SavedStudiesActivity.class))
@@ -114,6 +125,12 @@ public class MainActivity extends AppCompatActivity {
     private void openAnalysis(String mode) {
         Intent intent = new Intent(this, AnalysisActivity.class);
         intent.putExtra("MODE", mode);
+        startActivity(intent);
+    }
+
+    private void openAssessment(String mode) {
+        Intent intent = new Intent(this, RadiographicAssessmentActivity.class);
+        intent.putExtra(RadiographicAssessmentActivity.EXTRA_MODE, mode);
         startActivity(intent);
     }
 }

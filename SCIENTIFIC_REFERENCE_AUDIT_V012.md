@@ -13,27 +13,47 @@ YomCeph distingue entre **geometría de una medición**, **conjunto de referenci
 - Una medición nueva sólo se activa cuando sus landmarks y geometría pueden definirse de forma reproducible.
 - Un análisis incompleto permanece visible como **En validación**; YomCeph no fabrica resultados.
 - Ritucci–Burstone se marca **Otra proyección**, porque el método publicado para asimetría utiliza submentovertex (SMV), no lateral.
-- “Prevalencia” sólo se calcula para categorías con una regla explícita del protocolo; las variables continuas se resumen con n, media, DE, mínimo y máximo.
+- “Prevalencia” sólo se calcula para categorías con una regla explícita; las variables continuas se resumen con n, media, DE, mínimo y máximo.
+
+## Separación entre geometría y norma
+
+Versiones históricas contenían `closest_supplement(theta, target)`, que elegía un ángulo o su suplemento según cuál quedaba más cerca de un valor esperado. Esa estrategia se conserva en archivos heredados únicamente para compatibilidad de versiones antiguas, pero **la entrada pública v0.12 ya no utiliza esa decisión para sus resultados activos**.
+
+La candidata pública recalcula antes de mostrar o guardar:
+
+- SN–PoOr, SN–GoGn y AB–GoGn como el sector agudo entre sus líneas.
+- IS–SN como el sector obtuso del eje del incisivo superior respecto de SN.
+- SN–OPT y SN–CVT como el sector obtuso/inferiormente abierto descrito en la metodología de postura craneocervical.
+- MGP–OP como el sector obtuso entre McGregor y el plano odontoideo.
+- MGP–CVT con la dirección anatómica explícita de las líneas, sin valor objetivo.
+- Powell nasomental como el sector obtuso entre la tangente dorsonasal y Prn–Pg'.
+- Powell mentocervical mediante los vectores anatómicamente ordenados G'→Pg' y Me'→C.
+
+Estas reglas están implementadas en funciones geométricas puras y tienen pruebas de reflexión izquierda/derecha. Por tanto, cambiar una referencia normativa no puede cambiar el valor geométrico medido.
+
+**Fuentes de orientación:** Solow B, Tallgren A. *Am J Phys Anthropol*. 1976;44:417-435. PMID: 937521. Revisiones de postura describen SN/OPT y SN/CVT como ángulos de apertura inferior. Para el ángulo craneocervical de Rocabado se usa la intersección McGregor/plano odontoideo con intervalo de referencia 96–106° (PMCID: PMC7710100).
 
 ## Steiner
 
 Landmarks principales: S, N, A, B, D, Pg, Po, Or, ANS, PNS, Ar, Go, Me, Gn, CI, ejes incisivos, plano oclusal y tejidos blandos para línea S.
 
-Una tabla contemporánea que reproduce valores tradicionales reporta aproximadamente SNA 82°, SNB 80°, ANB 2°, SN-GoGn 32°, plano oclusal-SN 14°, U1-NA 22°/4 mm, L1-NB 25°/4 mm y línea S 0 mm. En la versión pública, el usuario puede trabajar sin clasificación automática o seleccionar una referencia clásica publicada. No se incluye una referencia institucional propia como opción preconfigurada.
+Una tabla contemporánea que reproduce valores tradicionales reporta aproximadamente SNA 82°, SNB 80°, ANB 2°, SN-GoGn 32°, plano oclusal-SN 14°, U1-NA 22°/4 mm, L1-NB 25°/4 mm y línea S 0 mm. En la versión pública, el usuario puede trabajar **Sin clasificación automática** o seleccionar una referencia clásica publicada. No se incluye una referencia institucional propia como opción preconfigurada.
 
-Pendiente matemático: varias fórmulas históricas de YomCeph usan `closest_supplement()`. Se conserva por compatibilidad con datos creados en versiones anteriores, pero no se generaliza a nuevos módulos hasta sustituirlo por una orientación geométrica inequívoca.
+Cuando se selecciona **Sin clasificación**, las columnas `norm`, `sd`, `difference` y `diagnosis` quedan vacías para las mediciones Steiner: no se inyectan valores heredados. Una base histórica importada puede conservar internamente una referencia `legacy_imported` exclusivamente para reproducibilidad; no se ofrece como una universidad o protocolo público seleccionable.
 
 **Fuentes:** Steiner CC. *Am J Orthod*. 1953; PMCID: PMC8686945.
 
 ## Wits appraisal — activo
 
-Landmarks: A, B y plano oclusal funcional. A y B se proyectan perpendicularmente para obtener AO y BO y se mide su separación sobre el plano. La referencia original de Jacobson depende del sexo y de la convención de signo, por lo que YomCeph conserva el valor crudo y documenta la convención.
+Landmarks: A, B y plano oclusal funcional. A y B se proyectan perpendicularmente para obtener AO y BO y se mide su separación sobre el plano. La referencia original de Jacobson depende del sexo y de la convención de signo, por lo que YomCeph conserva el valor crudo y documenta la dirección anatómica posterior→anterior.
 
 **Fuente:** Jacobson A. *Am J Orthod*. 1975;67(2):125-138. PMID: 1054214.
 
 ## YEN y W — activos
 
 Landmarks: S, M y G. YEN es el ángulo S-M-G. Referencia original: 117–123° Clase I, <117° Clase II, >123° Clase III. El ángulo W utiliza M-G y la perpendicular desde M a S-G; referencia original 51–56° Clase I, <51° Clase II, >56° Clase III.
+
+Para reducir ambigüedad, M y G se describen mediante la construcción de los mayores círculos inscritos correspondientes en premaxila y sínfisis mandibular, no como simples “puntos medios”.
 
 **Fuentes:** Neela PK et al. PMID: 19582259; Bhad WA et al. PMID: 21303811.
 
@@ -47,17 +67,23 @@ Referencias históricas reproducidas: silla 123±6°, articular 143±5°, gonial
 
 ## Postura craneofacial / Solow–Tallgren — activa como variables descriptivas
 
-Landmarks actuales: S, N, cv2ip, cv2tg, cv4ip, pares posteriores C2–C7, PC, PNS, C0, Ops y Opi. Se calculan SN-OPT, SN-CVT, OPT-CVT, tangente posterior C2-C7, MGP-CVT y profundidad cervical. No se asigna una única “normal universal” a los ángulos posturales: la literatura muestra dependencia de técnica, edad, postura y población.
+Landmarks actuales: S, N, cv2ip, cv2tg, cv4ip, pares posteriores C2–C7, PC, PNS, C0, Ops y Opi. Se calculan SN-OPT, SN-CVT, OPT-CVT, tangente posterior C2-C7, MGP-CVT y profundidad cervical. La literatura define SN/OPT y SN/CVT como relaciones angulares entre SN y las tangentes cervicales; varias publicaciones especifican la apertura inferior. No se asigna una única “normal universal” a los ángulos posturales: dependen de técnica, edad, postura y población.
+
+**Fuentes:** Solow B, Tallgren A. PMID: 937521; revisión PMCID: PMC4009738.
 
 ## Rocabado — parcialmente activo
 
-El ángulo craneocervical McGregor/plano odontoideo permanece disponible. Para el módulo completo se requieren H, RGn, C3 anteroinferior y referencias C0/C1/C2 adicionales para el triángulo hioideo y espacios suboccipitales. Esas extensiones permanecen en validación hasta cerrar la geometría exacta.
+El ángulo craneocervical McGregor/plano odontoideo permanece disponible y su geometría ya no depende de una norma para elegir el suplemento. Para el módulo completo se requieren H, RGn, C3 anteroinferior y referencias C0/C1/C2 adicionales para el triángulo hioideo y espacios suboccipitales. Esas extensiones permanecen en validación hasta cerrar la geometría exacta.
 
-**Fuentes de revisión:** PMCID: PMC4942290; PMC3555465; PMC11495177.
+**Fuentes de revisión:** PMCID: PMC4942290; PMC3555465; PMC11495177; PMC7710100.
 
 ## Powell — activo y corregido
 
 Landmarks: G', N', Dn, Prn, Pg', Me' y punto cervical C. Desde v0.9 YomCeph separa Dn de Prn: la dirección del dorso nasal usa N'–Dn y Prn sigue siendo la punta nasal. Rangos de referencia actuales: nasofrontal 115–130°, nasofacial 30–40°, nasomental 120–132° y mentocervical 80–95°. Se presentan como referencias estéticas, no diagnóstico de patología.
+
+La construcción pública v0.12 ya no selecciona nasomental o mentocervical por cercanía a esos rangos: primero calcula el sector anatómico y después, de forma separada, puede compararlo con la referencia.
+
+**Fuentes:** literatura de perfil de Powell/Humphreys; definiciones concordantes en textos de cirugía facial y estudios contemporáneos de análisis de perfil.
 
 ## McNamara y vías aéreas — en validación
 
@@ -103,7 +129,9 @@ M, G, Co, Ptm, H, C3 anteroinferior, RGn, Ba y Bo ya están incorporados al cat�
 
 ## Estadística y exportación
 
-Para casos **incluidos** YomCeph puede calcular n válido, media, desviación estándar, mínimo, máximo y frecuencias. Sólo reporta prevalencia (%) cuando existe una categoría explícita y reproducible. La exportación para IBM SPSS se hace mediante CSV UTF-8 + archivo `.sps` de importación reproducible; no se crea un `.sav` falso.
+Para casos **incluidos** YomCeph calcula n válido, media, desviación estándar, mínimo y máximo. Las frecuencias del estudio distinguen todos los registros de la muestra incluida. Sólo reporta prevalencia (%) cuando existe una categoría explícita y reproducible y exporta además el denominador `N válido categorizado`.
+
+La exportación para IBM SPSS se hace mediante CSV UTF-8 con nombres de variables ASCII, válidos y únicos + archivo `.sps` de importación reproducible; el diccionario conserva simultáneamente el nombre humano y el nombre SPSS. No se crea un `.sav` falso.
 
 ## Referencias principales verificadas
 
@@ -113,12 +141,14 @@ Para casos **incluidos** YomCeph puede calcular n válido, media, desviación es
 4. Neela PK, Mascarenhas R, Husain A. YEN angle. PMID: 19582259.
 5. Bhad WA, Nayak S, Doshi UH. W angle. PMID: 21303811.
 6. Björk–Jarabak norms. PMCID: PMC6191777.
-7. McNamara population comparison. PMCID: PMC8018756.
-8. Rocabado/hyoid literature: PMC4942290; PMC3555465; PMC11495177.
-9. Burstone/COGS: PMCID: PMC4252385; PMC3723291.
-10. Ricketts growth/landmarks: PMCID: PMC3971129.
-11. Sassouni validation: PMID: 2638077; arc analysis PMID: 4081484.
-12. Sagittal G-triangle: PMID: 34669681; PMCID: PMC8865203.
-13. Ritucci/Burstone SMV asymmetry: PMID: 8074089; 6584032.
+7. Solow B, Tallgren A. Head posture and craniofacial morphology. PMID: 937521.
+8. Cervical posture measurement review. PMCID: PMC4009738.
+9. Rocabado/cranio-cervical definition: PMCID: PMC7710100; PMC4942290; PMC3555465; PMC11495177.
+10. McNamara population comparison. PMCID: PMC8018756.
+11. Burstone/COGS: PMCID: PMC4252385; PMC3723291.
+12. Ricketts growth/landmarks: PMCID: PMC3971129.
+13. Sassouni validation: PMID: 2638077; arc analysis PMID: 4081484.
+14. Sagittal G-triangle: PMID: 34669681; PMCID: PMC8865203.
+15. Ritucci/Burstone SMV asymmetry: PMID: 8074089; 6584032.
 
 **Estado:** suficiente para activar de forma trazable Steiner, Postura como variables seleccionables, Powell, Wits, Björk–Jarabak y YEN/W. Los demás módulos permanecen visibles, pero no producen resultados hasta completar su validación geométrica y bibliográfica.

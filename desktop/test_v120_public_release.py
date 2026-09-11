@@ -1,6 +1,6 @@
 import yomceph_desktop_v11_database as v11db
 import yomceph_desktop_v120 as v120
-from yomceph_desktop_v120_release import YomCephV120Release
+from yomceph_desktop_v120_release import YomCephV120Release, _unique_spss_names
 
 
 class DummyRelease:
@@ -12,6 +12,28 @@ def _dummy(reference):
     obj = object.__new__(DummyRelease)
     obj.steiner_reference = reference
     return obj
+
+
+class _Var:
+    def __init__(self, value):
+        self.value = value
+
+    def get(self):
+        return self.value
+
+
+class DummyEligibility:
+    _evaluate_eligibility = YomCephV120Release._evaluate_eligibility
+
+
+def _eligibility(years, months, minimum=0, maximum=15, manual="yes"):
+    obj = object.__new__(DummyEligibility)
+    obj.workflow_type = "research"
+    obj.current_study = {"age_min": minimum, "age_max": maximum}
+    obj.age_years_var = _Var(str(years))
+    obj.age_months_var = _Var(str(months))
+    obj.manual_eligibility = manual
+    return obj._evaluate_eligibility()
 
 
 def test_public_catalog_has_no_institutional_steiner_affiliation():
@@ -60,3 +82,22 @@ def test_legacy_imported_reference_is_internal_and_reproducible():
     assert sd == expected[1]
     assert diff == value - expected[0]
     assert unit == expected[2]
+
+
+def test_integer_age_max_includes_entire_last_year_of_age():
+    assert _eligibility(15, 11, maximum=15)[0] == "eligible"
+    assert _eligibility(16, 0, maximum=15)[0] == "not_eligible"
+
+
+def test_spss_names_are_unique_ascii_and_bounded():
+    names = _unique_spss_names(["Grupo Á", "Grupo-A", "Grupo A", "123 medida", "Grupo Á"])
+    assert len(names) == len(set(name.casefold() for name in names))
+    assert all(len(name) <= 64 for name in names)
+    assert all(name[0].isalpha() or name[0] == "_" for name in names)
+    assert names[3].startswith("v_")
+
+
+def test_yen_w_landmarks_have_reproducible_circle_definitions():
+    info = {point[0]: point[2].casefold() for point in v120.EXTRA_POINTS}
+    assert "mayor círculo" in info["M"]
+    assert "mayor círculo" in info["G"]

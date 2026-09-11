@@ -30,7 +30,7 @@
           <h1>Una lateral de cráneo. Sólo los puntos que realmente necesitas.</h1>
           <p class="hero-copy">YomCeph separa el trabajo de un <strong>caso individual</strong> de una <strong>investigación</strong>. Elige los análisis y resultados que quieres estudiar; la aplicación solicita únicamente los landmarks necesarios y conserva el protocolo, la calibración y los datos de cada caso.</p>
           <div class="hero-actions"><a class="button primary" href="#flujo">Ver el flujo</a><a class="button secondary" href="science.html">Revisar metodología</a></div>
-          <p class="version-note">Windows · almacenamiento local · Español / English · uso educativo e investigación</p>
+          <p class="version-note">Windows · almacenamiento local · interfaz pública actual en Español · sitio web ES/EN · uso educativo e investigación</p>
         </div>
         <div class="choice-preview" aria-label="Vista del inicio de YomCeph">
           <p class="mini-kicker">¿Qué vamos a hacer hoy?</p>
@@ -52,7 +52,7 @@
           <article><span>05</span><h3>Marca sólo los landmarks requeridos</h3><p>YomCeph forma la unión de puntos necesaria para las mediciones seleccionadas.</p></article>
           <article><span>06</span><h3>Revisa QC y resultados</h3><p>Las advertencias no modifican puntos ni resultados automáticamente.</p></article>
           <article><span>07</span><h3>Guarda y continúa</h3><p>En investigación, el siguiente caso conserva exactamente el mismo protocolo.</p></article>
-          <article><span>08</span><h3>Exporta la investigación</h3><p>Excel con datos y descriptivos, más CSV UTF-8 y sintaxis reproducible para IBM SPSS.</p></article>
+          <article><span>08</span><h3>Exporta la investigación</h3><p>Excel con datos, descriptivos, frecuencias, prevalencias y denominadores; además CSV UTF-8 y sintaxis reproducible para IBM SPSS.</p></article>
         </div>
       </div>
     </section>
@@ -63,7 +63,7 @@
         <h2>El protocolo se define antes de empezar a medir.</h2>
         <div class="research-grid">
           <div class="protocol-card"><h3>Muestra y elegibilidad</h3><p>Nombre del estudio, muestra planeada de 1 a 1000 casos, posibilidad de aumentarla, rango de edad y criterios de inclusión/exclusión.</p><p>Si la edad de un caso queda fuera del rango, YomCeph lo marca como <strong>NO ELEGIBLE</strong>. Puede conservarse por trazabilidad, pero no entra en los cálculos de incluidos.</p></div>
-          <div class="protocol-card"><h3>Procedencia y grupos configurables</h3><p>No hay una lista universal impuesta ni centros preconfigurados. Cada estudio puede crear variables como:</p><div class="code-samples"><code>Centro = Centro A | Centro B</code><code>Grupo = Caso | Control</code><code>Tratamiento = Intervención | Comparador</code><code>Momento = Pre | Post</code></div></div>
+          <div class="protocol-card"><h3>Procedencia y grupos configurables</h3><p>No hay una lista universal impuesta ni centros preconfigurados. Cada estudio puede crear variables como:</p><div class="code-samples"><code>Centro = Centro A | Centro B</code><code>Grupo = Caso | Control</code><code>Tratamiento = Intervención | Comparador</code><code>Momento = Pre | Post</code></div><p>Durante la captura, esas categorías se seleccionan de listas cerradas para evitar variantes ortográficas que fragmenten la base.</p></div>
           <div class="protocol-card"><h3>Protocolo reproducible</h3><p>Se guardan los análisis, resultados, grupos y referencia elegida. Después del primer caso incluido, el protocolo queda bloqueado para evitar cambios metodológicos silenciosos. La muestra puede ampliarse si se autorizó al crear el estudio.</p></div>
           <div class="protocol-card"><h3>Base de datos separada</h3><p>Los casos individuales nunca se mezclan con la muestra. Cada investigación mantiene su propio conjunto de sujetos y su propia exportación.</p></div>
         </div>
@@ -76,12 +76,12 @@
         <h2>Muchos análisis visibles; sólo los verificados producen resultados.</h2>
         <p class="section-lead">La etiqueta <strong>Disponible</strong> significa que YomCeph tiene landmarks y geometría implementados. <strong>En validación</strong> significa que el método sigue documentándose o probándose. No se inventan fórmulas para completar una lista.</p>
         <div class="analysis-grid">
-          <article><span class="status active">Disponible</span><h3>Steiner</h3><p>Esquelético, vertical, dental y tejidos blandos. La clasificación automática puede desactivarse o utilizar una referencia clásica publicada; los valores crudos siempre se conservan.</p></article>
+          <article><span class="status active">Disponible</span><h3>Steiner</h3><p>Esquelético, vertical, dental y tejidos blandos. “Sin clasificación” conserva únicamente los valores crudos; la referencia clásica publicada sólo se aplica cuando el usuario la selecciona explícitamente.</p></article>
           <article><span class="status active">Disponible</span><h3>Postura craneofacial</h3><p>SN–OPT, SN–CVT, OPT–CVT, tangentes cervicales, MGP–CVT y profundidad cervical.</p></article>
           <article><span class="status active">Disponible</span><h3>Powell</h3><p>Nasofrontal, nasofacial, nasomental y mentocervical, con Dn separado de Prn.</p></article>
           <article><span class="status active">Disponible</span><h3>Wits</h3><p>Proyecciones AO y BO sobre el plano oclusal funcional. Las medidas en mm requieren calibración.</p></article>
           <article><span class="status active">Disponible</span><h3>Björk–Jarabak</h3><p>Ángulos silla, articular y gonial, dimensiones lineales y ratio facial.</p></article>
-          <article><span class="status active">Disponible</span><h3>YEN y W</h3><p>Indicadores sagitales basados en S, M y G, con rangos originales identificados como referencia del método.</p></article>
+          <article><span class="status active">Disponible</span><h3>YEN y W</h3><p>Indicadores sagitales basados en S, M y G, con definiciones de landmarks y rangos de referencia documentados.</p></article>
           <article><span class="status validating">En validación</span><h3>Rocabado completo</h3><p>El ángulo craneocervical existente se conserva; triángulo hioideo y espacios C0–C2 requieren cierre geométrico.</p></article>
           <article><span class="status validating">En validación</span><h3>McNamara y vías aéreas</h3><p>Co, Ptm y puntos faríngeos se están incorporando con referencias dependientes de edad/sexo/población.</p></article>
           <article><span class="status validating">En validación</span><h3>Downs · Tweed · Ricketts</h3><p>Se están cerrando orientación, signos, puntos construidos y referencias de crecimiento antes de activarlos.</p></article>
@@ -95,7 +95,7 @@
 
     <section class="section soft-section">
       <div class="container notice-grid export-grid">
-        <div><span class="eyebrow">Excel + IBM SPSS</span><h2>Datos crudos primero; categorías sólo cuando están definidas.</h2><p>La exportación de investigación genera un Excel con datos, descriptivos, frecuencias, prevalencias, diccionario y protocolo. Para SPSS se genera CSV UTF-8 y un archivo <code>.sps</code> de importación. YomCeph no disfraza un CSV como archivo <code>.sav</code>.</p></div>
+        <div><span class="eyebrow">Excel + IBM SPSS</span><h2>Datos crudos primero; categorías sólo cuando están definidas.</h2><p>La exportación genera un Excel con Datos, Descriptivos, Frecuencias, Prevalencias, Diccionario y Protocolo. Las prevalencias incluyen N válido y denominador. Para SPSS se genera un CSV UTF-8 con nombres de variables únicos y compatibles más un archivo <code>.sps</code> de importación. YomCeph no disfraza un CSV como archivo <code>.sav</code>.</p></div>
         <aside class="stat-card"><strong>Estadística descriptiva</strong><p>N válido · media · DE · mínimo · máximo.</p><strong>Prevalencia</strong><p>Sólo cuando existe una regla categórica explícita y reproducible.</p></aside>
       </div>
     </section>

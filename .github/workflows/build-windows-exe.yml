@@ -8,6 +8,7 @@ on:
       - desktop-v0114-research-metadata
       - desktop-v0115-quality-audit
       - desktop-v0116-universal-ui
+      - desktop-v0120-workflow-builder
     paths:
       - 'desktop/**'
       - '.github/workflows/build-windows-exe.yml'
@@ -25,24 +26,29 @@ jobs:
           python-version: '3.12'
 
       - name: Install Python dependencies
-        run: pip install -r desktop/requirements.txt
+        run: |
+          pip install -r desktop/requirements.txt
+          pip install pytest==8.4.2
 
       - name: Create brand assets
         run: python desktop/create_brand_assets.py
 
-      - name: Validate v0.11.6 source
+      - name: Validate v0.12.0 source
         shell: pwsh
         run: |
           python -m py_compile desktop/yomceph_desktop_v115_quality_audit.py
           python -m py_compile desktop/yomceph_desktop_v115.py
           python -m py_compile desktop/yomceph_desktop_v116.py
           python -m py_compile desktop/yomceph_desktop_v116_final.py
+          python -m py_compile desktop/yomceph_scientific_catalog.py
+          python -m py_compile desktop/yomceph_desktop_v120.py
           python -m json.tool desktop/yomceph_i18n.json | Out-Null
+          python -m pytest desktop/test_v120_catalog.py -q
 
       - name: Build installed application folder
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --add-data "desktop/yomceph_i18n.json;." --name YomCeph_Desktop desktop/yomceph_desktop_v116_final.py
+          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --add-data "desktop/yomceph_i18n.json;." --name YomCeph_Desktop desktop/yomceph_desktop_v120.py
 
       - name: Install Inno Setup
         shell: pwsh
@@ -56,11 +62,11 @@ jobs:
           if (!(Test-Path $iscc)) {
             $iscc = (Get-Command ISCC.exe -ErrorAction Stop).Source
           }
-          & $iscc "desktop\YomCeph_v0116.iss"
+          & $iscc "desktop\YomCeph_v0120.iss"
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph_Desktop_Installer_v0.11.6
-          path: installer/YomCeph_Desktop_Setup_v0.11.6.exe
+          name: YomCeph_Desktop_Installer_v0.12.0
+          path: installer/YomCeph_Desktop_Setup_v0.12.0.exe
           if-no-files-found: error

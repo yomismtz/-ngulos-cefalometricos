@@ -1,81 +1,93 @@
 # Política de privacidad de YomCeph
 
-**Última actualización: 9 de septiembre de 2026**
+**Última actualización: 11 de septiembre de 2026**
 
-YomCeph es una aplicación educativa para apoyar el aprendizaje y la práctica de trazados cefalométricos. El identificador previsto de la aplicación para Google Play es `com.yomceph.app`.
+YomCeph es una herramienta educativa y de apoyo a investigación para trazados cefalométricos. Este repositorio contiene versiones para distintas plataformas; las funciones de red pueden diferir entre YomCeph Desktop y la aplicación Android.
 
 ## Responsable y contacto
 
 YomCeph es un proyecto mantenido en el repositorio público de GitHub `yomismtz/-ngulos-cefalometricos`.
 
-Para consultas sobre privacidad o sobre el tratamiento de datos en la aplicación, puede utilizar el mecanismo público de incidencias del proyecto:
+Para consultas sobre privacidad o incidencias puede utilizarse:
 
 https://github.com/yomismtz/-ngulos-cefalometricos/issues
 
-Cuando la aplicación se publique en Google Play, también estarán disponibles los datos de contacto del desarrollador indicados en su ficha oficial.
+## Datos que puede manejar YomCeph
 
-## Datos a los que puede acceder la aplicación
+Según la función utilizada, YomCeph puede trabajar con información introducida o seleccionada directamente por el usuario, como:
 
-YomCeph puede trabajar con información introducida o seleccionada directamente por el usuario, entre ella:
+- radiografías e imágenes;
+- identificadores de caso o paciente introducidos por el usuario;
+- nombre y protocolo de una investigación;
+- edad y fechas;
+- sexo registrado e identidad de género opcional;
+- país, institución y variables de agrupación del estudio;
+- landmarks cefalométricos;
+- calibración;
+- mediciones, control de calidad y resultados.
 
-- radiografías u otras imágenes usadas para el análisis;
-- nombre del estudio;
-- nombre del paciente o identificador introducido por el usuario;
-- edad;
-- sexo;
-- puntos cefalométricos;
-- datos de calibración;
-- mediciones y resultados del análisis.
-
-Por su naturaleza, una radiografía, los datos de un paciente y los resultados cefalométricos pueden constituir información personal o información relacionada con la salud.
+Por su naturaleza, una radiografía y los datos asociados pueden constituir información personal y relacionada con la salud.
 
 ## Finalidad
 
-La información se utiliza únicamente para las funciones que el usuario solicita dentro de la aplicación: visualizar una imagen, marcar puntos, calcular mediciones, guardar un estudio localmente, revisarlo, eliminarlo o exportarlo.
+Los datos se utilizan para las funciones solicitadas por el usuario: visualizar una radiografía, seleccionar análisis, colocar landmarks, calibrar, calcular mediciones, guardar y revisar casos, organizar una investigación y exportar resultados.
 
-## Tratamiento y almacenamiento
+## Almacenamiento de estudios
 
-En la versión actual, los datos de los estudios se procesan y almacenan **localmente en el dispositivo**.
+Los datos clínicos y de investigación de YomCeph Desktop se procesan y almacenan **localmente en el equipo**. La base de datos, las copias de radiografías, los protocolos y los historiales se mantienen fuera de la carpeta de instalación para que una actualización del programa no los sustituya.
 
-YomCeph:
+YomCeph Desktop:
 
-- no crea cuentas;
+- no requiere una cuenta;
 - no contiene anuncios;
-- no utiliza analítica;
+- no utiliza analítica de uso;
 - no incluye telemetría del desarrollador;
-- no dispone del permiso `INTERNET`;
-- no envía automáticamente radiografías, datos personales o resultados a servidores del desarrollador.
+- no sube automáticamente radiografías, identificadores de pacientes, landmarks ni resultados a servidores del desarrollador.
 
-Las copias de seguridad de los datos privados de la aplicación están desactivadas.
+La versión Android descrita por la documentación actual del proyecto mantiene sus estudios localmente y no utiliza permiso `INTERNET`. Si esa situación cambia, esta política y las declaraciones de la tienda deberán actualizarse antes de publicar la versión correspondiente.
+
+## Actualizaciones de YomCeph Desktop
+
+YomCeph Desktop v0.12 puede consultar automáticamente la API pública de **GitHub Releases** al iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, resultados ni contenido de investigaciones.
+
+Como en cualquier conexión HTTPS, GitHub puede procesar datos técnicos necesarios para prestar el servicio, como dirección IP, fecha/hora, agente de usuario y la versión instalada que se incluye en el agente de usuario de YomCeph.
+
+Cuando existe una actualización:
+
+1. YomCeph informa al usuario y solicita confirmación antes de instalarla.
+2. El instalador y su checksum se descargan mediante HTTPS desde la publicación oficial del repositorio.
+3. YomCeph calcula y verifica SHA-256 antes de ejecutar el instalador.
+4. Si existe un caso con cambios sin guardar, la instalación no se inicia.
+5. Si no hay conexión a Internet, YomCeph continúa funcionando localmente.
+
+La comprobación de actualizaciones no se utiliza para analítica, perfiles de uso ni seguimiento de pacientes.
 
 ## Exportación y compartición
 
-El usuario puede decidir exportar imágenes o informes y compartirlos mediante otras aplicaciones instaladas en su dispositivo. Esta acción solo se produce cuando el usuario la inicia expresamente.
+El usuario puede exportar archivos como Excel, CSV, sintaxis para IBM SPSS, imágenes o informes. La compartición con otras aplicaciones o servicios se produce únicamente por decisión del usuario. Una vez entregado un archivo a un tercero, el tratamiento posterior depende de las políticas de ese tercero.
 
-Una vez que un archivo sale de YomCeph y se entrega a otra aplicación o servicio elegido por el usuario, el tratamiento posterior depende de ese tercero y de sus propias políticas.
+## Investigación
+
+YomCeph permite definir protocolos con muestra, rango de edad, criterios de inclusión/exclusión, grupos y variables cefalométricas. La aplicación puede ayudar a marcar casos como incluidos, no elegibles o pendientes y a producir estadística descriptiva, pero la aprobación ética, consentimiento/autorizaciones y base legal del tratamiento corresponden al investigador y a su institución.
+
+Para docencia e investigación se recomienda utilizar identificadores codificados y radiografías anonimizadas siempre que sea posible.
 
 ## Conservación y eliminación
 
-Los estudios permanecen en el dispositivo hasta que el usuario los elimina, borra los datos de la aplicación o desinstala YomCeph.
-
-Los estudios pueden eliminarse desde la sección **Mis análisis**. YomCeph no conserva una copia de servidor que deba solicitarse al desarrollador, ya que la versión actual no transmite los estudios a un servidor.
+Los estudios permanecen en el dispositivo o equipo hasta que el usuario los elimina o borra los archivos locales correspondientes. YomCeph no mantiene una copia clínica en un servidor del desarrollador.
 
 ## Seguridad y uso responsable
 
-YomCeph limita el tratamiento de los estudios al dispositivo y no solicita permisos amplios de almacenamiento ni acceso a servicios de red.
-
-Para actividades docentes se recomienda usar radiografías anonimizadas o información para la que exista autorización. El usuario es responsable de contar con las autorizaciones necesarias antes de introducir o compartir información identificable de pacientes.
+El usuario o la institución deben proteger el equipo y las exportaciones conforme a su contexto: control de acceso, cifrado del dispositivo cuando proceda, copias de seguridad autorizadas y manejo adecuado de información identificable.
 
 ## Público previsto
 
-YomCeph está orientada principalmente a estudiantes universitarios y adultos en formación odontológica u ortodóncica. No está diseñada específicamente para niños.
+YomCeph está orientada principalmente a estudiantes universitarios, docentes, investigadores y profesionales de odontología/ortodoncia. No está diseñada específicamente para niños como usuarios de la aplicación.
 
 ## Aviso médico
 
-YomCeph **no es un dispositivo médico** y **no diagnostica, trata, cura ni previene ninguna afección médica**. Los resultados son referencias cefalométricas orientativas para fines educativos.
-
-Para asesoramiento, diagnóstico o tratamiento médico u odontológico, consulte a un profesional sanitario cualificado. Una medición aislada de la aplicación no debe utilizarse como diagnóstico independiente.
+YomCeph es una herramienta educativa y de apoyo a investigación/trazado. No sustituye la evaluación clínica de un profesional sanitario y no debe utilizarse como único fundamento para diagnóstico o tratamiento. Una medición aislada no constituye un diagnóstico independiente.
 
 ## Cambios futuros
 
-Esta política se actualizará si cambian las funciones de YomCeph o sus prácticas de datos. Si en el futuro se añaden cuentas, servicios en la nube, analítica, anuncios, sincronización, telemetría u otros servicios que transmitan datos fuera del dispositivo, esta política y las declaraciones de Google Play deberán revisarse antes de publicar esa versión.
+Esta política se actualizará antes de incorporar cuentas, almacenamiento clínico en la nube, sincronización, telemetría, anuncios u otras funciones que transmitan información adicional fuera del dispositivo. La política publicada debe corresponder siempre al comportamiento real de la versión distribuida.

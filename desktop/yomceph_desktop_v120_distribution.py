@@ -7,6 +7,7 @@ envía radiografías, datos de pacientes, landmarks ni resultados.
 
 from pathlib import Path
 import threading
+import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
 
 import yomceph_desktop_hidpi as ui
@@ -40,6 +41,33 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
 
     def _install_database_bar(self):
         super()._install_database_bar()
+
+        # Compatibilidad con QualityAuditYomCeph._refresh_case_state(): esa capa
+        # heredada cambia bg/fg/activebackground directamente. ttk.Button no
+        # admite esas opciones y provocaba TclError: unknown option "-bg" al
+        # iniciar la distribución v0.12. El botón QC público debe ser tk.Button.
+        try:
+            old_qc = self.qc_button
+            old_qc.destroy()
+            self.qc_button = tk.Button(
+                self.case_state_frame,
+                text="QC pendiente",
+                command=self.show_quality_control,
+                bg="#DCE3EA",
+                fg="#233044",
+                activebackground="#DCE3EA",
+                activeforeground="#233044",
+                relief=tk.FLAT,
+                bd=0,
+                padx=8,
+                pady=2,
+                font=("Segoe UI", 9, "bold"),
+                cursor="hand2",
+            )
+            self.qc_button.pack(side=tk.RIGHT)
+        except Exception:
+            pass
+
         # El control manual vive en Más ▾ para no robar espacio a la radiografía.
         try:
             for child in self.universal_wrapper.winfo_children():

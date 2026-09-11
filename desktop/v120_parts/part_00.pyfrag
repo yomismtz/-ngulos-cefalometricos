@@ -1,0 +1,120 @@
+import csv
+import json
+import math
+import os
+import re
+import sqlite3
+import statistics
+import tkinter as tk
+from datetime import datetime
+from pathlib import Path
+from tkinter import filedialog, messagebox, simpledialog, ttk
+
+import yomceph_desktop as core
+import yomceph_desktop_hidpi as ui
+import yomceph_desktop_v07_powell as v07
+import yomceph_desktop_v11_database as v11db
+import yomceph_desktop_v116 as v116
+import yomceph_desktop_v116_final as v116final
+from yomceph_scientific_catalog import (
+    ANALYSES, EXTRA_POINTS, MEASUREMENTS, REFERENCES,
+    STATUS_ACTIVE, STATUS_OTHER_PROJECTION, STATUS_REFERENCE_ONLY, STATUS_VALIDATION,
+    analysis_measurements, required_landmarks,
+)
+
+APP_VERSION = "0.12.0"
+MAX_RESEARCH_CASES = 1000
+UAM_STUDY_ID = "uam2026"
+UAM_CLINICS = ["Tepepan", "Tláhuac", "San Lorenzo", "Nezahualcóyotl"]
+
+# Referencia clásica documentada por literatura reciente que reproduce la tabla
+# de Steiner. Se conserva separada del protocolo UAM del usuario.
+CLASSIC_STEINER = {
+    "SNA": (82.0, 3.2, "°"),
+    "SNB": (80.0, 2.9, "°"),
+    "SND": (76.0, 3.5, "°"),
+    "ANB": (2.0, 1.9, "°"),
+    "SL": (51.0, 4.3, "mm"),
+    "SE": (22.0, 2.1, "mm"),
+    "SN–GoGn": (32.0, 5.1, "°"),
+    "Plano oclusal–SN": (14.0, 2.9, "°"),
+    "IS–NA (°)": (22.0, 1.8, "°"),
+    "IS–NA (mm)": (4.0, 1.1, "mm"),
+    "II–NB (°)": (25.0, 4.1, "°"),
+    "II–NB (mm)": (4.0, 1.2, "mm"),
+    "Pg–NB": (1.0, 0.8, "mm"),
+    "Ángulo interincisal": (131.0, 5.0, "°"),
+    "Línea S · labio superior": (0.0, 2.2, "mm"),
+    "Línea S · labio inferior": (0.0, 1.2, "mm"),
+}
+
+JARABAK_REFERENCE = {
+    "Jarabak · Saddle": (123.0, 6.0, "°"),
+    "Jarabak · Articular": (143.0, 5.0, "°"),
+    "Jarabak · Gonial": (130.0, 6.0, "°"),
+    "Jarabak · Sum": (396.0, 5.0, "°"),
+    "Jarabak · S-Ar": (32.0, 3.0, "mm"),
+    "Jarabak · S-N": (71.0, 3.0, "mm"),
+    "Jarabak · Ar-Go": (44.0, 5.0, "mm"),
+    "Jarabak · Go-Me": (71.0, 5.0, "mm"),
+    "Jarabak · S-Go": (77.5, 7.5, "mm"),
+    "Jarabak · N-Me": (112.5, 7.5, "mm"),
+    "Jarabak ratio": (63.5, 1.5, "%"),
+}
+
+POWELL_RANGES = {
+    "Powell Nasofrontal": (115.0, 130.0, "°"),
+    "Powell Nasofacial": (30.0, 40.0, "°"),
+    "Powell Nasomental": (120.0, 132.0, "°"),
+    "Powell Mentocervical": (80.0, 95.0, "°"),
+}
+
+
+def _safe_json(raw, default):
+    try:
+        value = json.loads(raw or "")
+        return value
+    except Exception:
+        return default
+
+
+def _safe_id(text):
+    text = re.sub(r"[^a-zA-Z0-9_-]+", "_", (text or "").strip()).strip("_")
+    return text[:60] or datetime.now().strftime("study_%Y%m%d_%H%M%S")
+
+
+def _projection_scalar(p, origin, direction):
+    dx, dy = direction
+    return (p[0] - origin[0]) * dx + (p[1] - origin[1]) * dy
+
+
+def _project_point(p, a, b):
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    den = dx * dx + dy * dy
+    if den <= 1e-12:
+        return a
+    t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / den
+    return a[0] + t * dx, a[1] + t * dy
+
+
+def _point_line_distance_px(p, a, b):
+    return core.point_line_distance(p, a, b)
+
+
+class YomCephV120(v116final.YomCephV116Final):
+    """YomCeph v0.12: flujo Caso individual / Investigación y protocolo seleccionable."""
+
+    def __init__(self):
+        self.workflow_type = "individual"
+        self.current_study_id = None
+        self.current_study = None
+        self.selected_measure_keys = []
+        self.steiner_reference = "none"
+        self.case_group_values = {}
+        self.manual_eligibility = "pending"
+        self._legacy_top_widgets = []
+        self._left_pane = self._center_pane = self._right_pane = None
+        self._left_visible = True
+        self._right_visible = True
+        self._resize_job = None
+        self._startup_home_shown = False

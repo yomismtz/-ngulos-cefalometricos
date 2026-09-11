@@ -105,4 +105,11 @@ if nolla_reference.exists():
     namespace = {'__name__': '__main__'}
     exec(compile(nolla_reference.read_text(encoding='utf-8'), str(nolla_reference), 'exec'), namespace)
 
-print('Responsive phone/tablet layouts, corrected radiograph navigation, local database, low-RAM policy, PDF viewer, and embedded Nolla radiographic reference applied; build version set to 1.30.')
+# Add literature-verified complementary cephalometric/craniocervical angles and
+# CVM age-reference context. This runs after all earlier catalog/UI generators.
+complementary = Path('ci/add-complementary-ceph-cvm-age.py')
+if complementary.exists():
+    namespace = {'__name__': '__main__'}
+    exec(compile(complementary.read_text(encoding='utf-8'), str(complementary), 'exec'), namespace)
+
+print('Responsive phone/tablet layouts, corrected navigation, local database, PDF viewer, Nolla image, complementary cephalometric angles, and CVM age-reference context applied; build version set to 1.31.')

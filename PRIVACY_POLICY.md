@@ -14,43 +14,43 @@ https://github.com/yomismtz/-ngulos-cefalometricos/issues
 
 ## Datos que puede manejar YomCeph
 
-Según la función utilizada, YomCeph puede trabajar con información introducida o seleccionada directamente por el usuario, como:
+Según la función utilizada, YomCeph puede trabajar con información introducida o seleccionada directamente por el usuario, como radiografías e imágenes, archivos PDF que contienen radiografías, identificadores de caso, nombre y protocolo de investigación, edad y fechas, sexo registrado, identidad de género opcional, país o institución si el usuario decide registrarlos, variables de agrupación, landmarks, calibración, mediciones, control de calidad y resultados.
 
-- radiografías e imágenes;
-- identificadores de caso o paciente introducidos por el usuario;
-- nombre y protocolo de una investigación;
-- edad y fechas;
-- sexo registrado e identidad de género opcional;
-- país, institución y variables de agrupación del estudio;
-- landmarks cefalométricos;
-- calibración;
-- mediciones, control de calidad y resultados.
-
-Por su naturaleza, una radiografía y los datos asociados pueden constituir información personal y relacionada con la salud.
+Por su naturaleza, una radiografía y los datos asociados pueden constituir información personal y relacionada con la salud. Para docencia e investigación se recomienda utilizar identificadores codificados y radiografías anonimizadas siempre que sea posible.
 
 ## Finalidad
 
-Los datos se utilizan para las funciones solicitadas por el usuario: visualizar una radiografía, seleccionar análisis, colocar landmarks, calibrar, calcular mediciones, guardar y revisar casos, organizar una investigación y exportar resultados.
+Los datos se utilizan para las funciones solicitadas por el usuario: visualizar una radiografía, seleccionar análisis, colocar landmarks, calibrar, calcular mediciones, guardar y revisar casos, organizar investigaciones y exportar resultados.
 
-## Almacenamiento de estudios
+## Almacenamiento de YomCeph Desktop
 
-Los datos clínicos y de investigación de YomCeph Desktop se procesan y almacenan **localmente en el equipo**. La base de datos, las copias de radiografías, los protocolos y los historiales se mantienen fuera de la carpeta de instalación para que una actualización del programa no los sustituya.
+Los datos clínicos y de investigación de YomCeph Desktop se procesan y almacenan **localmente en el equipo**. En Windows la ruta principal actual es:
+
+`%LOCALAPPDATA%\YomCeph\ResearchData`
+
+En esa carpeta pueden existir la base SQLite, copias de radiografías asociadas a casos, imágenes importadas desde PDF, respaldos y archivos temporales de actualización. Se almacenan fuera de la carpeta del programa para que una actualización o reinstalación no los sustituya automáticamente.
 
 YomCeph Desktop:
 
 - no requiere una cuenta;
 - no contiene anuncios;
-- no utiliza analítica de uso;
-- no incluye telemetría del desarrollador;
-- no sube automáticamente radiografías, identificadores de pacientes, landmarks ni resultados a servidores del desarrollador.
+- no utiliza analítica de uso del desarrollador;
+- no incluye telemetría clínica;
+- no sube automáticamente radiografías, identificadores de pacientes, landmarks, protocolos ni resultados a servidores del desarrollador.
 
 La versión Android descrita por la documentación actual del proyecto mantiene sus estudios localmente y no utiliza permiso `INTERNET`. Si esa situación cambia, esta política y las declaraciones de la tienda deberán actualizarse antes de publicar la versión correspondiente.
 
+## Sitio web público
+
+El sitio público de YomCeph es estático y no incorpora cookies publicitarias, píxeles de seguimiento ni analítica propia de YomCeph. Está previsto para publicarse mediante GitHub Pages y las descargas se sirven desde GitHub Releases.
+
+Al visitar el sitio, abrir GitHub o descargar un instalador, GitHub puede procesar los datos técnicos normales necesarios para prestar el servicio, como dirección IP, fecha/hora, agente de usuario y URL solicitada, de acuerdo con sus propias políticas. El sitio no tiene acceso a la base local de YomCeph ni a las radiografías almacenadas en el equipo.
+
 ## Actualizaciones de YomCeph Desktop
 
-YomCeph Desktop v0.12 puede consultar automáticamente la API pública de **GitHub Releases** al iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, resultados ni contenido de investigaciones.
+YomCeph Desktop v0.12.1 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
 
-Como en cualquier conexión HTTPS, GitHub puede procesar datos técnicos necesarios para prestar el servicio, como dirección IP, fecha/hora, agente de usuario y la versión instalada que se incluye en el agente de usuario de YomCeph.
+Como en cualquier conexión HTTPS, GitHub puede procesar datos técnicos necesarios para prestar el servicio, como dirección IP, fecha/hora, agente de usuario y versión instalada.
 
 Cuando existe una actualización:
 
@@ -70,11 +70,11 @@ El usuario puede exportar archivos como Excel, CSV, sintaxis para IBM SPSS, imá
 
 YomCeph permite definir protocolos con muestra, rango de edad, criterios de inclusión/exclusión, grupos y variables cefalométricas. La aplicación puede ayudar a marcar casos como incluidos, no elegibles o pendientes y a producir estadística descriptiva, pero la aprobación ética, consentimiento/autorizaciones y base legal del tratamiento corresponden al investigador y a su institución.
 
-Para docencia e investigación se recomienda utilizar identificadores codificados y radiografías anonimizadas siempre que sea posible.
-
 ## Conservación y eliminación
 
-Los estudios permanecen en el dispositivo o equipo hasta que el usuario los elimina o borra los archivos locales correspondientes. YomCeph no mantiene una copia clínica en un servidor del desarrollador.
+Los estudios permanecen en el equipo hasta que el usuario elimina los registros o borra los archivos locales correspondientes. **Desinstalar YomCeph Desktop no elimina por defecto `%LOCALAPPDATA%\YomCeph\ResearchData`**, precisamente para evitar pérdida accidental durante una reinstalación o actualización.
+
+Si el usuario desea retirar completamente los datos después de desinstalar, debe revisar y, si corresponde, eliminar manualmente esa carpeta después de conservar los respaldos necesarios. YomCeph no mantiene una copia clínica paralela en un servidor del desarrollador.
 
 ## Seguridad y uso responsable
 

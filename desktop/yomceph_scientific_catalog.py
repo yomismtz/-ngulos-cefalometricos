@@ -16,10 +16,10 @@ STATUS_REFERENCE_ONLY = "reference_only"
 STATUS_OTHER_PROJECTION = "other_projection"
 
 EXTRA_POINTS = [
-    ("M", "M · punto medio de la maxila anterior",
-     "Punto M del método YEN/W: punto medio de la maxila anterior, según la definición publicada por Neela y colaboradores. Se usa junto con S y G."),
-    ("G", "G · centro en la base de la sínfisis",
-     "Punto G del método YEN/W: centro en la parte inferior de la sínfisis mandibular, según la definición publicada. Se usa junto con S y M."),
+    ("M", "M · centro de la premaxila",
+     "Marque el centro del mayor círculo que pueda inscribirse en la región anterior de la maxila y sea tangente a sus límites anterior, superior y palatino según la definición del método YEN/W."),
+    ("G", "G · centro de la sínfisis mandibular",
+     "Marque el centro del mayor círculo que pueda inscribirse en la sínfisis mandibular y sea tangente a sus límites internos anterior, posterior e inferior según la definición del método YEN/W."),
     ("Co", "Condylion (Co)",
      "Punto más posterosuperior del contorno del cóndilo mandibular. Necesario para longitudes efectivas de McNamara."),
     ("Ptm", "Pterigomaxilar (Ptm)",
@@ -88,7 +88,7 @@ MEASUREMENTS = {
 }
 
 ANALYSES = {
-    "steiner": {"name":"Steiner","status":STATUS_ACTIVE,"summary":"Esquelético, vertical, dental y tejidos blandos. YomCeph conserva el protocolo UAM y, por separado, documenta las referencias clásicas publicadas.","missing_landmarks":[]},
+    "steiner": {"name":"Steiner","status":STATUS_ACTIVE,"summary":"Esquelético, vertical, dental y tejidos blandos. Los valores crudos se conservan siempre; la clasificación automática puede desactivarse o usar una referencia clásica publicada identificada explícitamente.","missing_landmarks":[]},
     "posture": {"name":"Postura craneofacial / Solow–Tallgren / cervical","status":STATUS_ACTIVE,"summary":"SN–OPT, SN–CVT, OPT–CVT, tangentes cervicales y profundidad cervical. Las variables posturales se mantienen descriptivas salvo que el estudio elija una referencia publicada específica.","missing_landmarks":[]},
     "powell": {"name":"Powell · perfil de tejidos blandos","status":STATUS_ACTIVE,"summary":"Cuatro ángulos del triángulo estético: nasofrontal, nasofacial, nasomental y mentocervical.","missing_landmarks":[]},
     "wits": {"name":"Wits","status":STATUS_ACTIVE,"summary":"Proyección perpendicular de A y B al plano oclusal funcional y distancia AO–BO.","missing_landmarks":[]},

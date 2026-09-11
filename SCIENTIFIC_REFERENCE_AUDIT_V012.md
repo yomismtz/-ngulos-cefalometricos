@@ -7,8 +7,9 @@ YomCeph distingue entre **geometría de una medición**, **conjunto de referenci
 
 ## Principios de implementación
 
-- Los valores del protocolo UAM 2026 se conservan sin cambios para no alterar una investigación en curso.
-- Cuando la literatura clásica difiere del protocolo UAM, ambos se mantienen como conjuntos de referencia distintos.
+- La distribución pública es neutral: no incluye universidad, escuela, clínica, país, muestra ni investigación preconfigurados.
+- Los valores crudos se conservan independientemente de la referencia seleccionada.
+- Cuando se utiliza una referencia publicada, queda identificada como tal y separada de cualquier protocolo propio del usuario.
 - Una medición nueva sólo se activa cuando sus landmarks y geometría pueden definirse de forma reproducible.
 - Un análisis incompleto permanece visible como **En validación**; YomCeph no fabrica resultados.
 - Ritucci–Burstone se marca **Otra proyección**, porque el método publicado para asimetría utiliza submentovertex (SMV), no lateral.
@@ -18,9 +19,9 @@ YomCeph distingue entre **geometría de una medición**, **conjunto de referenci
 
 Landmarks principales: S, N, A, B, D, Pg, Po, Or, ANS, PNS, Ar, Go, Me, Gn, CI, ejes incisivos, plano oclusal y tejidos blandos para línea S.
 
-Una tabla contemporánea que reproduce valores tradicionales reporta aproximadamente SNA 82°, SNB 80°, ANB 2°, SN-GoGn 32°, plano oclusal-SN 14°, U1-NA 22°/4 mm, L1-NB 25°/4 mm y línea S 0 mm. El protocolo UAM 2026 contiene valores deliberadamente diferentes —por ejemplo II-NB 16±1° y Pg-NB 4±1 mm—, por lo que nunca se sustituyen silenciosamente.
+Una tabla contemporánea que reproduce valores tradicionales reporta aproximadamente SNA 82°, SNB 80°, ANB 2°, SN-GoGn 32°, plano oclusal-SN 14°, U1-NA 22°/4 mm, L1-NB 25°/4 mm y línea S 0 mm. En la versión pública, el usuario puede trabajar sin clasificación automática o seleccionar una referencia clásica publicada. No se incluye una referencia institucional propia como opción preconfigurada.
 
-Pendiente matemático: varias fórmulas históricas de YomCeph usan `closest_supplement()`. Se conserva para compatibilidad del estudio actual, pero no se generaliza a nuevos módulos hasta sustituirlo por una orientación geométrica inequívoca.
+Pendiente matemático: varias fórmulas históricas de YomCeph usan `closest_supplement()`. Se conserva por compatibilidad con datos creados en versiones anteriores, pero no se generaliza a nuevos módulos hasta sustituirlo por una orientación geométrica inequívoca.
 
 **Fuentes:** Steiner CC. *Am J Orthod*. 1953; PMCID: PMC8686945.
 
@@ -56,7 +57,7 @@ El ángulo craneocervical McGregor/plano odontoideo permanece disponible. Para e
 
 ## Powell — activo y corregido
 
-Landmarks: G', N', Dn, Prn, Pg', Me' y punto cervical C. Desde v0.9 YomCeph separa Dn de Prn: la dirección del dorso nasal usa N'–Dn y Prn sigue siendo la punta nasal. Rangos del protocolo actual: nasofrontal 115–130°, nasofacial 30–40°, nasomental 120–132° y mentocervical 80–95°. Se presentan como referencias estéticas, no diagnóstico de patología.
+Landmarks: G', N', Dn, Prn, Pg', Me' y punto cervical C. Desde v0.9 YomCeph separa Dn de Prn: la dirección del dorso nasal usa N'–Dn y Prn sigue siendo la punta nasal. Rangos de referencia actuales: nasofrontal 115–130°, nasofacial 30–40°, nasomental 120–132° y mentocervical 80–95°. Se presentan como referencias estéticas, no diagnóstico de patología.
 
 ## McNamara y vías aéreas — en validación
 
@@ -68,7 +69,7 @@ Downs requiere validar orientación/signo del ángulo facial, convexidad, AB-pla
 
 ## Ricketts — en validación por edad
 
-Landmarks prioritarios: Pt, DC, CC, CF, Xi y Pm, además de los ya existentes. Varias referencias de Ricketts cambian con crecimiento, por lo que YomCeph no aplicará una norma adulta fija a niños de 0–15 años.
+Landmarks prioritarios: Pt, DC, CC, CF, Xi y Pm, además de los ya existentes. Varias referencias de Ricketts cambian con crecimiento, por lo que YomCeph no aplicará una norma adulta fija a niños y adolescentes.
 
 ## COGS / Burstone — en validación
 
@@ -120,4 +121,4 @@ Para casos **incluidos** YomCeph puede calcular n válido, media, desviación es
 12. Sagittal G-triangle: PMID: 34669681; PMCID: PMC8865203.
 13. Ritucci/Burstone SMV asymmetry: PMID: 8074089; 6584032.
 
-**Estado:** suficiente para activar de forma trazable Steiner (con referencias separadas), Postura como variables seleccionables, Powell, Wits, Björk–Jarabak y YEN/W. Los demás módulos permanecen visibles, pero no producen resultados hasta completar su validación geométrica y bibliográfica.
+**Estado:** suficiente para activar de forma trazable Steiner, Postura como variables seleccionables, Powell, Wits, Björk–Jarabak y YEN/W. Los demás módulos permanecen visibles, pero no producen resultados hasta completar su validación geométrica y bibliográfica.

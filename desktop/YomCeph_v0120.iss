@@ -1,5 +1,5 @@
 #define MyAppName "YomCeph Desktop"
-#define MyAppVersion "0.12.1"
+#define MyAppVersion "0.12.2"
 #define MyAppPublisher "YomCeph"
 #define MyAppExeName "YomCeph_Desktop.exe"
 
@@ -39,8 +39,7 @@ Name: "{autodesktop}\YomCeph Desktop"; Filename: "{app}\{#MyAppExeName}"; Tasks:
 Name: "desktopicon"; Description: "Crear un acceso directo en el escritorio / Create a desktop shortcut"; GroupDescription: "Accesos directos / Shortcuts:"; Flags: unchecked
 
 [Run]
-; También se ejecuta después de una actualización iniciada desde YomCeph.
-Filename: "{app}\{#MyAppExeName}"; Description: "Abrir YomCeph Desktop / Open YomCeph Desktop"; Flags: nowait postinstall
+Filename: "{app}\{#MyAppExeName}"; Description: "Abrir YomCeph Desktop / Open YomCeph Desktop"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 ; La base y las radiografías se guardan fuera de la carpeta de instalación.

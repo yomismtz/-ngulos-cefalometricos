@@ -48,7 +48,7 @@ Al visitar el sitio, abrir GitHub o descargar un instalador, GitHub puede proces
 
 ## Actualizaciones de YomCeph Desktop
 
-YomCeph Desktop v0.12.1 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
+YomCeph Desktop v0.12.2 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
 
 Como en cualquier conexión HTTPS, GitHub puede procesar datos técnicos necesarios para prestar el servicio, como dirección IP, fecha/hora, agente de usuario y versión instalada.
 

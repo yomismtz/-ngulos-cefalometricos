@@ -63,7 +63,7 @@
         <h2>El protocolo se define antes de empezar a medir.</h2>
         <div class="research-grid">
           <div class="protocol-card"><h3>Muestra y elegibilidad</h3><p>Nombre del estudio, muestra planeada de 1 a 1000 casos, posibilidad de aumentarla, rango de edad y criterios de inclusión/exclusión.</p><p>Si la edad de un caso queda fuera del rango, YomCeph lo marca como <strong>NO ELEGIBLE</strong>. Puede conservarse por trazabilidad, pero no entra en los cálculos de incluidos.</p></div>
-          <div class="protocol-card"><h3>Procedencia y grupos configurables</h3><p>No hay una lista universal impuesta. Cada estudio puede crear variables como:</p><div class="code-samples"><code>Clínica = Tepepan | Tláhuac | San Lorenzo | Nezahualcóyotl</code><code>Grupo = Caso | Control</code><code>Tratamiento = Placebo | Intervención</code><code>Momento = Pre | Post</code></div></div>
+          <div class="protocol-card"><h3>Procedencia y grupos configurables</h3><p>No hay una lista universal impuesta ni centros preconfigurados. Cada estudio puede crear variables como:</p><div class="code-samples"><code>Centro = Centro A | Centro B</code><code>Grupo = Caso | Control</code><code>Tratamiento = Intervención | Comparador</code><code>Momento = Pre | Post</code></div></div>
           <div class="protocol-card"><h3>Protocolo reproducible</h3><p>Se guardan los análisis, resultados, grupos y referencia elegida. Después del primer caso incluido, el protocolo queda bloqueado para evitar cambios metodológicos silenciosos. La muestra puede ampliarse si se autorizó al crear el estudio.</p></div>
           <div class="protocol-card"><h3>Base de datos separada</h3><p>Los casos individuales nunca se mezclan con la muestra. Cada investigación mantiene su propio conjunto de sujetos y su propia exportación.</p></div>
         </div>
@@ -76,7 +76,7 @@
         <h2>Muchos análisis visibles; sólo los verificados producen resultados.</h2>
         <p class="section-lead">La etiqueta <strong>Disponible</strong> significa que YomCeph tiene landmarks y geometría implementados. <strong>En validación</strong> significa que el método sigue documentándose o probándose. No se inventan fórmulas para completar una lista.</p>
         <div class="analysis-grid">
-          <article><span class="status active">Disponible</span><h3>Steiner</h3><p>Esquelético, vertical, dental y tejidos blandos. El protocolo UAM 2026 permanece separado de referencias clásicas publicadas.</p></article>
+          <article><span class="status active">Disponible</span><h3>Steiner</h3><p>Esquelético, vertical, dental y tejidos blandos. La clasificación automática puede desactivarse o utilizar una referencia clásica publicada; los valores crudos siempre se conservan.</p></article>
           <article><span class="status active">Disponible</span><h3>Postura craneofacial</h3><p>SN–OPT, SN–CVT, OPT–CVT, tangentes cervicales, MGP–CVT y profundidad cervical.</p></article>
           <article><span class="status active">Disponible</span><h3>Powell</h3><p>Nasofrontal, nasofacial, nasomental y mentocervical, con Dn separado de Prn.</p></article>
           <article><span class="status active">Disponible</span><h3>Wits</h3><p>Proyecciones AO y BO sobre el plano oclusal funcional. Las medidas en mm requieren calibración.</p></article>

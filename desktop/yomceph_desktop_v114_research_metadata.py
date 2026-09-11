@@ -19,6 +19,7 @@ class ResearchMetadataYomCeph(v113.WorkspaceYomCeph):
     """v0.11.4: metadatos de investigación + protección contra sobrescritura accidental."""
 
     def __init__(self):
+        self._loaded_case_id = None
         super().__init__()
         self.title("YomCeph Desktop · Investigación · Base de datos · v0.11.4")
         self.status.config(
@@ -165,7 +166,7 @@ class ResearchMetadataYomCeph(v113.WorkspaceYomCeph):
         return super().open_image()
 
     # ------------------------------------------------------------------
-    # Guardado con metadatos
+    # Guardado con metadatos y colisiones bloqueadas
     # ------------------------------------------------------------------
     def save_case_to_database(self):
         case_id = self.case_id.get().strip()
@@ -184,21 +185,32 @@ class ResearchMetadataYomCeph(v113.WorkspaceYomCeph):
 
         r = self.calculate_values()
         now = datetime.now().isoformat(timespec="seconds")
-        stored_image = self._copy_case_image(case_id)
         points_json = json.dumps(self.points, ensure_ascii=False)
 
         with sqlite3.connect(self._db_path) as con:
             exists = con.execute("SELECT 1 FROM cases WHERE case_id=?", (case_id,)).fetchone() is not None
             if exists:
+                if self._loaded_case_id != case_id:
+                    messagebox.showerror(
+                        "Número de caso ya utilizado",
+                        f"El caso {case_id} ya existe en la base.\n\n"
+                        "Por seguridad, un caso nuevo NO puede sobrescribir un identificador existente. "
+                        "Si realmente desea corregir ese paciente, ábralo primero desde 'Abrir base' y edítelo desde allí."
+                    )
+                    return
                 ok = messagebox.askyesno(
-                    "Actualizar caso",
-                    f"El caso {case_id} ya existe.\n\n¿Desea actualizar sus puntos, resultados y datos del paciente?"
+                    "Actualizar caso existente",
+                    f"Está editando el caso {case_id}, abierto previamente desde la base.\n\n"
+                    "¿Desea guardar las correcciones de puntos, resultados y datos del paciente?"
                 )
                 if not ok:
                     return
                 created = con.execute("SELECT created_at FROM cases WHERE case_id=?", (case_id,)).fetchone()[0]
             else:
                 created = now
+
+            # Sólo después de validar el identificador se copia la radiografía al archivo permanente.
+            stored_image = self._copy_case_image(case_id)
 
             con.execute("""
                 INSERT INTO cases(
@@ -243,6 +255,7 @@ class ResearchMetadataYomCeph(v113.WorkspaceYomCeph):
                 """, (case_id, key, float(value), unit, norm, sd, diff, diagnosis))
             con.commit()
 
+        self._loaded_case_id = case_id
         self._backup_database()
         self.results_cache = r
         self._update_db_counter()
@@ -267,6 +280,7 @@ class ResearchMetadataYomCeph(v113.WorkspaceYomCeph):
             self.sex_var.set(sex or "")
             self.clinic_var.set(clinic or "")
             self.radiograph_date_var.set(rx_date or "")
+            self._loaded_case_id = case_id
 
     # ------------------------------------------------------------------
     # CSV para Excel: metadatos + celdas vacías para valores no calculables
@@ -359,6 +373,7 @@ class ResearchMetadataYomCeph(v113.WorkspaceYomCeph):
         self.mm_per_pixel = None
         self.calibration_points = []
         self.case_id.set("")
+        self._loaded_case_id = None
         self._clear_metadata()
         self.cal_label.config(text="Sin calibración")
         self.redraw()

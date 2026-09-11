@@ -4,24 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#6E4A9E">
-  <meta name="description" content="YomCeph: herramienta educativa e investigativa para trazado cefalométrico, control de calidad y gestión local de estudios.">
-  <title>YomCeph · Cefalometría clara, trazable y accesible</title>
+  <meta name="description" content="YomCeph: cefalometría modular para casos individuales e investigación, con protocolos reproducibles, control de calidad y datos locales.">
+  <title>YomCeph · Cefalometría para análisis individual e investigación</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="v120.css">
   <script defer src="app.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header">
     <div class="container nav-wrap">
-      <a class="brand" href="#inicio" aria-label="YomCeph, inicio">
-        <span class="brand-mark" aria-hidden="true">YC</span>
-        <span>YomCeph</span>
-      </a>
+      <a class="brand" href="#inicio" aria-label="YomCeph, inicio"><span class="brand-mark" aria-hidden="true">YC</span><span>YomCeph</span></a>
       <nav class="main-nav" aria-label="Navegación principal">
-        <a data-i18n="nav-purpose" href="#para-que-sirve">Para qué sirve</a>
-        <a data-i18n="nav-how" href="#como-usar">Cómo usar</a>
-        <a data-i18n="nav-modes" href="#modos">Modos</a>
-        <a data-i18n="nav-privacy" href="privacy.html">Privacidad</a>
+        <a href="#flujo">Cómo funciona</a><a href="#investigacion">Investigación</a><a href="#analisis">Análisis</a><a href="science.html">Base científica</a><a href="privacy.html">Privacidad</a>
       </nav>
       <button id="language-toggle" class="language-button" type="button" aria-label="Cambiar idioma">EN</button>
     </div>
@@ -31,104 +26,88 @@
     <section id="inicio" class="hero">
       <div class="container hero-grid">
         <div>
-          <span class="eyebrow" data-i18n="eyebrow">Cefalometría educativa e investigación</span>
-          <h1 data-i18n="hero-title">Trazados cefalométricos más claros, ordenados y reproducibles.</h1>
-          <p class="hero-copy" data-i18n="hero-copy">YomCeph ayuda a marcar landmarks, calibrar radiografías, calcular mediciones, revisar advertencias geométricas y organizar estudios sin enviar automáticamente los datos del paciente a servidores del desarrollador.</p>
-          <div class="hero-actions">
-            <a class="button primary" data-i18n="cta-how" href="#como-usar">Ver cómo se usa</a>
-            <a class="button secondary" data-i18n="cta-privacy" href="privacy.html">Leer privacidad</a>
-          </div>
-          <p class="version-note">YomCeph Desktop v0.11.6 · Windows</p>
+          <span class="eyebrow">YomCeph Desktop · v0.12</span>
+          <h1>Una lateral de cráneo. Sólo los puntos que realmente necesitas.</h1>
+          <p class="hero-copy">YomCeph separa el trabajo de un <strong>caso individual</strong> de una <strong>investigación</strong>. Elige los análisis y resultados que quieres estudiar; la aplicación solicita únicamente los landmarks necesarios y conserva el protocolo, la calibración y los datos de cada caso.</p>
+          <div class="hero-actions"><a class="button primary" href="#flujo">Ver el flujo</a><a class="button secondary" href="science.html">Revisar metodología</a></div>
+          <p class="version-note">Windows · almacenamiento local · Español / English · uso educativo e investigación</p>
         </div>
-        <div class="app-card" aria-label="Resumen visual del flujo de YomCeph">
-          <div class="app-card-top">
-            <div class="mini-logo">YC</div>
-            <div>
-              <strong>YomCeph</strong>
-              <span data-i18n="card-subtitle">Flujo guiado</span>
-            </div>
-          </div>
-          <ol class="flow-list">
-            <li><span>1</span><b data-i18n="step-data">Datos</b></li>
-            <li><span>2</span><b data-i18n="step-image">Radiografía</b></li>
-            <li><span>3</span><b data-i18n="step-cal">Calibrar</b></li>
-            <li><span>4</span><b data-i18n="step-points">Puntos</b></li>
-            <li><span>5</span><b data-i18n="step-qc">Revisar QC</b></li>
-            <li><span>6</span><b data-i18n="step-results">Resultados</b></li>
-            <li><span>7</span><b data-i18n="step-save">Guardar</b></li>
-          </ol>
+        <div class="choice-preview" aria-label="Vista del inicio de YomCeph">
+          <p class="mini-kicker">¿Qué vamos a hacer hoy?</p>
+          <article><strong>👤 Caso individual</strong><span>Una radiografía o paciente para revisar. No entra en estadísticas de investigación.</span></article>
+          <article><strong>📊 Investigación</strong><span>Define muestra, edades, grupos, criterios, análisis y resultados antes de comenzar.</span></article>
         </div>
       </div>
     </section>
 
-    <section id="para-que-sirve" class="section">
+    <section id="flujo" class="section">
       <div class="container">
-        <span class="eyebrow" data-i18n="purpose-kicker">Para qué sirve</span>
-        <h2 data-i18n="purpose-title">Una herramienta para aprender, medir y documentar.</h2>
-        <div class="feature-grid">
-          <article class="feature-card"><h3 data-i18n="f1-title">Trazado cefalométrico</h3><p data-i18n="f1-copy">Permite colocar landmarks anatómicos sobre radiografías laterales y calcular mediciones del protocolo activo.</p></article>
-          <article class="feature-card"><h3 data-i18n="f2-title">Calibración trazable</h3><p data-i18n="f2-copy">Guarda la relación mm/píxel, los dos puntos usados y la longitud real para poder reconstruir la calibración.</p></article>
-          <article class="feature-card"><h3 data-i18n="f3-title">Control de calidad</h3><p data-i18n="f3-copy">Genera advertencias cuando detecta puntos duplicados, geometría degenerada o mediciones lineales sin calibración. No corrige valores automáticamente.</p></article>
-          <article class="feature-card"><h3 data-i18n="f4-title">Investigación</h3><p data-i18n="f4-copy">Organiza casos, metadatos, historial de cambios y exportaciones CSV. Una investigación personalizada puede configurar una meta de hasta 1000 casos.</p></article>
-          <article class="feature-card"><h3 data-i18n="f5-title">Uso general</h3><p data-i18n="f5-copy">Permite trabajar con distintas edades, países e instituciones sin imponer las restricciones de un protocolo de investigación específico.</p></article>
-          <article class="feature-card"><h3 data-i18n="f6-title">Datos locales</h3><p data-i18n="f6-copy">Los estudios se procesan y almacenan localmente. La app no crea cuentas ni envía automáticamente radiografías al desarrollador.</p></article>
-        </div>
-      </div>
-    </section>
-
-    <section id="como-usar" class="section soft-section">
-      <div class="container">
-        <span class="eyebrow" data-i18n="how-kicker">Cómo se usa</span>
-        <h2 data-i18n="how-title">Siete pasos, de la radiografía al resultado.</h2>
+        <span class="eyebrow">Flujo progresivo</span>
+        <h2>Primero el objetivo; después la radiografía.</h2>
         <div class="steps-grid">
-          <article><span>01</span><h3 data-i18n="h1-title">Crea o abre un caso</h3><p data-i18n="h1-copy">Elige Modo General, Investigación personalizada o el perfil protegido de tu estudio.</p></article>
-          <article><span>02</span><h3 data-i18n="h2-title">Completa los datos</h3><p data-i18n="h2-copy">Añade solo la información necesaria: edad, fecha de nacimiento opcional, sexo registrado, género opcional, país e institución.</p></article>
-          <article><span>03</span><h3 data-i18n="h3-title">Abre la radiografía</h3><p data-i18n="h3-copy">Carga una imagen adecuada y preferentemente anonimizada.</p></article>
-          <article><span>04</span><h3 data-i18n="h4-title">Calibra</h3><p data-i18n="h4-copy">Marca dos extremos de una referencia conocida e introduce la distancia real en milímetros.</p></article>
-          <article><span>05</span><h3 data-i18n="h5-title">Marca los landmarks</h3><p data-i18n="h5-copy">Sigue la lista guiada y ajusta los puntos con precisión antes de calcular.</p></article>
-          <article><span>06</span><h3 data-i18n="h6-title">Revisa QC y resultados</h3><p data-i18n="h6-copy">Comprueba advertencias geométricas. YomCeph avisa, pero no modifica automáticamente tus mediciones.</p></article>
-          <article><span>07</span><h3 data-i18n="h7-title">Guarda y exporta</h3><p data-i18n="h7-copy">Guarda el caso localmente y exporta los datos cuando necesites analizarlos en Excel, R, SPSS u otras herramientas.</p></article>
+          <article><span>01</span><h3>Elige el tipo de trabajo</h3><p>Caso individual o investigación. Sus datos quedan separados.</p></article>
+          <article><span>02</span><h3>Define qué quieres medir</h3><p>Combina análisis y selecciona sólo los ángulos, planos o medidas lineales que necesitas.</p></article>
+          <article><span>03</span><h3>Captura los datos necesarios</h3><p>Edad, sexo registrado, fechas y, si corresponde, grupos configurables del protocolo.</p></article>
+          <article><span>04</span><h3>Abre y calibra la lateral</h3><p>La radiografía ocupa la mayor parte de la pantalla. Los paneles laterales se adaptan a la resolución.</p></article>
+          <article><span>05</span><h3>Marca sólo los landmarks requeridos</h3><p>YomCeph forma la unión de puntos necesaria para las mediciones seleccionadas.</p></article>
+          <article><span>06</span><h3>Revisa QC y resultados</h3><p>Las advertencias no modifican puntos ni resultados automáticamente.</p></article>
+          <article><span>07</span><h3>Guarda y continúa</h3><p>En investigación, el siguiente caso conserva exactamente el mismo protocolo.</p></article>
+          <article><span>08</span><h3>Exporta la investigación</h3><p>Excel con datos y descriptivos, más CSV UTF-8 y sintaxis reproducible para IBM SPSS.</p></article>
         </div>
       </div>
     </section>
 
-    <section id="modos" class="section">
+    <section id="investigacion" class="section soft-section">
       <div class="container">
-        <span class="eyebrow" data-i18n="modes-kicker">Modos de trabajo</span>
-        <h2 data-i18n="modes-title">La misma herramienta, distinta cantidad de complejidad.</h2>
-        <div class="mode-grid">
-          <article class="mode-card featured"><span class="pill" data-i18n="simple-pill">Más simple</span><h3 data-i18n="simple-title">Interfaz sencilla</h3><p data-i18n="simple-copy">Muestra el flujo principal y oculta detalles técnicos hasta que se necesitan. Pensada para aprendizaje y uso cotidiano.</p></article>
-          <article class="mode-card"><span class="pill" data-i18n="advanced-pill">Más detalle</span><h3 data-i18n="advanced-title">Interfaz avanzada / investigación</h3><p data-i18n="advanced-copy">Añade base de datos, QC detallado, historial, calibración completa y exportaciones científicas.</p></article>
-          <article class="mode-card"><span class="pill" data-i18n="research-pill">Hasta 1000</span><h3 data-i18n="research-title">Investigación personalizada</h3><p data-i18n="research-copy">Permite establecer una meta de 1 a 1000 casos. El tamaño muestral adecuado debe justificarse estadísticamente para cada investigación.</p></article>
+        <span class="eyebrow">Constructor de investigación</span>
+        <h2>El protocolo se define antes de empezar a medir.</h2>
+        <div class="research-grid">
+          <div class="protocol-card"><h3>Muestra y elegibilidad</h3><p>Nombre del estudio, muestra planeada de 1 a 1000 casos, posibilidad de aumentarla, rango de edad y criterios de inclusión/exclusión.</p><p>Si la edad de un caso queda fuera del rango, YomCeph lo marca como <strong>NO ELEGIBLE</strong>. Puede conservarse por trazabilidad, pero no entra en los cálculos de incluidos.</p></div>
+          <div class="protocol-card"><h3>Procedencia y grupos configurables</h3><p>No hay una lista universal impuesta. Cada estudio puede crear variables como:</p><div class="code-samples"><code>Clínica = Tepepan | Tláhuac | San Lorenzo | Nezahualcóyotl</code><code>Grupo = Caso | Control</code><code>Tratamiento = Placebo | Intervención</code><code>Momento = Pre | Post</code></div></div>
+          <div class="protocol-card"><h3>Protocolo reproducible</h3><p>Se guardan los análisis, resultados, grupos y referencia elegida. Después del primer caso incluido, el protocolo queda bloqueado para evitar cambios metodológicos silenciosos. La muestra puede ampliarse si se autorizó al crear el estudio.</p></div>
+          <div class="protocol-card"><h3>Base de datos separada</h3><p>Los casos individuales nunca se mezclan con la muestra. Cada investigación mantiene su propio conjunto de sujetos y su propia exportación.</p></div>
         </div>
+      </div>
+    </section>
+
+    <section id="analisis" class="section">
+      <div class="container">
+        <span class="eyebrow">Catálogo científico</span>
+        <h2>Muchos análisis visibles; sólo los verificados producen resultados.</h2>
+        <p class="section-lead">La etiqueta <strong>Disponible</strong> significa que YomCeph tiene landmarks y geometría implementados. <strong>En validación</strong> significa que el método sigue documentándose o probándose. No se inventan fórmulas para completar una lista.</p>
+        <div class="analysis-grid">
+          <article><span class="status active">Disponible</span><h3>Steiner</h3><p>Esquelético, vertical, dental y tejidos blandos. El protocolo UAM 2026 permanece separado de referencias clásicas publicadas.</p></article>
+          <article><span class="status active">Disponible</span><h3>Postura craneofacial</h3><p>SN–OPT, SN–CVT, OPT–CVT, tangentes cervicales, MGP–CVT y profundidad cervical.</p></article>
+          <article><span class="status active">Disponible</span><h3>Powell</h3><p>Nasofrontal, nasofacial, nasomental y mentocervical, con Dn separado de Prn.</p></article>
+          <article><span class="status active">Disponible</span><h3>Wits</h3><p>Proyecciones AO y BO sobre el plano oclusal funcional. Las medidas en mm requieren calibración.</p></article>
+          <article><span class="status active">Disponible</span><h3>Björk–Jarabak</h3><p>Ángulos silla, articular y gonial, dimensiones lineales y ratio facial.</p></article>
+          <article><span class="status active">Disponible</span><h3>YEN y W</h3><p>Indicadores sagitales basados en S, M y G, con rangos originales identificados como referencia del método.</p></article>
+          <article><span class="status validating">En validación</span><h3>Rocabado completo</h3><p>El ángulo craneocervical existente se conserva; triángulo hioideo y espacios C0–C2 requieren cierre geométrico.</p></article>
+          <article><span class="status validating">En validación</span><h3>McNamara y vías aéreas</h3><p>Co, Ptm y puntos faríngeos se están incorporando con referencias dependientes de edad/sexo/población.</p></article>
+          <article><span class="status validating">En validación</span><h3>Downs · Tweed · Ricketts</h3><p>Se están cerrando orientación, signos, puntos construidos y referencias de crecimiento antes de activarlos.</p></article>
+          <article><span class="status validating">En validación</span><h3>COGS · Sassouni · Bimler · G-triangle</h3><p>Requieren construcciones específicas y/o normas poblacionales documentadas antes de producir resultados.</p></article>
+          <article><span class="status reference">Referencia</span><h3>Alexander</h3><p>La literatura localizada describe principalmente la Alexander Discipline; no se ha asumido un análisis cefalométrico canónico único.</p></article>
+          <article><span class="status projection">Otra proyección</span><h3>Ritucci–Burstone</h3><p>El método de asimetría publicado usa submentovertex (SMV), por lo que no se presenta como realizable con una lateral única.</p></article>
+        </div>
+        <p><a class="text-link dark-link" href="science.html">Ver auditoría científica y referencias →</a></p>
+      </div>
+    </section>
+
+    <section class="section soft-section">
+      <div class="container notice-grid export-grid">
+        <div><span class="eyebrow">Excel + IBM SPSS</span><h2>Datos crudos primero; categorías sólo cuando están definidas.</h2><p>La exportación de investigación genera un Excel con datos, descriptivos, frecuencias, prevalencias, diccionario y protocolo. Para SPSS se genera CSV UTF-8 y un archivo <code>.sps</code> de importación. YomCeph no disfraza un CSV como archivo <code>.sav</code>.</p></div>
+        <aside class="stat-card"><strong>Estadística descriptiva</strong><p>N válido · media · DE · mínimo · máximo.</p><strong>Prevalencia</strong><p>Sólo cuando existe una regla categórica explícita y reproducible.</p></aside>
       </div>
     </section>
 
     <section class="section notice-section">
       <div class="container notice-grid">
-        <div><span class="eyebrow" data-i18n="privacy-kicker">Privacidad por diseño</span><h2 data-i18n="privacy-title">Tus estudios permanecen en tu dispositivo.</h2><p data-i18n="privacy-copy">YomCeph no requiere una cuenta, no incluye anuncios ni telemetría del desarrollador y no envía automáticamente radiografías, datos personales o resultados a servidores del desarrollador.</p><a class="text-link" data-i18n="privacy-link" href="privacy.html">Ver política de privacidad completa →</a></div>
-        <aside class="medical-note"><strong data-i18n="medical-title">Uso educativo</strong><p data-i18n="medical-copy">YomCeph no es un dispositivo médico y no debe utilizarse como sustituto de la evaluación, diagnóstico o tratamiento por un profesional sanitario cualificado.</p></aside>
-      </div>
-    </section>
-
-    <section class="section faq-section">
-      <div class="container narrow">
-        <span class="eyebrow">FAQ</span>
-        <h2 data-i18n="faq-title">Preguntas frecuentes</h2>
-        <details><summary data-i18n="q1">¿YomCeph corrige automáticamente mis puntos o resultados?</summary><p data-i18n="a1">No. El control de calidad genera advertencias para revisión. Los landmarks y mediciones no se corrigen automáticamente.</p></details>
-        <details><summary data-i18n="q2">¿Necesito Internet?</summary><p data-i18n="a2">Las funciones principales de análisis y almacenamiento son locales. La web del proyecto sí requiere Internet para consultarse.</p></details>
-        <details><summary data-i18n="q3">¿Puedo usarla para una investigación grande?</summary><p data-i18n="a3">El modo de investigación personalizada permite una meta de hasta 1000 casos. Esa capacidad técnica no reemplaza un cálculo formal del tamaño de muestra.</p></details>
-        <details><summary data-i18n="q4">¿Qué datos debo introducir?</summary><p data-i18n="a4">Solo los necesarios para tu finalidad. Para docencia e investigación se recomienda trabajar con identificadores codificados y radiografías anonimizadas siempre que sea posible.</p></details>
+        <div><span class="eyebrow">Privacidad por diseño</span><h2>Los estudios permanecen en el equipo.</h2><p>YomCeph no requiere una cuenta y no envía automáticamente radiografías, datos personales o resultados a servidores del desarrollador. Las exportaciones salen del programa cuando el usuario decide guardarlas o compartirlas.</p><a class="text-link" href="privacy.html">Política de privacidad completa →</a></div>
+        <aside class="medical-note"><strong>Uso educativo e investigación</strong><p>YomCeph no sustituye la evaluación clínica ni constituye por sí sola un diagnóstico médico u odontológico. Las normas cefalométricas dependen de método, edad, sexo y población.</p></aside>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div><strong>YomCeph</strong><p data-i18n="footer-copy">Cefalometría educativa e investigación con almacenamiento local.</p></div>
-      <div><a href="privacy.html" data-i18n="footer-privacy">Política de privacidad</a><a href="https://github.com/yomismtz/-ngulos-cefalometricos" rel="noopener">GitHub</a></div>
-      <p class="copyright">© 2026 YomCeph</p>
-    </div>
-  </footer>
+  <footer class="site-footer"><div class="container footer-grid"><div><strong>YomCeph</strong><p>Cefalometría modular, trazable y local.</p></div><div><a href="science.html">Base científica</a><a href="privacy.html">Privacidad</a><a href="https://github.com/yomismtz/-ngulos-cefalometricos" rel="noopener">GitHub</a></div><p class="copyright">© 2026 YomCeph</p></div></footer>
 </body>
 </html>

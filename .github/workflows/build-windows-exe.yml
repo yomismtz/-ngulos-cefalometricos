@@ -45,7 +45,7 @@ jobs:
           python -m py_compile desktop/yomceph_desktop_v120.py
           python -m py_compile desktop/yomceph_desktop_v120_final.py
           python -m json.tool desktop/yomceph_i18n.json | Out-Null
-          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py -q
+          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py -q
 
       - name: Build installed application folder
         shell: pwsh

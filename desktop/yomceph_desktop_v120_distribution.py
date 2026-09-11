@@ -26,7 +26,7 @@ from yomceph_updater import (
     launch_installer,
 )
 
-APP_VERSION = "0.12.1"
+APP_VERSION = "0.12.2"
 
 
 class YomCephV120Distribution(YomCephV120ReleaseFinal):
@@ -37,15 +37,10 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
         self._update_download_in_progress = False
         super().__init__()
         self.title(f"YomCeph Desktop · v{APP_VERSION}")
-        # No bloquea el inicio ni la pantalla "¿Qué vamos a hacer hoy?".
         self.after(2500, lambda: self.check_for_updates(manual=False))
 
     def _get_more_menu(self):
-        """Devuelve el menú Más ▾ sin consultar opciones inexistentes en Entries.
-
-        Una búsqueda anterior llamaba cget('text') sobre todos los hijos del toolbar;
-        ttk.Entry no tiene esa opción y el bloque quedaba abortado silenciosamente.
-        """
+        """Devuelve el menú Más ▾ sin consultar opciones inexistentes en Entries."""
         for child in self.universal_wrapper.winfo_children():
             if not isinstance(child, ttk.Menubutton):
                 continue
@@ -77,10 +72,8 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
     def _install_database_bar(self):
         super()._install_database_bar()
 
-        # Compatibilidad con QualityAuditYomCeph._refresh_case_state(): esa capa
-        # heredada cambia bg/fg/activebackground directamente. ttk.Button no
-        # admite esas opciones y provocaba TclError: unknown option "-bg" al
-        # iniciar la distribución v0.12. El botón QC público debe ser tk.Button.
+        # QualityAuditYomCeph cambia bg/fg/activebackground directamente. Esas
+        # opciones pertenecen a tk.Button, no a ttk.Button.
         old_qc = getattr(self, "qc_button", None)
         if old_qc is not None:
             try:
@@ -104,9 +97,6 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
         )
         self.qc_button.pack(side=tk.RIGHT)
 
-        # Los controles manuales viven en Más ▾ para no robar espacio a la RX.
-        # Se insertan aquí de forma robusta porque capas heredadas pueden fallar
-        # al recorrer widgets de tipos distintos.
         menu = self._get_more_menu()
         labels = self._menu_labels(menu)
         if menu is not None:
@@ -125,9 +115,6 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
                     command=lambda: self.check_for_updates(manual=True),
                 )
 
-    # ------------------------------------------------------------------
-    # Actualizaciones
-    # ------------------------------------------------------------------
     def _has_unsaved_case(self):
         if getattr(self, "_case_saved", False):
             return False
@@ -163,8 +150,6 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
     def _finish_update_check(self, update, error, manual):
         self._update_check_in_progress = False
         if error is not None:
-            # La app puede seguir trabajando totalmente offline. En comprobación
-            # automática no se molesta al usuario por ausencia de conexión.
             if manual:
                 messagebox.showwarning("Actualizaciones", str(error))
                 try:
@@ -245,13 +230,8 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
             self.update_idletasks()
         except Exception:
             pass
-        # Inno Setup conserva los datos locales, actualiza la misma AppId y
-        # vuelve a abrir YomCeph al terminar.
         self.after(250, self.destroy)
 
-    # ------------------------------------------------------------------
-    # Radiografías: imágenes + PDF
-    # ------------------------------------------------------------------
     def open_image(self):
         path = filedialog.askopenfilename(
             title="Seleccionar radiografía",
@@ -292,10 +272,6 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
 
         source_path = Path(path)
         working_path = source_path
-
-        # El flujo histórico vuelve a abrir self.image_path con Pillow al guardar
-        # proyectos/casos. PDF no es una imagen Pillow y una página >1 de TIFF/GIF
-        # perdería la selección. Por eso esos casos se materializan como PNG.
         must_materialize = imported.source_kind == "pdf" or imported.page_index != 0
         if must_materialize:
             try:

@@ -7,6 +7,7 @@ from datetime import datetime
 from tkinter import filedialog, messagebox, ttk
 
 import yomceph_desktop_hidpi as ui
+import yomceph_desktop_v11_database as v11db
 import yomceph_desktop_v113_workspace as v113
 
 APP_VERSION = "0.11.4"
@@ -233,14 +234,7 @@ class ResearchMetadataYomCeph(v113.WorkspaceYomCeph):
                 unit = self._measurement_unit(key)
                 norm = sd = diff = None
                 diagnosis = self._diagnosis_for_result(key, value, r)
-                if key in self.STEINER_PROTOCOL if hasattr(self, "STEINER_PROTOCOL") else False:
-                    pass
-                # Usa exactamente la misma lógica de protocolo que v0.11.x.
-                try:
-                    protocol = __import__("yomceph_desktop_v11_database").STEINER_PROTOCOL
-                except Exception:
-                    protocol = {}
-                if key in protocol:
+                if key in v11db.STEINER_PROTOCOL:
                     _, dx, diff, norm, sd, unit = self._protocol_diagnosis(key, value)
                     diagnosis = dx
                 con.execute("""
@@ -287,16 +281,8 @@ class ResearchMetadataYomCeph(v113.WorkspaceYomCeph):
         if not path:
             return
 
-        try:
-            dbmod = __import__("yomceph_desktop_v11_database")
-            steiner_order = dbmod.STEINER_ORDER
-            posture_order = dbmod.POSTURE_ORDER
-        except Exception:
-            steiner_order = []
-            posture_order = []
-
         all_keys = []
-        for key in steiner_order + posture_order:
+        for key in v11db.STEINER_ORDER + v11db.POSTURE_ORDER:
             if key not in all_keys:
                 all_keys.append(key)
 

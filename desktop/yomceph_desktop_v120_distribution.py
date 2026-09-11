@@ -8,7 +8,7 @@ envía radiografías, datos de pacientes, landmarks ni resultados.
 from pathlib import Path
 import threading
 import tkinter as tk
-from tkinter import filedialog, messagebox, simpledialog
+from tkinter import filedialog, messagebox, simpledialog, ttk
 
 import yomceph_desktop_hidpi as ui
 from yomceph_desktop_v120_release_final import YomCephV120ReleaseFinal
@@ -26,7 +26,7 @@ from yomceph_updater import (
     launch_installer,
 )
 
-APP_VERSION = "0.12.0"
+APP_VERSION = "0.12.1"
 
 
 class YomCephV120Distribution(YomCephV120ReleaseFinal):
@@ -36,8 +36,43 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
         self._update_check_in_progress = False
         self._update_download_in_progress = False
         super().__init__()
+        self.title(f"YomCeph Desktop · v{APP_VERSION}")
         # No bloquea el inicio ni la pantalla "¿Qué vamos a hacer hoy?".
         self.after(2500, lambda: self.check_for_updates(manual=False))
+
+    def _get_more_menu(self):
+        """Devuelve el menú Más ▾ sin consultar opciones inexistentes en Entries.
+
+        Una búsqueda anterior llamaba cget('text') sobre todos los hijos del toolbar;
+        ttk.Entry no tiene esa opción y el bloque quedaba abortado silenciosamente.
+        """
+        for child in self.universal_wrapper.winfo_children():
+            if not isinstance(child, ttk.Menubutton):
+                continue
+            try:
+                menu_name = child.cget("menu")
+                if menu_name:
+                    return self.nametowidget(str(menu_name))
+            except (tk.TclError, KeyError):
+                continue
+        return None
+
+    @staticmethod
+    def _menu_labels(menu):
+        labels = set()
+        if menu is None:
+            return labels
+        end = menu.index("end")
+        if end is None:
+            return labels
+        for index in range(end + 1):
+            try:
+                label = menu.entrycget(index, "label")
+            except tk.TclError:
+                continue
+            if label:
+                labels.add(str(label))
+        return labels
 
     def _install_database_bar(self):
         super()._install_database_bar()
@@ -46,42 +81,49 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
         # heredada cambia bg/fg/activebackground directamente. ttk.Button no
         # admite esas opciones y provocaba TclError: unknown option "-bg" al
         # iniciar la distribución v0.12. El botón QC público debe ser tk.Button.
-        try:
-            old_qc = self.qc_button
-            old_qc.destroy()
-            self.qc_button = tk.Button(
-                self.case_state_frame,
-                text="QC pendiente",
-                command=self.show_quality_control,
-                bg="#DCE3EA",
-                fg="#233044",
-                activebackground="#DCE3EA",
-                activeforeground="#233044",
-                relief=tk.FLAT,
-                bd=0,
-                padx=8,
-                pady=2,
-                font=("Segoe UI", 9, "bold"),
-                cursor="hand2",
-            )
-            self.qc_button.pack(side=tk.RIGHT)
-        except Exception:
-            pass
+        old_qc = getattr(self, "qc_button", None)
+        if old_qc is not None:
+            try:
+                old_qc.destroy()
+            except tk.TclError:
+                pass
+        self.qc_button = tk.Button(
+            self.case_state_frame,
+            text="QC pendiente",
+            command=self.show_quality_control,
+            bg="#DCE3EA",
+            fg="#233044",
+            activebackground="#DCE3EA",
+            activeforeground="#233044",
+            relief=tk.FLAT,
+            bd=0,
+            padx=8,
+            pady=2,
+            font=("Segoe UI", 9, "bold"),
+            cursor="hand2",
+        )
+        self.qc_button.pack(side=tk.RIGHT)
 
-        # El control manual vive en Más ▾ para no robar espacio a la radiografía.
-        try:
-            for child in self.universal_wrapper.winfo_children():
-                if str(child.cget("text")) != "Más ▾":
-                    continue
-                menu = self.nametowidget(str(child.cget("menu")))
+        # Los controles manuales viven en Más ▾ para no robar espacio a la RX.
+        # Se insertan aquí de forma robusta porque capas heredadas pueden fallar
+        # al recorrer widgets de tipos distintos.
+        menu = self._get_more_menu()
+        labels = self._menu_labels(menu)
+        if menu is not None:
+            if "Alto contraste" not in labels and hasattr(self, "high_contrast_var"):
+                menu.add_separator()
+                menu.add_checkbutton(
+                    label="Alto contraste",
+                    variable=self.high_contrast_var,
+                    command=self._apply_high_contrast,
+                )
+                labels.add("Alto contraste")
+            if "Buscar actualizaciones" not in labels:
                 menu.add_separator()
                 menu.add_command(
                     label="Buscar actualizaciones",
                     command=lambda: self.check_for_updates(manual=True),
                 )
-                break
-        except Exception:
-            pass
 
     # ------------------------------------------------------------------
     # Actualizaciones

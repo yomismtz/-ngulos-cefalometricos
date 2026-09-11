@@ -1,3 +1,4 @@
+import json
 import sqlite3
 import tkinter as tk
 from datetime import datetime
@@ -25,6 +26,19 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         super()._init_database()
         with sqlite3.connect(self._db_path) as con:
             con.execute(
+                """CREATE TABLE IF NOT EXISTS research_protocol_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    study_id TEXT NOT NULL,
+                    action TEXT NOT NULL,
+                    changed_at TEXT NOT NULL,
+                    protocol_version INTEGER NOT NULL,
+                    details_json TEXT NOT NULL DEFAULT '{}'
+                )"""
+            )
+            con.execute(
+                "CREATE INDEX IF NOT EXISTS idx_protocol_history_study ON research_protocol_history(study_id,id)"
+            )
+            con.execute(
                 """UPDATE research_studies
                    SET steiner_reference='none'
                    WHERE steiner_reference='legacy_imported'
@@ -36,6 +50,41 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
                    WHERE steiner_reference='legacy_imported'
                      AND (research_study_id IS NULL
                           OR research_study_id NOT GLOB 'investigacion_importada*')"""
+            )
+            con.commit()
+
+    def _record_protocol_history(self, study_id, action, details=None, version=None):
+        if not study_id:
+            return
+        now = datetime.now().isoformat(timespec="seconds")
+        with sqlite3.connect(self._db_path) as con:
+            con.execute(
+                """CREATE TABLE IF NOT EXISTS research_protocol_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    study_id TEXT NOT NULL,
+                    action TEXT NOT NULL,
+                    changed_at TEXT NOT NULL,
+                    protocol_version INTEGER NOT NULL,
+                    details_json TEXT NOT NULL DEFAULT '{}'
+                )"""
+            )
+            if version is None:
+                row = con.execute(
+                    "SELECT protocol_version FROM research_studies WHERE study_id=?",
+                    (study_id,),
+                ).fetchone()
+                version = int(row[0]) if row and row[0] is not None else 1
+            con.execute(
+                """INSERT INTO research_protocol_history(
+                    study_id,action,changed_at,protocol_version,details_json
+                ) VALUES(?,?,?,?,?)""",
+                (
+                    study_id,
+                    action,
+                    now,
+                    int(version),
+                    json.dumps(details or {}, ensure_ascii=False, sort_keys=True),
+                ),
             )
             con.commit()
 
@@ -62,9 +111,8 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         return values
 
     def _save_study(self, data, existing_id=None):
-        # Evita colisiones humanas (no sólo SPSS) entre una variable de grupo y
-        # una medición/columna derivada. Sin esto, dos columnas llamadas "SNA"
-        # podrían hacer que una estadística leyera la columna equivocada.
+        # Evita colisiones humanas entre variables de grupo y mediciones/columnas
+        # derivadas. El padre también normaliza duplicados y nombres reservados.
         reserved = set()
         for key in v120.MEASUREMENTS:
             reserved.add(_spss_base_name(key).casefold())
@@ -93,9 +141,47 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         if adjusted:
             messagebox.showwarning(
                 "Variables del estudio",
-                "Una variable de grupo coincidía con el nombre de una medición. YomCeph la renombró para mantener columnas inequívocas en Excel y SPSS."
+                "Una variable de grupo coincidía con el nombre de una medición. "
+                "YomCeph la renombró para mantener columnas inequívocas en Excel y SPSS."
             )
-        return super()._save_study(cleaned, existing_id)
+
+        study_id = super()._save_study(cleaned, existing_id)
+        now = datetime.now().isoformat(timespec="seconds")
+        with sqlite3.connect(self._db_path) as con:
+            if existing_id:
+                con.execute(
+                    """UPDATE research_studies
+                       SET protocol_version=protocol_version+1, updated_at=?
+                       WHERE study_id=?""",
+                    (now, study_id),
+                )
+            row = con.execute(
+                "SELECT protocol_version FROM research_studies WHERE study_id=?",
+                (study_id,),
+            ).fetchone()
+            version = int(row[0]) if row and row[0] is not None else 1
+            con.commit()
+
+        snapshot = {
+            "name": cleaned.get("name", ""),
+            "target_n": cleaned.get("target_n"),
+            "allow_target_increase": bool(cleaned.get("allow_target_increase")),
+            "age_min": cleaned.get("age_min"),
+            "age_max": cleaned.get("age_max"),
+            "country": cleaned.get("country", ""),
+            "institution": cleaned.get("institution", ""),
+            "group_fields": cleaned.get("group_fields", []),
+            "analyses": cleaned.get("analyses", []),
+            "measurements": cleaned.get("measurements", []),
+            "steiner_reference": cleaned.get("steiner_reference", "none"),
+        }
+        self._record_protocol_history(
+            study_id,
+            "edited" if existing_id else "created",
+            snapshot,
+            version=version,
+        )
+        return study_id
 
     def _ensure_research_capacity(self, local_case_id):
         """Evita rebasar silenciosamente la muestra planeada."""
@@ -126,7 +212,8 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         if included >= MAX_RESEARCH_CASES or target >= MAX_RESEARCH_CASES:
             messagebox.showwarning(
                 "Capacidad de investigación",
-                f"YomCeph v0.12 admite hasta {MAX_RESEARCH_CASES} casos planeados por investigación. No se puede ampliar más esta muestra."
+                f"YomCeph v0.12 admite hasta {MAX_RESEARCH_CASES} casos planeados por investigación. "
+                "No se puede ampliar más esta muestra."
             )
             return False
         if not bool(self.current_study.get("allow_target_increase")):
@@ -150,16 +237,33 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         now = datetime.now().isoformat(timespec="seconds")
         with sqlite3.connect(self._db_path) as con:
             con.execute(
-                "UPDATE research_studies SET target_n=?, protocol_version=protocol_version+1, updated_at=? WHERE study_id=?",
+                """UPDATE research_studies
+                   SET target_n=?, protocol_version=protocol_version+1, updated_at=?
+                   WHERE study_id=?""",
                 (new_target, now, self.current_study_id),
             )
+            version = con.execute(
+                "SELECT protocol_version FROM research_studies WHERE study_id=?",
+                (self.current_study_id,),
+            ).fetchone()[0]
             con.commit()
+        self._record_protocol_history(
+            self.current_study_id,
+            "sample_increased",
+            {
+                "old_target": target,
+                "new_target": new_target,
+                "included_at_change": included,
+            },
+            version=version,
+        )
         self.current_study = self._get_study(self.current_study_id)
         self.study_target_var.set(str(new_target))
         self._update_db_counter()
         messagebox.showinfo(
             "Muestra ampliada",
-            f"El tamaño planeado quedó registrado como {new_target}. La versión del protocolo se incrementó para mantener trazabilidad."
+            f"El tamaño planeado quedó registrado como {new_target}. "
+            "La versión del protocolo se incrementó y el cambio quedó en el historial."
         )
         return True
 
@@ -172,7 +276,8 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         if not self.sex_code_var.get().strip():
             messagebox.showwarning(
                 "Dato pendiente",
-                "Antes de incluir el caso seleccione el sexo registrado. Si no está disponible, utilice una categoría explícita como “No registrado”."
+                "Antes de incluir el caso seleccione el sexo registrado. Si no está disponible, "
+                "utilice una categoría explícita como “No registrado”."
             )
             return False
         missing = [
@@ -183,11 +288,50 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         if missing:
             messagebox.showwarning(
                 "Grupo pendiente",
-                "Antes de incluir el caso complete las variables del protocolo: " + ", ".join(missing) + ".\n\n"
-                "Use Datos del caso. Si una variable puede faltar, añada al protocolo una opción explícita como “No registrado” o “No aplica”."
+                "Antes de incluir el caso complete las variables del protocolo: "
+                + ", ".join(missing)
+                + ".\n\nUse Datos del caso. Si una variable puede faltar, añada al protocolo "
+                  "una opción explícita como “No registrado” o “No aplica”."
             )
             return False
         return True
+
+    def _write_excel_release(
+        self, path, headers, matrix, selected, group_names, category_headers, spss_map
+    ):
+        super()._write_excel_release(
+            path, headers, matrix, selected, group_names, category_headers, spss_map
+        )
+        from openpyxl import load_workbook
+        from openpyxl.styles import Font
+
+        with sqlite3.connect(self._db_path) as con:
+            rows = con.execute(
+                """SELECT changed_at,protocol_version,action,details_json
+                   FROM research_protocol_history
+                   WHERE study_id=? ORDER BY id""",
+                (self.current_study_id,),
+            ).fetchall()
+
+        wb = load_workbook(path)
+        if "Historial protocolo" in wb.sheetnames:
+            del wb["Historial protocolo"]
+        ws = wb.create_sheet("Historial protocolo")
+        ws.append(["Fecha", "Versión", "Acción", "Detalles"])
+        for cell in ws[1]:
+            cell.font = Font(bold=True)
+        for changed_at, version, action, details_json in rows:
+            try:
+                details = json.loads(details_json or "{}")
+                details_text = json.dumps(details, ensure_ascii=False, sort_keys=True)
+            except Exception:
+                details_text = details_json or ""
+            ws.append([changed_at, version, action, details_text])
+        ws.column_dimensions["A"].width = 22
+        ws.column_dimensions["B"].width = 10
+        ws.column_dimensions["C"].width = 20
+        ws.column_dimensions["D"].width = 90
+        wb.save(path)
 
     def save_case_to_database(self):
         local = self.case_id.get().strip()

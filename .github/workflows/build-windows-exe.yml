@@ -8,8 +8,11 @@ on:
       - desktop-v0114-research-metadata
       - desktop-v0115-quality-audit
       - desktop-v0116-universal-ui
+      - desktop-v0120-workflow-builder
     paths:
       - 'desktop/**'
+      - 'website/**'
+      - 'PRIVACY_POLICY.md'
       - '.github/workflows/build-windows-exe.yml'
 
 jobs:
@@ -25,24 +28,36 @@ jobs:
           python-version: '3.12'
 
       - name: Install Python dependencies
-        run: pip install -r desktop/requirements.txt
+        run: |
+          pip install -r desktop/requirements.txt
+          pip install pytest==8.4.2
 
       - name: Create brand assets
         run: python desktop/create_brand_assets.py
 
-      - name: Validate v0.11.6 source
+      - name: Validate v0.12 source, formulas and distribution contract
         shell: pwsh
         run: |
           python -m py_compile desktop/yomceph_desktop_v115_quality_audit.py
           python -m py_compile desktop/yomceph_desktop_v115.py
           python -m py_compile desktop/yomceph_desktop_v116.py
           python -m py_compile desktop/yomceph_desktop_v116_final.py
+          python -m py_compile desktop/yomceph_scientific_catalog.py
+          python -m py_compile desktop/yomceph_v120_geometry.py
+          python -m py_compile desktop/yomceph_radiograph_loader.py
+          python -m py_compile desktop/yomceph_updater.py
+          python -m py_compile desktop/yomceph_desktop_v120.py
+          python -m py_compile desktop/yomceph_desktop_v120_final.py
+          python -m py_compile desktop/yomceph_desktop_v120_release.py
+          python -m py_compile desktop/yomceph_desktop_v120_release_final.py
+          python -m py_compile desktop/yomceph_desktop_v120_distribution.py
           python -m json.tool desktop/yomceph_i18n.json | Out-Null
+          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py desktop/test_v120_distribution_contract.py -q
 
       - name: Build installed application folder
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --add-data "desktop/yomceph_i18n.json;." --name YomCeph_Desktop desktop/yomceph_desktop_v116_final.py
+          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --add-data "desktop/yomceph_i18n.json;." --name YomCeph_Desktop desktop/yomceph_desktop_v120_distribution.py
 
       - name: Install Inno Setup
         shell: pwsh
@@ -56,11 +71,20 @@ jobs:
           if (!(Test-Path $iscc)) {
             $iscc = (Get-Command ISCC.exe -ErrorAction Stop).Source
           }
-          & $iscc "desktop\YomCeph_v0116.iss"
+          & $iscc "desktop\YomCeph_v0120.iss"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup falló" }
+          $version = (Get-Content desktop/VERSION -Raw).Trim()
+          $exe = "installer\YomCeph_Desktop_Setup_v$version.exe"
+          if (!(Test-Path $exe)) { throw "No se generó $exe" }
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  YomCeph_Desktop_Setup_v$version.exe" | Set-Content "$exe.sha256" -Encoding ascii
+          Write-Host "SHA256=$hash"
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph_Desktop_Installer_v0.11.6
-          path: installer/YomCeph_Desktop_Setup_v0.11.6.exe
+          name: YomCeph_Desktop_Installer_v0.12.0
+          path: |
+            installer/YomCeph_Desktop_Setup_v0.12.0.exe
+            installer/YomCeph_Desktop_Setup_v0.12.0.exe.sha256
           if-no-files-found: error

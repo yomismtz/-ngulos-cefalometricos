@@ -1,5 +1,7 @@
 import sqlite3
 import tkinter as tk
+from datetime import datetime
+from tkinter import messagebox, simpledialog
 
 import yomceph_desktop_hidpi as ui
 from yomceph_desktop_v120_release import YomCephV120Release
@@ -62,6 +64,77 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         values = super().calculate_values()
         values.update(legacy_active_angles(self.points))
         return values
+
+    def _ensure_research_capacity(self, local_case_id):
+        """Evita rebasar silenciosamente la muestra planeada.
+
+        Devuelve True cuando el caso puede guardarse como incluido. Actualizar un
+        caso que ya pertenece a la muestra no consume una plaza nueva.
+        """
+        if self.workflow_type != "research" or not self.current_study_id or not self.current_study:
+            return True
+        status, _reason = self._evaluate_eligibility()
+        if status != "eligible":
+            return True
+
+        storage_id = self._storage_case_id(local_case_id)
+        with sqlite3.connect(self._db_path) as con:
+            already_included = con.execute(
+                """SELECT 1 FROM cases
+                   WHERE case_id=? AND research_study_id=? AND eligibility_status='eligible'""",
+                (storage_id, self.current_study_id),
+            ).fetchone() is not None
+            if already_included:
+                return True
+            included = con.execute(
+                """SELECT COUNT(*) FROM cases
+                   WHERE research_study_id=? AND eligibility_status='eligible'""",
+                (self.current_study_id,),
+            ).fetchone()[0]
+
+        target = int(self.current_study.get("target_n") or 0)
+        if included < target:
+            return True
+
+        if not bool(self.current_study.get("allow_target_increase")):
+            messagebox.showwarning(
+                "Muestra completa",
+                f"La investigación ya alcanzó la muestra planeada de {target} casos incluidos.\n\n"
+                "El protocolo no permite ampliarla. Este caso no se guardará como incluido."
+            )
+            return False
+
+        new_target = simpledialog.askinteger(
+            "Ampliar muestra",
+            f"La investigación ya alcanzó {included}/{target} casos incluidos.\n\n"
+            "Para incluir este paciente, registre primero el nuevo tamaño planeado de muestra:",
+            minvalue=included + 1,
+            maxvalue=1000,
+            parent=self,
+        )
+        if not new_target:
+            return False
+        now = datetime.now().isoformat(timespec="seconds")
+        with sqlite3.connect(self._db_path) as con:
+            con.execute(
+                "UPDATE research_studies SET target_n=?, protocol_version=protocol_version+1, updated_at=? WHERE study_id=?",
+                (new_target, now, self.current_study_id),
+            )
+            con.commit()
+        self.current_study = self._get_study(self.current_study_id)
+        self.study_target_var.set(str(new_target))
+        self._update_db_counter()
+        messagebox.showinfo(
+            "Muestra ampliada",
+            f"El tamaño planeado quedó registrado como {new_target}. La versión del protocolo se incrementó para mantener trazabilidad."
+        )
+        return True
+
+    def save_case_to_database(self):
+        local = self.case_id.get().strip()
+        if local and not self._ensure_research_capacity(local):
+            return
+        return super().save_case_to_database()
 
 
 if __name__ == "__main__":

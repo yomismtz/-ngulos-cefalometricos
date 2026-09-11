@@ -62,6 +62,13 @@ class DummyCapacity:
         return None
 
 
+class DummyCompleteness:
+    _validate_included_case_completeness = YomCephV120ReleaseFinal._validate_included_case_completeness
+
+    def _evaluate_eligibility(self):
+        return "eligible", "ok"
+
+
 def _capacity_db(tmp_path, target=2, allow=0, included=2):
     db = tmp_path / "capacity.sqlite3"
     with sqlite3.connect(db) as con:
@@ -194,3 +201,32 @@ def test_updating_existing_included_case_does_not_consume_new_slot(tmp_path, mon
         lambda *a, **k: (_ for _ in ()).throw(AssertionError("no debe advertir")),
     )
     assert obj._ensure_research_capacity("2") is True
+
+
+def test_1000_case_limit_never_opens_invalid_increase_dialog(tmp_path, monkeypatch):
+    obj, _db = _capacity_db(tmp_path, target=1000, allow=1, included=1000)
+    warnings = []
+    monkeypatch.setattr(release_final_module.messagebox, "showwarning", lambda *a, **k: warnings.append(a))
+    monkeypatch.setattr(
+        release_final_module.simpledialog,
+        "askinteger",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("no debe abrir diálogo")),
+    )
+    assert obj._ensure_research_capacity("1001") is False
+    assert warnings
+
+
+def test_included_case_requires_sex_and_configured_groups(monkeypatch):
+    obj = object.__new__(DummyCompleteness)
+    obj.workflow_type = "research"
+    obj.current_study = {"group_fields": [{"name": "Grupo", "options": ["Caso", "Control"]}]}
+    obj.sex_code_var = _Var("")
+    obj.case_group_values = {"Grupo": ""}
+    warnings = []
+    monkeypatch.setattr(release_final_module.messagebox, "showwarning", lambda *a, **k: warnings.append(a))
+    assert obj._validate_included_case_completeness() is False
+    obj.sex_code_var.set("female")
+    assert obj._validate_included_case_completeness() is False
+    obj.case_group_values["Grupo"] = "Caso"
+    assert obj._validate_included_case_completeness() is True
+    assert warnings

@@ -183,6 +183,76 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         )
         return study_id
 
+    def _increase_sample_target(self, study_id, old_target, new_target, included, source):
+        now = datetime.now().isoformat(timespec="seconds")
+        with sqlite3.connect(self._db_path) as con:
+            con.execute(
+                """UPDATE research_studies
+                   SET target_n=?, protocol_version=protocol_version+1, updated_at=?
+                   WHERE study_id=?""",
+                (new_target, now, study_id),
+            )
+            version = con.execute(
+                "SELECT protocol_version FROM research_studies WHERE study_id=?",
+                (study_id,),
+            ).fetchone()[0]
+            con.commit()
+        self._record_protocol_history(
+            study_id,
+            "sample_increased",
+            {
+                "old_target": old_target,
+                "new_target": new_target,
+                "included_at_change": included,
+                "source": source,
+            },
+            version=version,
+        )
+        if study_id == self.current_study_id:
+            self.current_study = self._get_study(study_id)
+            self.study_target_var.set(str(new_target))
+            self._update_db_counter()
+        return version
+
+    def _show_locked_protocol(self, study):
+        text = (
+            f"El protocolo '{study['name']}' está bloqueado porque ya contiene casos incluidos.\n\n"
+            "No se cambian silenciosamente edades, grupos, análisis ni resultados."
+        )
+        target = int(study.get("target_n") or 0)
+        if not study.get("allow_target_increase"):
+            messagebox.showinfo("Protocolo bloqueado", text + f"\n\nMuestra planeada: {target}")
+            return
+        if target >= MAX_RESEARCH_CASES:
+            messagebox.showinfo(
+                "Protocolo bloqueado",
+                text + f"\n\nMuestra planeada: {target}. Se alcanzó el máximo de {MAX_RESEARCH_CASES}."
+            )
+            return
+        if not messagebox.askyesno(
+            "Protocolo bloqueado",
+            text + f"\n\nMuestra actual: {target}.\n\n¿Desea aumentar únicamente el tamaño planeado de muestra?"
+        ):
+            return
+        with sqlite3.connect(self._db_path) as con:
+            included = con.execute(
+                "SELECT COUNT(*) FROM cases WHERE research_study_id=? AND eligibility_status='eligible'",
+                (study["study_id"],),
+            ).fetchone()[0]
+        new_target = simpledialog.askinteger(
+            "Muestra",
+            "Nuevo número planeado:",
+            minvalue=max(target + 1, included + 1),
+            maxvalue=MAX_RESEARCH_CASES,
+            parent=self,
+        )
+        if not new_target:
+            return
+        self._increase_sample_target(
+            study["study_id"], target, new_target, included, "locked_protocol_editor"
+        )
+        self._activate_study(study["study_id"])
+
     def _ensure_research_capacity(self, local_case_id):
         """Evita rebasar silenciosamente la muestra planeada."""
         if self.workflow_type != "research" or not self.current_study_id or not self.current_study:
@@ -234,32 +304,9 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         )
         if not new_target:
             return False
-        now = datetime.now().isoformat(timespec="seconds")
-        with sqlite3.connect(self._db_path) as con:
-            con.execute(
-                """UPDATE research_studies
-                   SET target_n=?, protocol_version=protocol_version+1, updated_at=?
-                   WHERE study_id=?""",
-                (new_target, now, self.current_study_id),
-            )
-            version = con.execute(
-                "SELECT protocol_version FROM research_studies WHERE study_id=?",
-                (self.current_study_id,),
-            ).fetchone()[0]
-            con.commit()
-        self._record_protocol_history(
-            self.current_study_id,
-            "sample_increased",
-            {
-                "old_target": target,
-                "new_target": new_target,
-                "included_at_change": included,
-            },
-            version=version,
+        self._increase_sample_target(
+            self.current_study_id, target, new_target, included, "case_inclusion"
         )
-        self.current_study = self._get_study(self.current_study_id)
-        self.study_target_var.set(str(new_target))
-        self._update_db_counter()
         messagebox.showinfo(
             "Muestra ampliada",
             f"El tamaño planeado quedó registrado como {new_target}. "

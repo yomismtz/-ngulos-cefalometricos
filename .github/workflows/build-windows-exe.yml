@@ -6,6 +6,7 @@ on:
     branches:
       - desktop-exe-vertebral
       - desktop-v0114-research-metadata
+      - desktop-v0115-quality-audit
     paths:
       - 'desktop/**'
       - '.github/workflows/build-windows-exe.yml'
@@ -28,13 +29,13 @@ jobs:
       - name: Create brand assets
         run: python desktop/create_brand_assets.py
 
-      - name: Validate v0.11.4 source
-        run: python -m py_compile desktop/yomceph_desktop_v114_research_metadata.py
+      - name: Validate v0.11.5 source
+        run: python -m py_compile desktop/yomceph_desktop_v115_quality_audit.py
 
       - name: Build installed application folder
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_v114_research_metadata.py
+          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_v115_quality_audit.py
 
       - name: Install Inno Setup
         shell: pwsh
@@ -48,11 +49,11 @@ jobs:
           if (!(Test-Path $iscc)) {
             $iscc = (Get-Command ISCC.exe -ErrorAction Stop).Source
           }
-          & $iscc "desktop\YomCeph_v0114.iss"
+          & $iscc "desktop\YomCeph_v0115.iss"
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph_Desktop_Installer_v0.11.4
-          path: installer/YomCeph_Desktop_Setup_v0.11.4.exe
+          name: YomCeph_Desktop_Installer_v0.11.5
+          path: installer/YomCeph_Desktop_Setup_v0.11.5.exe
           if-no-files-found: error

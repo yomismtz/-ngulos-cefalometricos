@@ -30,12 +30,14 @@ jobs:
         run: python desktop/create_brand_assets.py
 
       - name: Validate v0.11.5 source
-        run: python -m py_compile desktop/yomceph_desktop_v115_quality_audit.py
+        run: |
+          python -m py_compile desktop/yomceph_desktop_v115_quality_audit.py
+          python -m py_compile desktop/yomceph_desktop_v115.py
 
       - name: Build installed application folder
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_v115_quality_audit.py
+          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --name YomCeph_Desktop desktop/yomceph_desktop_v115.py
 
       - name: Install Inno Setup
         shell: pwsh

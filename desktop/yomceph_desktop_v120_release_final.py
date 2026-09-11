@@ -4,7 +4,8 @@ from datetime import datetime
 from tkinter import messagebox, simpledialog
 
 import yomceph_desktop_hidpi as ui
-from yomceph_desktop_v120_release import YomCephV120Release
+import yomceph_desktop_v120 as v120
+from yomceph_desktop_v120_release import YomCephV120Release, _spss_base_name
 from yomceph_v120_geometry import legacy_active_angles
 
 APP_VERSION = "0.12.0"
@@ -60,12 +61,44 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         values.update(legacy_active_angles(self.points))
         return values
 
-    def _ensure_research_capacity(self, local_case_id):
-        """Evita rebasar silenciosamente la muestra planeada.
+    def _save_study(self, data, existing_id=None):
+        # Evita colisiones humanas (no sólo SPSS) entre una variable de grupo y
+        # una medición/columna derivada. Sin esto, dos columnas llamadas "SNA"
+        # podrían hacer que una estadística leyera la columna equivocada.
+        reserved = set()
+        for key in v120.MEASUREMENTS:
+            reserved.add(_spss_base_name(key).casefold())
+            reserved.add(_spss_base_name(key + "__categoria").casefold())
+        cleaned = dict(data)
+        fields = []
+        used = set(reserved)
+        adjusted = False
+        for field in data.get("group_fields", []):
+            original = str(field.get("name", "Grupo")).strip() or "Grupo"
+            name = original
+            normalized = _spss_base_name(name).casefold()
+            suffix = 2
+            if normalized in used:
+                name = original + " grupo"
+                normalized = _spss_base_name(name).casefold()
+                adjusted = True
+            while normalized in used:
+                name = f"{original} grupo {suffix}"
+                normalized = _spss_base_name(name).casefold()
+                suffix += 1
+                adjusted = True
+            used.add(normalized)
+            fields.append({"name": name, "options": list(field.get("options", []))})
+        cleaned["group_fields"] = fields
+        if adjusted:
+            messagebox.showwarning(
+                "Variables del estudio",
+                "Una variable de grupo coincidía con el nombre de una medición. YomCeph la renombró para mantener columnas inequívocas en Excel y SPSS."
+            )
+        return super()._save_study(cleaned, existing_id)
 
-        Actualizar un caso ya incluido no consume una plaza. Una ampliación
-        autorizada incrementa la versión del protocolo para dejar trazabilidad.
-        """
+    def _ensure_research_capacity(self, local_case_id):
+        """Evita rebasar silenciosamente la muestra planeada."""
         if self.workflow_type != "research" or not self.current_study_id or not self.current_study:
             return True
         status, _reason = self._evaluate_eligibility()
@@ -90,15 +123,12 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         target = int(self.current_study.get("target_n") or 0)
         if included < target:
             return True
-
         if included >= MAX_RESEARCH_CASES or target >= MAX_RESEARCH_CASES:
             messagebox.showwarning(
                 "Capacidad de investigación",
-                f"YomCeph v0.12 admite hasta {MAX_RESEARCH_CASES} casos planeados por investigación. "
-                "No se puede ampliar más esta muestra."
+                f"YomCeph v0.12 admite hasta {MAX_RESEARCH_CASES} casos planeados por investigación. No se puede ampliar más esta muestra."
             )
             return False
-
         if not bool(self.current_study.get("allow_target_increase")):
             messagebox.showwarning(
                 "Muestra completa",
@@ -133,8 +163,36 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         )
         return True
 
+    def _validate_included_case_completeness(self):
+        if self.workflow_type != "research" or not self.current_study:
+            return True
+        status, _reason = self._evaluate_eligibility()
+        if status != "eligible":
+            return True
+        if not self.sex_code_var.get().strip():
+            messagebox.showwarning(
+                "Dato pendiente",
+                "Antes de incluir el caso seleccione el sexo registrado. Si no está disponible, utilice una categoría explícita como “No registrado”."
+            )
+            return False
+        missing = [
+            field.get("name", "Grupo")
+            for field in self.current_study.get("group_fields", [])
+            if not self.case_group_values.get(field.get("name", ""), "").strip()
+        ]
+        if missing:
+            messagebox.showwarning(
+                "Grupo pendiente",
+                "Antes de incluir el caso complete las variables del protocolo: " + ", ".join(missing) + ".\n\n"
+                "Use Datos del caso. Si una variable puede faltar, añada al protocolo una opción explícita como “No registrado” o “No aplica”."
+            )
+            return False
+        return True
+
     def save_case_to_database(self):
         local = self.case_id.get().strip()
+        if local and not self._validate_included_case_completeness():
+            return
         if local and not self._ensure_research_capacity(local):
             return
         return super().save_case_to_database()

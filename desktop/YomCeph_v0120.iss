@@ -21,6 +21,8 @@ SetupIconFile=yomceph.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+CloseApplications=yes
+RestartApplications=no
 
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
@@ -37,8 +39,9 @@ Name: "{autodesktop}\YomCeph Desktop"; Filename: "{app}\{#MyAppExeName}"; Tasks:
 Name: "desktopicon"; Description: "Crear un acceso directo en el escritorio / Create a desktop shortcut"; GroupDescription: "Accesos directos / Shortcuts:"; Flags: unchecked
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Abrir YomCeph Desktop / Open YomCeph Desktop"; Flags: nowait postinstall skipifsilent
+; También se ejecuta después de una actualización iniciada desde YomCeph.
+Filename: "{app}\{#MyAppExeName}"; Description: "Abrir YomCeph Desktop / Open YomCeph Desktop"; Flags: nowait postinstall
 
 [UninstallDelete]
-; La base permanece fuera de la carpeta de instalación.
+; La base y las radiografías se guardan fuera de la carpeta de instalación.
 Type: filesandordirs; Name: "{app}"

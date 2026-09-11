@@ -17,6 +17,10 @@ def _polar(degrees, radius=1.0):
     return radius * math.cos(rad), radius * math.sin(rad)
 
 
+def _add(a, b):
+    return a[0] + b[0], a[1] + b[1]
+
+
 def test_line_angle_helpers_define_sector_without_norm():
     origin = (0.0, 0.0)
     x_axis = (1.0, 0.0)
@@ -50,13 +54,15 @@ def test_angle_helpers_are_invariant_when_entire_radiograph_is_mirrored():
 def test_legacy_active_angles_use_explicit_sectors_not_reference_targets():
     # S-N horizontal. Po-Or and Go-Gn are 7°/32° and therefore use acute sectors.
     # U1 axis is 76° to SN, so U1-SN must report its conventional obtuse sector 104°.
+    po = (0.0, 2.0)
+    go = (0.0, 4.0)
     points = {
         "S": (0.0, 0.0),
         "N": (10.0, 0.0),
-        "Po": (0.0, 2.0),
-        "Or": _polar(7.0, 10.0),
-        "Go": (0.0, 4.0),
-        "Gn": _polar(32.0, 10.0),
+        "Po": po,
+        "Or": _add(po, _polar(7.0, 10.0)),
+        "Go": go,
+        "Gn": _add(go, _polar(32.0, 10.0)),
         "A": (0.0, 0.0),
         "B": (0.0, 10.0),
         "U1a": (0.0, 0.0),
@@ -95,15 +101,12 @@ def test_powell_angles_no_longer_choose_sector_by_closeness_to_norm():
         "Nsoft": (0.0, 0.0),
         "Dn": (10.0, 0.0),
         "Prn": (0.0, 0.0),
-        "Pgsoft": _polar(54.0, 10.0),
+        "Pgsoft": (10.0, 0.0),
         "Gsoft": (0.0, 0.0),
         "Mesoft": (0.0, 0.0),
         "Csoft": _polar(85.0, 10.0),
     }
-    # Para mentocervical Gsoft->Pgsoft también debe ser horizontal en este sintético.
-    points["Pgsoft"] = (10.0, 0.0)
     values = legacy_active_angles(points)
-    # Reasignamos un conjunto separado para nasomental porque Pgsoft participa en ambas.
     nasomental_points = dict(points)
     nasomental_points["Pgsoft"] = _polar(54.0, 10.0)
     assert math.isclose(legacy_active_angles(nasomental_points)["Powell Nasomental"], 126.0, abs_tol=1e-9)

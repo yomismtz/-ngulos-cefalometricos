@@ -64,6 +64,21 @@ jobs:
         run: |
           pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --add-data "desktop/yomceph_i18n.json;." --name YomCeph_Desktop desktop/yomceph_desktop_v120_distribution.py
 
+      - name: Packaged EXE startup smoke test
+        shell: pwsh
+        run: |
+          $oldLocalAppData = $env:LOCALAPPDATA
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP "YomCephPackagedSmokeData"
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          $exe = Resolve-Path "dist\YomCeph_Desktop\YomCeph_Desktop.exe"
+          $p = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 8
+          $p.Refresh()
+          if ($p.HasExited) { throw "El EXE empaquetado se cerró durante el arranque. ExitCode=$($p.ExitCode)" }
+          Stop-Process -Id $p.Id -Force
+          $env:LOCALAPPDATA = $oldLocalAppData
+          Write-Host "Packaged EXE startup smoke test: OK"
+
       - name: Install Inno Setup
         shell: pwsh
         run: choco install innosetup -y --no-progress
@@ -84,6 +99,29 @@ jobs:
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  YomCeph_Desktop_Setup_v$version.exe" | Set-Content "$exe.sha256" -Encoding ascii
           Write-Host "SHA256=$hash"
+
+      - name: Silent installer + installed EXE smoke test
+        shell: pwsh
+        run: |
+          $version = (Get-Content desktop/VERSION -Raw).Trim()
+          $setup = Resolve-Path "installer\YomCeph_Desktop_Setup_v$version.exe"
+          $installDir = Join-Path $env:RUNNER_TEMP "YomCephInstalledSmoke"
+          $dataDir = Join-Path $env:RUNNER_TEMP "YomCephInstalledSmokeData"
+          Remove-Item $installDir -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $dataDir | Out-Null
+          $install = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=$installDir") -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "El instalador silencioso falló. ExitCode=$($install.ExitCode)" }
+          $installedExe = Join-Path $installDir "YomCeph_Desktop.exe"
+          if (!(Test-Path $installedExe)) { throw "El instalador no creó $installedExe" }
+          $oldLocalAppData = $env:LOCALAPPDATA
+          $env:LOCALAPPDATA = $dataDir
+          $p = Start-Process -FilePath $installedExe -PassThru
+          Start-Sleep -Seconds 8
+          $p.Refresh()
+          if ($p.HasExited) { throw "El EXE instalado se cerró durante el arranque. ExitCode=$($p.ExitCode)" }
+          Stop-Process -Id $p.Id -Force
+          $env:LOCALAPPDATA = $oldLocalAppData
+          Write-Host "Silent installer + installed EXE smoke test: OK"
 
       - name: Upload installer
         uses: actions/upload-artifact@v4

@@ -51,8 +51,13 @@ jobs:
           python -m py_compile desktop/yomceph_desktop_v120_release.py
           python -m py_compile desktop/yomceph_desktop_v120_release_final.py
           python -m py_compile desktop/yomceph_desktop_v120_distribution.py
+          python -m py_compile desktop/smoke_v120_windows.py
           python -m json.tool desktop/yomceph_i18n.json | Out-Null
           python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py desktop/test_v120_distribution_contract.py -q
+
+      - name: Windows Tkinter startup smoke test
+        shell: pwsh
+        run: python desktop/smoke_v120_windows.py
 
       - name: Build installed application folder
         shell: pwsh
@@ -83,8 +88,8 @@ jobs:
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: YomCeph_Desktop_Installer_v0.12.0
+          name: YomCeph_Desktop_Installer
           path: |
-            installer/YomCeph_Desktop_Setup_v0.12.0.exe
-            installer/YomCeph_Desktop_Setup_v0.12.0.exe.sha256
+            installer/YomCeph_Desktop_Setup_v*.exe
+            installer/YomCeph_Desktop_Setup_v*.exe.sha256
           if-no-files-found: error

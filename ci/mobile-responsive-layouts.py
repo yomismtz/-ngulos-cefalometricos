@@ -97,4 +97,12 @@ if adaptive.exists():
     namespace = {'__name__': '__main__'}
     exec(compile(adaptive.read_text(encoding='utf-8'), str(adaptive), 'exec'), namespace)
 
-print('Responsive phone/tablet layouts, corrected radiograph navigation, local database, low-RAM policy, and PDF viewer applied; build version set to 1.29.')
+# Embed the project owner's exact Nolla radiographic reference in the complete
+# application. Students can open it from Nolla, zoom/pan it, return, and enter
+# the observed stages into the existing analysis form.
+nolla_reference = Path('ci/integrate-nolla-reference.py')
+if nolla_reference.exists():
+    namespace = {'__name__': '__main__'}
+    exec(compile(nolla_reference.read_text(encoding='utf-8'), str(nolla_reference), 'exec'), namespace)
+
+print('Responsive phone/tablet layouts, corrected radiograph navigation, local database, low-RAM policy, PDF viewer, and embedded Nolla radiographic reference applied; build version set to 1.30.')

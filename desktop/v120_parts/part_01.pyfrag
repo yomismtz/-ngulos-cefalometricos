@@ -1,0 +1,120 @@
+
+        # Extender el catálogo maestro antes de que las clases antiguas construyan UI.
+        self._extend_master_points()
+        super().__init__()
+        self.title("YomCeph Desktop · v0.12.0")
+        self._capture_panes()
+        self.bind("<Configure>", self._on_window_resize, add="+")
+        self.after(250, self._responsive_layout)
+        self.after(350, self._show_workflow_home)
+
+    # ------------------------------------------------------------------
+    # Compatibilidad con las capas v0.11.6 durante __init__
+    # ------------------------------------------------------------------
+    def _extend_master_points(self):
+        seen = {p[0] for p in v11db.MASTER_POINTS}
+        for p in EXTRA_POINTS:
+            if p[0] not in seen:
+                v11db.MASTER_POINTS.append(p)
+                seen.add(p[0])
+        v11db.MASTER_ORDER[:] = [p[0] for p in v11db.MASTER_POINTS]
+        v11db.MASTER_INFO.clear()
+        v11db.MASTER_INFO.update({p[0]: (p[1], p[2]) for p in v11db.MASTER_POINTS})
+
+    def _build_ui(self):
+        super()._build_ui()
+        # La cabecera morada y la cuadrícula de 8 botones de v0.11.6 consumían
+        # demasiada altura. Se retiran; v0.12 añade una barra compacta después.
+        try:
+            slaves = list(self.pack_slaves())
+            if self.body_panes in slaves:
+                idx = slaves.index(self.body_panes)
+                for widget in slaves[:idx]:
+                    self._legacy_top_widgets.append(widget)
+                    widget.pack_forget()
+        except Exception:
+            pass
+
+    def _install_database_bar(self):
+        self._ensure_metadata_vars()
+        bar = ttk.Frame(self, padding=(6, 4))
+        try:
+            bar.pack(fill=tk.X, before=self.body_panes)
+        except Exception:
+            bar.pack(fill=tk.X)
+        self.universal_wrapper = bar
+
+        self.workflow_badge = tk.Label(
+            bar, text="CASO INDIVIDUAL", bg=ui.C["purple_dark"], fg="white",
+            padx=9, pady=4, font=("Segoe UI", 9, "bold")
+        )
+        self.workflow_badge.pack(side=tk.LEFT, padx=(0, 6))
+
+        self.study_compact_label = ttk.Label(bar, text="Sin investigación", style="Section.TLabel")
+        self.study_compact_label.pack(side=tk.LEFT, padx=(0, 8))
+
+        ttk.Label(bar, text="Caso:", style="Muted.TLabel").pack(side=tk.LEFT)
+        ttk.Entry(bar, textvariable=self.case_id, width=9).pack(side=tk.LEFT, padx=(3, 7))
+
+        self.open_image_button = ttk.Button(bar, text="📂 Radiografía", command=self.open_image, style="Purple.TButton")
+        self.open_image_button.pack(side=tk.LEFT, padx=2)
+        self.calibrate_button = ttk.Button(bar, text="📏 Calibrar", command=self.start_calibration, style="Turquoise.TButton")
+        self.calibrate_button.pack(side=tk.LEFT, padx=2)
+        self.calculate_button = ttk.Button(bar, text="✓ Calcular", command=self.calculate, style="Gold.TButton")
+        self.calculate_button.pack(side=tk.LEFT, padx=2)
+        self.save_db_button = ttk.Button(bar, text="💾 Guardar", command=self.save_case_to_database, style="Mint.TButton")
+        self.save_db_button.pack(side=tk.LEFT, padx=2)
+
+        self.secondary_actions = ttk.Frame(bar)
+        self.secondary_actions.pack(side=tk.RIGHT)
+        ttk.Button(self.secondary_actions, text="Datos", command=self.open_case_data, style="Soft.TButton").pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.secondary_actions, text="Base", command=self.open_database_browser, style="Soft.TButton").pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.secondary_actions, text="Exportar", command=self.export_research_package, style="Soft.TButton").pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.secondary_actions, text="Puntos", command=self.toggle_left_panel, style="Soft.TButton").pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.secondary_actions, text="Resultados", command=self.toggle_right_panel, style="Soft.TButton").pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.secondary_actions, text="☰", command=self._show_compact_menu, style="Soft.TButton").pack(side=tk.LEFT, padx=2)
+
+        self.db_counter = ttk.Label(bar, text="", style="Muted.TLabel")
+        self.db_counter.pack(side=tk.RIGHT, padx=(4, 8))
+
+        self.case_state_frame = tk.Frame(self, bg="#EEF2F6", padx=8, pady=3)
+        try:
+            self.case_state_frame.pack(fill=tk.X, before=self.body_panes)
+        except Exception:
+            self.case_state_frame.pack(fill=tk.X)
+        self.case_state_label = tk.Label(
+            self.case_state_frame, text="CASO — · NUEVO", bg="#EEF2F6", fg="#233044",
+            font=("Segoe UI", 9, "bold"), anchor="w"
+        )
+        self.case_state_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.qc_button = ttk.Button(self.case_state_frame, text="QC pendiente", command=self.show_quality_control, style="Soft.TButton")
+        self.qc_button.pack(side=tk.RIGHT)
+
+        # Atributos que v0.11.6 podía esperar. La interfaz extensa se sustituye
+        # deliberadamente por diálogos bajo demanda.
+        self.profile_combo = self.language_combo = self.interface_combo = None
+        self.study_row = self.meta1 = self.meta2 = None
+        self.open_db_button = self.export_db_button = self.more_info_button = None
+
+    def _apply_profile_rules(self, initial=False):
+        # v0.12 controla el perfil desde workflow_type/current_study.
+        return
+
+    def _apply_interface_mode(self):
+        return
+
+    def _apply_language(self):
+        try:
+            self.title("YomCeph Desktop · v0.12.0")
+        except Exception:
+            pass
+
+    def choose_analysis_mode(self, startup=False):
+        # Anula el selector Steiner/Postura heredado. El nuevo selector permite
+        # mezclar análisis y mediciones dentro del constructor de protocolo.
+        if not startup:
+            self.open_protocol_editor()
+
+    # ------------------------------------------------------------------
+    # SQLite: estudios y separación individuo/investigación
+    # ------------------------------------------------------------------

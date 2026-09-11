@@ -90,4 +90,11 @@ if vertical_fix.exists():
     namespace = {'__name__': '__main__'}
     exec(compile(vertical_fix.read_text(encoding='utf-8'), str(vertical_fix), 'exec'), namespace)
 
-print('Dedicated tablet layout generated, radiograph navigation corrected, compact landmark controls applied, and build version set to 1.28.')
+# Final adaptive pass: small/medium/large phones, 7–10+ inch tablets,
+# low-RAM image policy, indexed offline study database and in-app PDF viewer.
+adaptive = Path('ci/adaptive-device-db-pdf.py')
+if adaptive.exists():
+    namespace = {'__name__': '__main__'}
+    exec(compile(adaptive.read_text(encoding='utf-8'), str(adaptive), 'exec'), namespace)
+
+print('Responsive phone/tablet layouts, corrected radiograph navigation, local database, low-RAM policy, and PDF viewer applied; build version set to 1.29.')

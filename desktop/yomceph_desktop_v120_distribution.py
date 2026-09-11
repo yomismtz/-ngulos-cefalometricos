@@ -1,12 +1,12 @@
-"""Entrada de distribución de YomCeph Desktop v0.12.
+"""Entrada pública de YomCeph Desktop v0.12.
 
-Añade importación de radiografías en formatos de imagen comunes y PDF sobre la
-candidata pública auditada. Los PDF se convierten internamente a PNG sin pérdida
-después de seleccionar la página para conservar compatibilidad con la base local,
-el trazado, la calibración y los proyectos existentes.
+Incluye importación de radiografías multiformato/PDF y un actualizador seguro.
+La comprobación de versión consulta metadatos públicos de GitHub Releases; nunca
+envía radiografías, datos de pacientes, landmarks ni resultados.
 """
 
 from pathlib import Path
+import threading
 from tkinter import filedialog, messagebox, simpledialog
 
 import yomceph_desktop_hidpi as ui
@@ -18,13 +18,170 @@ from yomceph_radiograph_loader import (
     materialize_as_png,
     radiograph_page_count,
 )
+from yomceph_updater import (
+    UpdateError,
+    download_verified_installer,
+    fetch_latest_update,
+    launch_installer,
+)
 
 APP_VERSION = "0.12.0"
 
 
 class YomCephV120Distribution(YomCephV120ReleaseFinal):
-    """Distribución final con importación multiformato/PDF."""
+    """Distribución pública: PDF/multiformato + actualizaciones verificadas."""
 
+    def __init__(self):
+        self._update_check_in_progress = False
+        self._update_download_in_progress = False
+        super().__init__()
+        # No bloquea el inicio ni la pantalla "¿Qué vamos a hacer hoy?".
+        self.after(2500, lambda: self.check_for_updates(manual=False))
+
+    def _install_database_bar(self):
+        super()._install_database_bar()
+        # El control manual vive en Más ▾ para no robar espacio a la radiografía.
+        try:
+            for child in self.universal_wrapper.winfo_children():
+                if str(child.cget("text")) != "Más ▾":
+                    continue
+                menu = self.nametowidget(str(child.cget("menu")))
+                menu.add_separator()
+                menu.add_command(
+                    label="Buscar actualizaciones",
+                    command=lambda: self.check_for_updates(manual=True),
+                )
+                break
+        except Exception:
+            pass
+
+    # ------------------------------------------------------------------
+    # Actualizaciones
+    # ------------------------------------------------------------------
+    def _has_unsaved_case(self):
+        if getattr(self, "_case_saved", False):
+            return False
+        return bool(
+            getattr(self, "original", None) is not None
+            or getattr(self, "points", {})
+            or self.case_id.get().strip()
+        )
+
+    def check_for_updates(self, manual=False):
+        if self._update_check_in_progress or self._update_download_in_progress:
+            if manual:
+                messagebox.showinfo("Actualizaciones", "YomCeph ya está comprobando o descargando una actualización.")
+            return
+        self._update_check_in_progress = True
+        if manual:
+            try:
+                self.status.config(text="Buscando actualizaciones…")
+            except Exception:
+                pass
+
+        def worker():
+            try:
+                update = fetch_latest_update(APP_VERSION)
+                error = None
+            except Exception as exc:
+                update = None
+                error = exc
+            self.after(0, lambda: self._finish_update_check(update, error, manual))
+
+        threading.Thread(target=worker, name="YomCephUpdateCheck", daemon=True).start()
+
+    def _finish_update_check(self, update, error, manual):
+        self._update_check_in_progress = False
+        if error is not None:
+            # La app puede seguir trabajando totalmente offline. En comprobación
+            # automática no se molesta al usuario por ausencia de conexión.
+            if manual:
+                messagebox.showwarning("Actualizaciones", str(error))
+                try:
+                    self.status.config(text="No se pudo comprobar actualizaciones; YomCeph continúa en modo local.")
+                except Exception:
+                    pass
+            return
+        if update is None:
+            if manual:
+                messagebox.showinfo("Actualizaciones", f"YomCeph v{APP_VERSION} está actualizado.")
+                try:
+                    self.status.config(text=f"YomCeph v{APP_VERSION} · versión actual")
+                except Exception:
+                    pass
+            return
+
+        if self._has_unsaved_case():
+            messagebox.showinfo(
+                "Actualización disponible",
+                f"Está disponible YomCeph v{update.version}.\n\n"
+                "Hay un caso con cambios sin guardar. Guárdelo primero y después use "
+                "Más ▾ → Buscar actualizaciones. YomCeph no cerrará un trabajo sin guardar.",
+            )
+            return
+
+        if not messagebox.askyesno(
+            "Actualización disponible",
+            f"Está disponible YomCeph v{update.version}.\n\n"
+            "¿Desea descargarla, verificarla e instalarla ahora?\n\n"
+            "La base de datos y las radiografías guardadas permanecen fuera de la carpeta de instalación.",
+        ):
+            return
+        self._download_update(update)
+
+    def _download_update(self, update):
+        self._update_download_in_progress = True
+        try:
+            self.status.config(text=f"Descargando YomCeph v{update.version}…")
+        except Exception:
+            pass
+        base = Path(self._data_dir) if getattr(self, "_data_dir", None) else Path.home() / ".yomceph"
+        destination = base / "updates"
+
+        def worker():
+            try:
+                installer = download_verified_installer(update, destination, APP_VERSION)
+                error = None
+            except Exception as exc:
+                installer = None
+                error = exc
+            self.after(0, lambda: self._finish_update_download(update, installer, error))
+
+        threading.Thread(target=worker, name="YomCephUpdateDownload", daemon=True).start()
+
+    def _finish_update_download(self, update, installer, error):
+        self._update_download_in_progress = False
+        if error is not None:
+            messagebox.showerror("Actualización", f"No se pudo instalar la actualización.\n\n{error}")
+            try:
+                self.status.config(text="Actualización cancelada; no se modificó la instalación actual.")
+            except Exception:
+                pass
+            return
+        if self._has_unsaved_case():
+            messagebox.showwarning(
+                "Actualización preparada",
+                "La actualización se descargó y verificó, pero apareció trabajo sin guardar. "
+                "Guarde el caso y vuelva a buscar actualizaciones para instalarla.",
+            )
+            return
+        try:
+            launch_installer(installer)
+        except (UpdateError, OSError) as exc:
+            messagebox.showerror("Actualización", f"El instalador verificado no pudo iniciarse.\n\n{exc}")
+            return
+        try:
+            self.status.config(text=f"Instalando YomCeph v{update.version}…")
+            self.update_idletasks()
+        except Exception:
+            pass
+        # Inno Setup conserva los datos locales, actualiza la misma AppId y
+        # vuelve a abrir YomCeph al terminar.
+        self.after(250, self.destroy)
+
+    # ------------------------------------------------------------------
+    # Radiografías: imágenes + PDF
+    # ------------------------------------------------------------------
     def open_image(self):
         path = filedialog.askopenfilename(
             title="Seleccionar radiografía",
@@ -114,7 +271,6 @@ class YomCephV120Distribution(YomCephV120ReleaseFinal):
             pass
         self.after(50, self.fit_image)
 
-        # Mantiene el comportamiento de QC/estado de las capas v0.11.5+.
         if hasattr(self, "_case_saved"):
             self._case_saved = False
         try:

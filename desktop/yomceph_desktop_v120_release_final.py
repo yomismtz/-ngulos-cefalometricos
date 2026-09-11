@@ -8,6 +8,7 @@ from yomceph_desktop_v120_release import YomCephV120Release
 from yomceph_v120_geometry import legacy_active_angles
 
 APP_VERSION = "0.12.0"
+MAX_RESEARCH_CASES = 1000
 
 
 class YomCephV120ReleaseFinal(YomCephV120Release):
@@ -21,9 +22,6 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
 
     def _init_database(self):
         super()._init_database()
-        # ``legacy_imported`` sólo pertenece a la migración neutral creada por
-        # YomCeph. Si un usuario llama casualmente a su propio estudio
-        # "Investigación importada", no debe recibir una referencia histórica.
         with sqlite3.connect(self._db_path) as con:
             con.execute(
                 """UPDATE research_studies
@@ -42,14 +40,11 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
 
     def _install_database_bar(self):
         super()._install_database_bar()
-        # La barra compacta deja el alto contraste en el menú en lugar de ocupar
-        # espacio permanente sobre la radiografía.
         try:
             for child in self.universal_wrapper.winfo_children():
                 if str(child.cget("text")) != "Más ▾":
                     continue
-                menu_name = child.cget("menu")
-                menu = self.nametowidget(str(menu_name))
+                menu = self.nametowidget(str(child.cget("menu")))
                 menu.add_separator()
                 menu.add_checkbutton(
                     label="Alto contraste",
@@ -68,8 +63,8 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
     def _ensure_research_capacity(self, local_case_id):
         """Evita rebasar silenciosamente la muestra planeada.
 
-        Devuelve True cuando el caso puede guardarse como incluido. Actualizar un
-        caso que ya pertenece a la muestra no consume una plaza nueva.
+        Actualizar un caso ya incluido no consume una plaza. Una ampliación
+        autorizada incrementa la versión del protocolo para dejar trazabilidad.
         """
         if self.workflow_type != "research" or not self.current_study_id or not self.current_study:
             return True
@@ -96,6 +91,14 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
         if included < target:
             return True
 
+        if included >= MAX_RESEARCH_CASES or target >= MAX_RESEARCH_CASES:
+            messagebox.showwarning(
+                "Capacidad de investigación",
+                f"YomCeph v0.12 admite hasta {MAX_RESEARCH_CASES} casos planeados por investigación. "
+                "No se puede ampliar más esta muestra."
+            )
+            return False
+
         if not bool(self.current_study.get("allow_target_increase")):
             messagebox.showwarning(
                 "Muestra completa",
@@ -109,7 +112,7 @@ class YomCephV120ReleaseFinal(YomCephV120Release):
             f"La investigación ya alcanzó {included}/{target} casos incluidos.\n\n"
             "Para incluir este paciente, registre primero el nuevo tamaño planeado de muestra:",
             minvalue=included + 1,
-            maxvalue=1000,
+            maxvalue=MAX_RESEARCH_CASES,
             parent=self,
         )
         if not new_target:

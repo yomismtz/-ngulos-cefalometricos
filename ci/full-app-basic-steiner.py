@@ -32,7 +32,6 @@ s = s.replace(old, new, 1)
 helper_anchor = '''    private static String safe(String value) {
 '''
 if helper_anchor not in s:
-    # Fall back to the first helper/method near the end of class.
     helper_anchor = '''    private String modeTitle() {
 '''
 if helper_anchor not in s:
@@ -72,7 +71,7 @@ def replace_string(path: Path, key: str, value: str):
         text = re.sub(pattern, f'<string name="{key}">{value}</string>', text, count=1, flags=re.S)
     path.write_text(text, encoding='utf-8')
 
-replace_string(strings_es, 'analysis_steiner', 'STeINER BÁSICO · 5 ÁNGULOS')
+replace_string(strings_es, 'analysis_steiner', 'STEINER BÁSICO · 5 ÁNGULOS')
 replace_string(strings_en, 'analysis_steiner', 'BASIC STEINER · 5 ANGLES')
 
 # Version dedicated to this separation between complete and standalone apps.

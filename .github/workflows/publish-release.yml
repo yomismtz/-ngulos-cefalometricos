@@ -7,6 +7,8 @@ on:
       - desktop-exe-vertebral
     paths:
       - 'desktop/**'
+      - 'website/**'
+      - 'PRIVACY_POLICY.md'
       - '.github/workflows/publish-release.yml'
 
 permissions:
@@ -59,7 +61,7 @@ jobs:
           python -m py_compile desktop/yomceph_desktop_v120_release_final.py
           python -m py_compile desktop/yomceph_desktop_v120_distribution.py
           python -m json.tool desktop/yomceph_i18n.json | Out-Null
-          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py -q
+          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py desktop/test_v120_distribution_contract.py -q
 
       - name: Build application
         shell: pwsh

@@ -1,0 +1,120 @@
+            if not name:
+                messagebox.showwarning("Protocolo","Escriba el nombre de la investigación.",parent=win); return
+            try:
+                target=int(target_var.get().strip())
+                if not 1 <= target <= MAX_RESEARCH_CASES: raise ValueError
+            except ValueError:
+                messagebox.showwarning("Protocolo","La muestra planeada debe ser un entero entre 1 y 1000.",parent=win); return
+            try:
+                amin=int(amin_var.get()) if amin_var.get().strip() else None
+                amax=int(amax_var.get()) if amax_var.get().strip() else None
+                if amin is not None and not 0<=amin<=130: raise ValueError
+                if amax is not None and not 0<=amax<=130: raise ValueError
+                if amin is not None and amax is not None and amin>amax: raise ValueError
+            except ValueError:
+                messagebox.showwarning("Protocolo","Revise el rango de edad (0–130; mínima ≤ máxima).",parent=win); return
+            fields=[]
+            for raw in group_text.get("1.0","end").splitlines():
+                raw=raw.strip()
+                if not raw: continue
+                if "=" not in raw:
+                    messagebox.showwarning("Grupos",f"Use Nombre=opción1|opción2. Línea inválida: {raw}",parent=win); return
+                fname, opts=raw.split("=",1)
+                options=[x.strip() for x in opts.split("|") if x.strip()]
+                if not fname.strip() or not options:
+                    messagebox.showwarning("Grupos",f"Variable de grupo incompleta: {raw}",parent=win); return
+                fields.append({"name":fname.strip(),"options":options})
+            measures=[k for k,var in measure_vars.items() if var.get()]
+            # Si se activó un análisis sin marcar variables, selecciona por defecto sus variables activas.
+            for aid,var in analysis_vars.items():
+                if var.get():
+                    for k in analysis_measurements(aid,active_only=True):
+                        if k not in measures and not any(mv.get() for kk,mv in measure_vars.items() if MEASUREMENTS.get(kk,{}).get("analysis")==aid):
+                            measures.append(k)
+            if not measures:
+                messagebox.showwarning("Análisis","Seleccione al menos una medición disponible.",parent=win); return
+            aids=[]
+            for k in measures:
+                aid=MEASUREMENTS[k]["analysis"]
+                if aid not in aids: aids.append(aid)
+            data=dict(name=name,target_n=target,allow_target_increase=inc_var.get(),age_min=amin,age_max=amax,
+                      inclusion=inclusion.get("1.0","end").strip(),exclusion=exclusion.get("1.0","end").strip(),
+                      country=country_var.get().strip(),institution=institution_var.get().strip(),group_fields=fields,
+                      analyses=aids,measurements=measures,steiner_reference=steiner_ref_var.get())
+            sid=self._save_study(data, existing_id=(existing or {}).get("study_id"))
+            win.destroy(); self._activate_study(sid)
+        ttk.Button(buttons,text="Guardar protocolo y continuar",command=save_protocol,style="Purple.TButton").pack(side=tk.RIGHT)
+        ttk.Button(buttons,text="Cancelar",command=win.destroy,style="Soft.TButton").pack(side=tk.RIGHT,padx=6)
+
+    def _show_locked_protocol(self, study):
+        text=(f"El protocolo '{study['name']}' está bloqueado porque ya tiene casos incluidos.\n\n"
+              "Para preservar la reproducibilidad no se cambian silenciosamente análisis, variables, edades ni grupos. "
+              "La muestra planeada sí puede aumentarse cuando el protocolo lo permite.\n\n"
+              f"Muestra planeada actual: {study['target_n']} casos.")
+        if not study.get("allow_target_increase"):
+            messagebox.showinfo("Protocolo bloqueado",text); return
+        if messagebox.askyesno("Protocolo bloqueado",text+"\n\n¿Desea aumentar la muestra planeada?"):
+            new=simpledialog.askinteger("Aumentar muestra","Nuevo número planeado de casos:",minvalue=study["target_n"]+1,maxvalue=MAX_RESEARCH_CASES,parent=self)
+            if new:
+                with sqlite3.connect(self._db_path) as con:
+                    con.execute("UPDATE research_studies SET target_n=?,updated_at=? WHERE study_id=?",(new,datetime.now().isoformat(timespec="seconds"),study["study_id"]))
+                    con.commit()
+                self._activate_study(study["study_id"])
+
+    def _open_analysis_selector(self, title, on_accept):
+        win=tk.Toplevel(self); win.title(title); win.transient(self); win.grab_set()
+        sw,sh=self.winfo_screenwidth(),self.winfo_screenheight(); w,h=min(850,int(sw*.9)),min(760,int(sh*.88))
+        win.geometry(f"{w}x{h}+{max(0,(sw-w)//2)}+{max(0,(sh-h)//2)}")
+        outer=ttk.Frame(win); outer.pack(fill=tk.BOTH,expand=True)
+        canvas=tk.Canvas(outer,bg=ui.C["paper"],highlightthickness=0); sc=ttk.Scrollbar(outer,orient="vertical",command=canvas.yview)
+        content=ttk.Frame(canvas,padding=16); cid=canvas.create_window((0,0),window=content,anchor="nw")
+        canvas.configure(yscrollcommand=sc.set); canvas.pack(side=tk.LEFT,fill=tk.BOTH,expand=True); sc.pack(side=tk.RIGHT,fill=tk.Y)
+        content.bind("<Configure>",lambda e:canvas.configure(scrollregion=canvas.bbox("all"))); canvas.bind("<Configure>",lambda e:canvas.itemconfigure(cid,width=e.width))
+        ttk.Label(content,text=title,style="Section.TLabel",font=("Segoe UI Semibold",16)).pack(anchor="w",pady=(0,8))
+        measure_vars={}
+        for aid,spec in ANALYSES.items():
+            fr=ttk.LabelFrame(content,text=spec["name"],padding=8); fr.pack(fill=tk.X,pady=3)
+            active=analysis_measurements(aid,active_only=True)
+            ttk.Label(fr,text=spec.get("summary",""),style="Muted.TLabel",wraplength=740,justify=tk.LEFT).pack(anchor="w")
+            if not active:
+                ttk.Label(fr,text="No activado todavía: "+("requiere otra proyección" if spec.get("status")==STATUS_OTHER_PROJECTION else "en validación científica"),style="Muted.TLabel").pack(anchor="w",padx=(20,0))
+            for key in active:
+                var=tk.BooleanVar(value=(key in self.selected_measure_keys)); measure_vars[key]=var
+                ttk.Checkbutton(fr,text=MEASUREMENTS[key]["label"],variable=var).pack(anchor="w",padx=(20,0))
+        ref=tk.StringVar(value=self.steiner_reference or "none")
+        rf=ttk.LabelFrame(content,text="Referencia Steiner",padding=8); rf.pack(fill=tk.X,pady=5)
+        for value,label in [("none","Sin clasificación"),("classic","Steiner clásica"),("uam2026","Protocolo UAM 2026")]:
+            ttk.Radiobutton(rf,text=label,value=value,variable=ref).pack(anchor="w")
+        def accept():
+            keys=[k for k,v in measure_vars.items() if v.get()]
+            if not keys:
+                messagebox.showwarning("Análisis","Seleccione al menos una medición.",parent=win); return
+            win.destroy(); on_accept(keys,ref.get())
+        ttk.Button(content,text="Continuar",command=accept,style="Purple.TButton").pack(anchor="e",pady=10)
+
+    # ------------------------------------------------------------------
+    # Datos de caso y elegibilidad
+    # ------------------------------------------------------------------
+    def open_case_data(self, first_time=False):
+        win=tk.Toplevel(self); win.title("Datos del caso"); win.transient(self); win.grab_set()
+        sw,sh=self.winfo_screenwidth(),self.winfo_screenheight(); w,h=min(700,int(sw*.88)),min(720,int(sh*.88))
+        win.geometry(f"{w}x{h}+{max(0,(sw-w)//2)}+{max(0,(sh-h)//2)}")
+        fr=ttk.Frame(win,padding=16); fr.pack(fill=tk.BOTH,expand=True)
+        ttk.Label(fr,text="Datos del caso",style="Section.TLabel",font=("Segoe UI Semibold",16)).pack(anchor="w")
+        if self.workflow_type=="research" and self.current_study:
+            st=self.current_study
+            ttk.Label(fr,text=f"Investigación: {st['name']} · rango de edad: {st.get('age_min','—')} a {st.get('age_max','—')} años",style="Muted.TLabel").pack(anchor="w",pady=(2,10))
+        else:
+            ttk.Label(fr,text="Caso individual · estos datos no entrarán en una base de investigación.",style="Muted.TLabel").pack(anchor="w",pady=(2,10))
+
+        grid=ttk.Frame(fr); grid.pack(fill=tk.X)
+        for c in (1,3):grid.columnconfigure(c,weight=1)
+        ttk.Label(grid,text="Caso / ID:").grid(row=0,column=0,sticky="w",pady=4); ttk.Entry(grid,textvariable=self.case_id).grid(row=0,column=1,sticky="ew",pady=4,padx=4)
+        ttk.Label(grid,text="Edad (años):").grid(row=1,column=0,sticky="w",pady=4); ttk.Entry(grid,textvariable=self.age_years_var,width=8).grid(row=1,column=1,sticky="w",pady=4,padx=4)
+        ttk.Label(grid,text="Meses:").grid(row=1,column=2,sticky="w",pady=4); ttk.Entry(grid,textvariable=self.age_months_var,width=8).grid(row=1,column=3,sticky="w",pady=4,padx=4)
+        ttk.Label(grid,text="Fecha nacimiento:").grid(row=2,column=0,sticky="w",pady=4); ttk.Entry(grid,textvariable=self.birth_date_var).grid(row=2,column=1,sticky="ew",pady=4,padx=4)
+        ttk.Label(grid,text="Fecha radiografía:").grid(row=2,column=2,sticky="w",pady=4); ttk.Entry(grid,textvariable=self.radiograph_date_var).grid(row=2,column=3,sticky="ew",pady=4,padx=4)
+
+        ttk.Label(grid,text="Sexo registrado:").grid(row=3,column=0,sticky="w",pady=4)
+        sex_combo=ttk.Combobox(grid,state="readonly",width=24,values=[self._sex_label(c) for c in v116.SEX_CODES]); sex_combo.grid(row=3,column=1,sticky="ew",pady=4,padx=4)
+        current_label=self._sex_label(self.sex_code_var.get()); sex_combo.set(current_label if current_label else "")

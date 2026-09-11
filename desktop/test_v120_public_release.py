@@ -1,3 +1,4 @@
+import json
 import sqlite3
 
 import yomceph_desktop_v11_database as v11db
@@ -45,6 +46,8 @@ def _eligibility(years, months, minimum=0, maximum=15, manual="yes"):
 
 class DummyCapacity:
     _ensure_research_capacity = YomCephV120ReleaseFinal._ensure_research_capacity
+    _increase_sample_target = YomCephV120ReleaseFinal._increase_sample_target
+    _record_protocol_history = YomCephV120ReleaseFinal._record_protocol_history
 
     def _evaluate_eligibility(self):
         return "eligible", "ok"
@@ -179,7 +182,7 @@ def test_completed_sample_blocks_silent_extra_inclusion(tmp_path, monkeypatch):
     assert warnings
 
 
-def test_allowed_sample_increase_updates_target_and_protocol_version(tmp_path, monkeypatch):
+def test_allowed_sample_increase_updates_version_and_history(tmp_path, monkeypatch):
     obj, db = _capacity_db(tmp_path, target=2, allow=1, included=2)
     monkeypatch.setattr(release_final_module.simpledialog, "askinteger", lambda *a, **k: 3)
     monkeypatch.setattr(release_final_module.messagebox, "showinfo", lambda *a, **k: None)
@@ -188,8 +191,17 @@ def test_allowed_sample_increase_updates_target_and_protocol_version(tmp_path, m
         target, version = con.execute(
             "SELECT target_n,protocol_version FROM research_studies WHERE study_id='study'"
         ).fetchone()
+        action, hist_version, raw = con.execute(
+            "SELECT action,protocol_version,details_json FROM research_protocol_history WHERE study_id='study' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    details = json.loads(raw)
     assert target == 3
     assert version == 2
+    assert action == "sample_increased"
+    assert hist_version == 2
+    assert details["old_target"] == 2
+    assert details["new_target"] == 3
+    assert details["source"] == "case_inclusion"
     assert obj.study_target_var.get() == "3"
 
 

@@ -86,6 +86,10 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/mobile-responsive-layouts.py
 
+      - name: Keep complete-app Steiner basic
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/full-app-basic-steiner.py
+
       - name: Read app version
         id: app_version
         shell: bash

@@ -11,6 +11,8 @@ on:
       - desktop-v0120-workflow-builder
     paths:
       - 'desktop/**'
+      - 'website/**'
+      - 'PRIVACY_POLICY.md'
       - '.github/workflows/build-windows-exe.yml'
 
 jobs:
@@ -33,7 +35,7 @@ jobs:
       - name: Create brand assets
         run: python desktop/create_brand_assets.py
 
-      - name: Validate v0.12.0 source and formulas
+      - name: Validate v0.12 source, formulas and distribution contract
         shell: pwsh
         run: |
           python -m py_compile desktop/yomceph_desktop_v115_quality_audit.py
@@ -50,7 +52,7 @@ jobs:
           python -m py_compile desktop/yomceph_desktop_v120_release_final.py
           python -m py_compile desktop/yomceph_desktop_v120_distribution.py
           python -m json.tool desktop/yomceph_i18n.json | Out-Null
-          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py -q
+          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py desktop/test_v120_distribution_contract.py -q
 
       - name: Build installed application folder
         shell: pwsh
@@ -70,9 +72,12 @@ jobs:
             $iscc = (Get-Command ISCC.exe -ErrorAction Stop).Source
           }
           & $iscc "desktop\YomCeph_v0120.iss"
-          $exe = "installer\YomCeph_Desktop_Setup_v0.12.0.exe"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup falló" }
+          $version = (Get-Content desktop/VERSION -Raw).Trim()
+          $exe = "installer\YomCeph_Desktop_Setup_v$version.exe"
+          if (!(Test-Path $exe)) { throw "No se generó $exe" }
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$hash  YomCeph_Desktop_Setup_v0.12.0.exe" | Set-Content "installer\YomCeph_Desktop_Setup_v0.12.0.exe.sha256" -Encoding ascii
+          "$hash  YomCeph_Desktop_Setup_v$version.exe" | Set-Content "$exe.sha256" -Encoding ascii
           Write-Host "SHA256=$hash"
 
       - name: Upload installer

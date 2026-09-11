@@ -90,6 +90,10 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/')
         run: python3 ci/full-app-basic-steiner.py
 
+      - name: Add independent carpal skeletal maturity module
+        if: startsWith(github.ref_name, 'redesign/')
+        run: python3 ci/add-carpal-fishman.py
+
       - name: Read app version
         id: app_version
         shell: bash

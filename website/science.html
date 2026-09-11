@@ -12,7 +12,7 @@
 <section class="section"><div class="container">
   <h2>Estado actual del catálogo</h2>
   <div class="analysis-grid">
-    <article><span class="status active">Disponible</span><h3>Steiner</h3><p>Mediciones esqueléticas, verticales, dentales y de tejidos blandos. La clasificación automática puede desactivarse o usar una referencia clásica publicada; los valores crudos siempre se conservan.</p></article>
+    <article><span class="status active">Disponible</span><h3>Steiner</h3><p>Mediciones esqueléticas, verticales, dentales y de tejidos blandos. “Sin clasificación” conserva el valor crudo sin inyectar normas heredadas; la referencia clásica sólo se aplica cuando se selecciona explícitamente.</p></article>
     <article><span class="status active">Disponible</span><h3>Postura craneofacial</h3><p>SN–OPT, SN–CVT, OPT–CVT, tangentes cervicales y profundidad cervical. Se priorizan valores continuos si el estudio no define referencia.</p></article>
     <article><span class="status active">Disponible</span><h3>Powell</h3><p>Nasofrontal, nasofacial, nasomental y mentocervical. Dn y Prn son puntos distintos.</p></article>
     <article><span class="status active">Disponible</span><h3>Wits · YEN · W · Björk–Jarabak</h3><p>La geometría está implementada y cubierta por pruebas sintéticas. Las referencias se identifican por método.</p></article>
@@ -23,6 +23,21 @@
   </div>
 </div></section>
 <section class="section soft-section"><div class="container">
+  <span class="eyebrow">Geometría antes que norma</span><h2>El valor medido no se elige por cercanía a un valor esperado.</h2>
+  <p class="section-lead">La edición pública v0.12 define de forma explícita qué sector angular pertenece a cada medición activa. Las referencias se comparan después; no participan en la construcción geométrica.</p>
+  <table class="science-table">
+    <thead><tr><th>Medición</th><th>Construcción en v0.12</th><th>Referencia/uso</th></tr></thead>
+    <tbody>
+      <tr><td>SN–PoOr, SN–GoGn, AB–GoGn</td><td>Sector agudo entre las líneas correspondientes.</td><td>La norma, si se usa, se aplica después de medir.</td></tr>
+      <tr><td>IS–SN</td><td>Sector obtuso entre el eje del incisivo superior y SN.</td><td>Conserva la convención cefalométrica del ángulo alrededor de 100°.</td></tr>
+      <tr><td>SN–OPT y SN–CVT</td><td>Sector obtuso/inferiormente abierto entre SN y las tangentes cervicales.</td><td>Variables de postura; no se impone una norma universal.</td></tr>
+      <tr><td>MGP–OP</td><td>Sector obtuso entre el plano de McGregor y el plano odontoideo.</td><td>Rocabado, referencia habitual 96–106°.</td></tr>
+      <tr><td>Powell nasomental</td><td>Sector obtuso entre la tangente dorsonasal y Prn–Pg′.</td><td>Comparación estética independiente de la geometría.</td></tr>
+      <tr><td>Powell mentocervical</td><td>Vectores anatómicos G′→Pg′ y Me′→C.</td><td>Rango de referencia estética, no diagnóstico de patología.</td></tr>
+    </tbody>
+  </table>
+</div></section>
+<section class="section"><div class="container">
   <span class="eyebrow">Mediciones activas nuevas</span><h2>Qué se calcula y cómo</h2>
   <table class="science-table">
     <thead><tr><th>Medición</th><th>Landmarks</th><th>Geometría</th><th>Referencia</th></tr></thead>
@@ -33,6 +48,10 @@
       <tr><td>Björk–Jarabak</td><td>N, S, Ar, Go, Me</td><td>Ángulos, longitudes y ratio S-Go/N-Me ×100.</td><td>Las longitudes y patrones deben ligarse a población/edad/sexo.</td></tr>
     </tbody>
   </table>
+</div></section>
+<section class="section soft-section"><div class="container notice-grid">
+  <div><span class="eyebrow">Trazabilidad de investigación</span><h2>El protocolo conserva versiones e historial.</h2><p>La creación y edición del protocolo se registran con versión y fecha. Después del primer caso incluido, edades, grupos, análisis y resultados quedan bloqueados. Si el investigador autorizó ampliar la muestra, el cambio de tamaño planeado incrementa la versión y registra el valor anterior, el nuevo valor y el número de incluidos en ese momento.</p></div>
+  <aside class="stat-card"><strong>Exportación</strong><p>El Excel incluye una hoja “Historial protocolo” además de Datos, Descriptivos, Frecuencias, Prevalencias, Diccionario y Protocolo.</p></aside>
 </div></section>
 <section class="section"><div class="container narrow policy-content">
   <span class="eyebrow">Criterio de activación</span><h2>Qué significa “Disponible”</h2>
@@ -45,7 +64,8 @@
     <article><h3>YEN</h3><p>Neela PK, Mascarenhas R, Husain A. A new sagittal dysplasia indicator: the YEN angle. World J Orthod. 2009. PMID 19582259.</p></article>
     <article><h3>W angle</h3><p>Bhad WA, Nayak S, Doshi UH. A new approach of assessing sagittal dysplasia: the W angle. Eur J Orthod. 2013;35(1):66–70. PMID 21303811.</p></article>
     <article><h3>Björk–Jarabak</h3><p>Estudio de normas y variación: PMCID PMC6191777.</p></article>
-    <article><h3>Rocabado / postura cervical</h3><p>Literatura de revisión y aplicación: PMCID PMC4942290, PMC3555465 y PMC11495177.</p></article>
+    <article><h3>Solow–Tallgren / postura cervical</h3><p>Solow B, Tallgren A. Head posture and craniofacial morphology. Am J Phys Anthropol. 1976;44:417–435. PMID 937521; revisión PMCID PMC4009738.</p></article>
+    <article><h3>Rocabado</h3><p>Definición del ángulo craneocervical McGregor/odontoideo y revisiones: PMCID PMC7710100, PMC4942290, PMC3555465 y PMC11495177.</p></article>
     <article><h3>COGS / Burstone</h3><p>Burstone CJ et al. Cephalometrics for orthognathic surgery. J Oral Surg. 1978;36:269–277; referencias reproducidas en PMC4252385 y PMC3723291.</p></article>
     <article><h3>G-triangle</h3><p>Sagittal G-Triangle Analysis. PMID 34669681; PMCID PMC8865203.</p></article>
     <article><h3>Ritucci–Burstone</h3><p>Normas de asimetría en radiografías submental-vertical. PMID 8074089.</p></article>

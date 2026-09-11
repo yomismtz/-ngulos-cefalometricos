@@ -1,7 +1,8 @@
-"""Geometría pura y comprobable para mediciones nuevas de YomCeph v0.12.
+"""Geometría pura y comprobable para YomCeph v0.12.
 
 Este módulo no contiene normas clínicas. Sólo transforma coordenadas en valores
-geométricos. Esto permite probar las fórmulas sin crear una interfaz Tk.
+geométricos. Las decisiones agudo/obtuso/direccional se definen por el método,
+no por cercanía a un valor esperado.
 """
 
 import math
@@ -20,6 +21,39 @@ def angle3(a, vertex, c):
         return None
     cosine = max(-1.0, min(1.0, (u[0] * v[0] + u[1] * v[1]) / (nu * nv)))
     return math.degrees(math.acos(cosine))
+
+
+def directed_line_angle(a, b, c, d):
+    """Ángulo 0–180° entre los vectores anatómicamente ordenados a→b y c→d.
+
+    Invertir ambos ejes o reflejar toda la radiografía conserva el resultado.
+    Invertir sólo uno cambia al suplemento, por eso los extremos se documentan
+    explícitamente en cada medición que usa esta función.
+    """
+    ux, uy = b[0] - a[0], b[1] - a[1]
+    vx, vy = d[0] - c[0], d[1] - c[1]
+    nu = math.hypot(ux, uy)
+    nv = math.hypot(vx, vy)
+    if nu <= 1e-12 or nv <= 1e-12:
+        return None
+    cosine = max(-1.0, min(1.0, (ux * vx + uy * vy) / (nu * nv)))
+    return math.degrees(math.acos(cosine))
+
+
+def acute_line_angle(a, b, c, d):
+    """Ángulo agudo/no obtuso entre dos líneas, independiente de su sentido."""
+    raw = directed_line_angle(a, b, c, d)
+    if raw is None:
+        return None
+    return min(raw, 180.0 - raw)
+
+
+def obtuse_line_angle(a, b, c, d):
+    """Suplemento obtuso/no agudo entre dos líneas, independiente de su sentido."""
+    acute = acute_line_angle(a, b, c, d)
+    if acute is None:
+        return None
+    return 180.0 - acute
 
 
 def project_point_to_line(p, a, b):
@@ -63,6 +97,55 @@ def wits_ao_bo(a_point, b_point, occlusal_posterior, occlusal_anterior, mm_per_p
         return None
     ux, uy = dx / den, dy / den
     return ((ao[0] - bo[0]) * ux + (ao[1] - bo[1]) * uy) * mm_per_pixel
+
+
+def legacy_active_angles(points):
+    """Recalcula las medidas activas que históricamente usaban closest_supplement.
+
+    Devuelve únicamente valores cuya geometría queda definida sin consultar una
+    norma. Las claves ausentes significan que faltan landmarks.
+    """
+    p = points
+    r = {}
+
+    # Steiner: ángulos entre planos definidos como sector agudo.
+    if all(k in p for k in ("S", "N", "Po", "Or")):
+        r["SN–PoOr"] = acute_line_angle(p["S"], p["N"], p["Po"], p["Or"])
+    if all(k in p for k in ("S", "N", "Go", "Gn")):
+        r["SN–GoGn"] = acute_line_angle(p["S"], p["N"], p["Go"], p["Gn"])
+    if all(k in p for k in ("A", "B", "Go", "Gn")):
+        r["AB–GoGn"] = acute_line_angle(p["A"], p["B"], p["Go"], p["Gn"])
+
+    # U1-SN se expresa convencionalmente como el sector obtuso del eje incisivo
+    # con SN (aprox. 100°, no su suplemento agudo).
+    if all(k in p for k in ("U1a", "U1i", "S", "N")):
+        r["IS–SN"] = obtuse_line_angle(p["U1a"], p["U1i"], p["S"], p["N"])
+
+    # Solow–Tallgren: SN/OPT y SN/CVT son el ángulo que abre inferiormente;
+    # con estas líneas equivale al sector obtuso, independiente del espejo.
+    if all(k in p for k in ("S", "N", "cv2tg", "cv2ip")):
+        r["SN–OPT"] = obtuse_line_angle(p["S"], p["N"], p["cv2tg"], p["cv2ip"])
+    if all(k in p for k in ("S", "N", "cv2tg", "cv4ip")):
+        r["SN–CVT"] = obtuse_line_angle(p["S"], p["N"], p["cv2tg"], p["cv4ip"])
+
+    # Rocabado: el ángulo McGregor/odontoideo se expresa como sector obtuso.
+    if all(k in p for k in ("PNS", "C0", "Ops", "Opi")):
+        r["MGP–OP"] = obtuse_line_angle(p["PNS"], p["C0"], p["Ops"], p["Opi"])
+
+    # MGP–CVT se conserva como variable descriptiva con la dirección anatómica
+    # que ya usaba YomCeph. closest_supplement(..., 90) era matemáticamente un
+    # no-op: ambas opciones están a la misma distancia de 90°.
+    if all(k in p for k in ("PNS", "C0", "cv2tg", "cv4ip")):
+        r["MGP–CVT"] = directed_line_angle(p["PNS"], p["C0"], p["cv2tg"], p["cv4ip"])
+
+    # Powell: nasomental es el sector obtuso entre la tangente dorsonasal y la
+    # línea Prn-Pg'. Mentocervical usa el sector definido por G'→Pg' y Me'→C.
+    if all(k in p for k in ("Nsoft", "Dn", "Prn", "Pgsoft")):
+        r["Powell Nasomental"] = obtuse_line_angle(p["Nsoft"], p["Dn"], p["Prn"], p["Pgsoft"])
+    if all(k in p for k in ("Gsoft", "Pgsoft", "Mesoft", "Csoft")):
+        r["Powell Mentocervical"] = directed_line_angle(p["Gsoft"], p["Pgsoft"], p["Mesoft"], p["Csoft"])
+
+    return {key: value for key, value in r.items() if value is not None}
 
 
 def jarabak_values(points, mm_per_pixel=None):

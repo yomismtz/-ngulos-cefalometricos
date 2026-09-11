@@ -6,9 +6,7 @@ on:
     branches:
       - desktop-exe-vertebral
     paths:
-      - 'desktop/**'
-      - 'website/**'
-      - 'PRIVACY_POLICY.md'
+      - 'desktop/VERSION'
       - '.github/workflows/publish-release.yml'
 
 permissions:
@@ -33,6 +31,8 @@ jobs:
 
       - name: Validate version contract
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $version = (Get-Content desktop/VERSION -Raw).Trim()
           if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "VERSION inválida: $version" }
@@ -40,6 +40,12 @@ jobs:
           $iss = Get-Content desktop/YomCeph_v0120.iss -Raw
           if ($distribution -notmatch ('APP_VERSION = "' + [regex]::Escape($version) + '"')) { throw "APP_VERSION no coincide con VERSION" }
           if ($iss -notmatch ('#define MyAppVersion "' + [regex]::Escape($version) + '"')) { throw "Inno AppVersion no coincide con VERSION" }
+
+          $tag = "v$version"
+          $existingTarget = gh release view $tag --repo "${{ github.repository }}" --json targetCommitish --jq '.targetCommitish' 2>$null
+          if ($LASTEXITCODE -eq 0 -and $existingTarget -and $existingTarget.Trim() -ne $env:GITHUB_SHA) {
+            throw "La versión $tag ya fue publicada desde otro commit. Aumente desktop/VERSION antes de publicar una nueva compilación."
+          }
 
       - name: Create brand assets
         run: python desktop/create_brand_assets.py

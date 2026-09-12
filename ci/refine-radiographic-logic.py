@@ -33,7 +33,11 @@ logic.write_text(s, encoding='utf-8')
 
 activity = Path('app/src/main/java/com/cefalo/angulos/RadiographicAssessmentActivity.java')
 a = activity.read_text(encoding='utf-8')
-a = a.replace('''        View.OnClickListener labelsUpdater = v -> updateNollaLabels();\n''', '')
+
+# Keep the small labelsUpdater declaration until the final integrity pass.
+# The final pass replaces the full Nolla selector block (including this line)
+# with explicit "Seleccione" placeholders. Removing it here made the safety
+# patch depend on a missing textual anchor.
 
 cvm_anchor = '''        addSmallText("Observe solamente C2, C3 y C4. Marque «presente» solo cuando la concavidad inferior sea clara.");\n'''
 if 'CvmStageGuideView stageGuide' not in a and cvm_anchor in a:

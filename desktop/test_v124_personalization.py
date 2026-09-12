@@ -10,13 +10,13 @@ from yomceph_desktop_v124_personalization import (
     contrast_ratio,
     normalize_preferences,
 )
+from yomceph_desktop_v124_final import APP_VERSION as FINAL_VERSION
 
-# El módulo v0.12.4 ajusta las constantes de versión heredadas porque será el
-# siguiente entrypoint del EXE. Mientras v0.12.3 siga siendo la versión publicada,
-# sus pruebas contractuales deben continuar comprobando 0.12.3 sin contaminación
-# por el import de esta candidata.
-hardening.APP_VERSION = "0.12.3"
-distribution.APP_VERSION = "0.12.3"
+
+def test_v124_version_is_isolated_from_historical_layers():
+    assert FINAL_VERSION == "0.12.4"
+    assert hardening.APP_VERSION == "0.12.3"
+    assert distribution.APP_VERSION == "0.12.2"
 
 
 def test_five_palettes_are_complete():

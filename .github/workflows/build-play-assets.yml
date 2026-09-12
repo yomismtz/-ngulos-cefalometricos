@@ -1,0 +1,192 @@
+name: Build Google Play assets for both YOM editions
+
+on:
+  push:
+    branches: [ 'fix/play-assets-1.34' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  play-assets:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - edition: radiograficos
+            apply_steiner: 'false'
+            app_id: com.yomceph.app
+            label: YOM Analisis Radiograficos
+          - edition: steiner
+            apply_steiner: 'true'
+            app_id: com.yomceph.cefalometrico
+            label: YOM Steiner
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Generate verified release source
+        run: python3 ci/prepare-release-source.py
+
+      - name: Apply Steiner-only edition
+        if: matrix.apply_steiner == 'true'
+        run: python3 ci/prepare-steiner-only.py
+
+      - name: Enable R8 mapping for Play release
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle')
+          s = p.read_text(encoding='utf-8')
+          old = '            minifyEnabled false\n'
+          new = "            minifyEnabled true\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')\n"
+          if old not in s:
+              raise SystemExit('Expected minifyEnabled false anchor not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+          grep -nE 'applicationId|versionCode|versionName|minifyEnabled|proguardFiles' app/build.gradle
+
+      - name: Read version and verify application id
+        id: app
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle | head -n 1)
+          VERSION_CODE=$(sed -n "s/.*versionCode \([0-9][0-9]*\).*/\1/p" app/build.gradle | head -n 1)
+          APP_ID=$(sed -n "s/.*applicationId '\([^']*\)'.*/\1/p" app/build.gradle | head -n 1)
+          test "$APP_ID" = "${{ matrix.app_id }}" || (echo "Unexpected applicationId: $APP_ID" && exit 1)
+          test -n "$VERSION_NAME"
+          test -n "$VERSION_CODE"
+          if [ "${{ matrix.edition }}" = "radiograficos" ]; then
+            STEM="YOM-Analisis-Radiograficos-v${VERSION_NAME}-${VERSION_CODE}"
+          else
+            STEM="YOM-Steiner-v${VERSION_NAME}-${VERSION_CODE}"
+          fi
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "app_id=$APP_ID" >> "$GITHUB_OUTPUT"
+          echo "stem=$STEM" >> "$GITHUB_OUTPUT"
+
+      - name: Verify signing secrets
+        env:
+          KEYSTORE_B64: ${{ secrets.YOMCEPH_UPLOAD_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.YOMCEPH_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.YOMCEPH_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.YOMCEPH_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_B64" || (echo "Missing YOMCEPH_UPLOAD_KEYSTORE_BASE64" && exit 1)
+          test -n "$STORE_PASSWORD" || (echo "Missing YOMCEPH_KEYSTORE_PASSWORD" && exit 1)
+          test -n "$KEY_ALIAS" || (echo "Missing YOMCEPH_KEY_ALIAS" && exit 1)
+          test -n "$KEY_PASSWORD" || (echo "Missing YOMCEPH_KEY_PASSWORD" && exit 1)
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 16 SDK
+        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Set up Gradle 8.13
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Decode and verify upload keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.YOMCEPH_UPLOAD_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.YOMCEPH_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.YOMCEPH_KEY_ALIAS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/yomceph-upload.jks"
+          chmod 600 "$RUNNER_TEMP/yomceph-upload.jks"
+          keytool -list -keystore "$RUNNER_TEMP/yomceph-upload.jks" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+
+      - name: Run unit tests and release lint
+        run: |
+          gradle --no-daemon :app:testDebugUnitTest
+          gradle --no-daemon :app:lintRelease
+
+      - name: Build signed minified AAB and release APK
+        env:
+          YOMCEPH_KEYSTORE_PATH: ${{ runner.temp }}/yomceph-upload.jks
+          YOMCEPH_KEYSTORE_PASSWORD: ${{ secrets.YOMCEPH_KEYSTORE_PASSWORD }}
+          YOMCEPH_KEY_ALIAS: ${{ secrets.YOMCEPH_KEY_ALIAS }}
+          YOMCEPH_KEY_PASSWORD: ${{ secrets.YOMCEPH_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle --no-daemon :app:bundleRelease :app:assembleRelease
+          test -f app/build/outputs/bundle/release/app-release.aab
+          test -f app/build/outputs/mapping/release/mapping.txt
+          test -s app/build/outputs/mapping/release/mapping.txt
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab >/dev/null
+          echo "Signed AAB and ReTrace mapping generated successfully"
+
+      - name: Verify minified release opens on Android
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: true
+          script: |
+            adb install -r app/build/outputs/apk/release/app-release.apk
+            adb logcat -c
+            adb shell am force-stop ${{ steps.app.outputs.app_id }}
+            adb shell am start -W -n ${{ steps.app.outputs.app_id }}/com.cefalo.angulos.MainActivity
+            sleep 4
+            test -n "$(adb shell pidof ${{ steps.app.outputs.app_id }} | tr -d '\r')"
+            echo "Minified release remained alive after cold start"
+
+      - name: Prepare Play Console files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          STEM='${{ steps.app.outputs.stem }}'
+          cp app/build/outputs/bundle/release/app-release.aab "dist/${STEM}-google-play.aab"
+          cp app/build/outputs/mapping/release/mapping.txt "dist/${STEM}-mapping.txt"
+
+          if unzip -l app/build/outputs/bundle/release/app-release.aab | grep -Eq '(^|[[:space:]])base/lib/.+\.so$'; then
+            echo "Native libraries detected; a native debug-symbol archive is required." >&2
+            find app/build/outputs/native-debug-symbols -type f -name '*.zip' -print || true
+            SYMBOLS=$(find app/build/outputs/native-debug-symbols -type f -name '*.zip' -print -quit 2>/dev/null || true)
+            test -n "$SYMBOLS" || (echo "Native libraries found but no native debug symbols ZIP was generated" && exit 1)
+            cp "$SYMBOLS" "dist/${STEM}-native-debug-symbols.zip"
+          else
+            cat > "dist/${STEM}-native-debug-symbols-NO-APLICA.txt" <<'EOF'
+NO SE REQUIERE ARCHIVO ZIP DE SIMBOLOS NATIVOS.
+
+Esta version no contiene bibliotecas nativas .so ni codigo C/C++/NDK.
+Google Play solo solicita native debug symbols (.zip) cuando existe codigo nativo.
+No subas el ZIP general de respaldo en el campo de simbolos nativos.
+EOF
+          fi
+
+          sha256sum "dist/${STEM}-google-play.aab" "dist/${STEM}-mapping.txt" > "dist/${STEM}-SHA256.txt"
+          (
+            cd dist
+            zip -q "${STEM}-Google-Play-assets.zip" "${STEM}-google-play.aab" "${STEM}-mapping.txt" "${STEM}-SHA256.txt" "${STEM}-native-debug-symbols-NO-APLICA.txt" 2>/dev/null || \
+            zip -q "${STEM}-Google-Play-assets.zip" "${STEM}-google-play.aab" "${STEM}-mapping.txt" "${STEM}-SHA256.txt" "${STEM}-native-debug-symbols.zip"
+          )
+          ls -lh dist
+
+      - name: Upload Play assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.app.outputs.stem }}-Google-Play
+          path: dist/
+          if-no-files-found: error

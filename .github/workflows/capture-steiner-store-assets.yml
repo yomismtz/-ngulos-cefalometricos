@@ -65,31 +65,39 @@ jobs:
             adb shell am start -W -n com.yomceph.cefalometrico/com.cefalo.angulos.MainActivity
             sleep 3
 
+            cat > /tmp/find_ui.py <<'PY'
+            import re
+            import sys
+            import xml.etree.ElementTree as ET
+
+            needle = sys.argv[1].lower()
+            root = ET.parse('/tmp/window.xml').getroot()
+            for node in root.iter('node'):
+                hay = ' '.join([
+                    node.attrib.get('text', ''),
+                    node.attrib.get('resource-id', ''),
+                    node.attrib.get('content-desc', ''),
+                ]).lower()
+                if needle not in hay:
+                    continue
+                match = re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', node.attrib.get('bounds', ''))
+                if match:
+                    x1, y1, x2, y2 = map(int, match.groups())
+                    print((x1 + x2) // 2, (y1 + y2) // 2)
+                    raise SystemExit(0)
+            raise SystemExit(1)
+            PY
+
             tap_ui() {
               local needle="$1"
               adb shell uiautomator dump /sdcard/window.xml >/dev/null
               adb pull /sdcard/window.xml /tmp/window.xml >/dev/null
               local coords
-              coords=$(python3 - "$needle" <<'PY'
-import re, sys, xml.etree.ElementTree as ET
-needle=sys.argv[1].lower()
-root=ET.parse('/tmp/window.xml').getroot()
-for node in root.iter('node'):
-    hay=' '.join([node.attrib.get('text',''), node.attrib.get('resource-id',''), node.attrib.get('content-desc','')]).lower()
-    if needle in hay:
-        m=re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', node.attrib.get('bounds',''))
-        if m:
-            x1,y1,x2,y2=map(int,m.groups())
-            print((x1+x2)//2, (y1+y2)//2)
-            raise SystemExit(0)
-raise SystemExit(1)
-PY
-              )
+              coords=$(python3 /tmp/find_ui.py "$needle")
               adb shell input tap $coords
               sleep 2
             }
 
-            # Dismiss first-run educational notice if present.
             tap_ui "ENTENDIDO" || true
             sleep 1
             adb exec-out screencap -p > store-assets/01-inicio-steiner.png

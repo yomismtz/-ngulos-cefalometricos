@@ -48,7 +48,7 @@ Al visitar el sitio, abrir GitHub o descargar un instalador, GitHub puede proces
 
 ## Actualizaciones de YomCeph Desktop
 
-YomCeph Desktop v0.12.5 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
+YomCeph Desktop v0.12.6 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
 
 Como en cualquier conexión HTTPS, GitHub puede procesar datos técnicos necesarios para prestar el servicio, como dirección IP, fecha/hora, agente de usuario y versión instalada.
 
@@ -74,7 +74,7 @@ El usuario puede exportar archivos como Excel, CSV, sintaxis para IBM SPSS, imá
 
 ## Investigación y elegibilidad
 
-YomCeph permite definir protocolos con muestra, rango de edad, país/procedencia, criterios de inclusión/exclusión, grupos y variables cefalométricas. En Desktop v0.12.5 la radiografía puede abrirse y trazarse antes de completar la ficha final del sujeto.
+YomCeph permite definir protocolos con muestra, rango de edad, país/procedencia, criterios de inclusión/exclusión, grupos y variables cefalométricas. En Desktop v0.12.6 la radiografía puede abrirse y trazarse antes de completar la ficha final del sujeto.
 
 Al finalizar un caso de investigación, YomCeph puede evaluar reglas objetivas derivadas del protocolo, como rango de edad, país/procedencia, disponibilidad de los landmarks requeridos y calibración cuando se seleccionaron mediciones lineales. El investigador también puede registrar motivos radiográficos de exclusión, por ejemplo calidad insuficiente, anatomía recortada, artefactos, proyección inadecuada, imposibilidad de identificar puntos o un motivo adicional.
 

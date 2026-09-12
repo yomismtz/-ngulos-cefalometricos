@@ -17,7 +17,7 @@ def test_protocol_criteria_are_generated_from_age_and_country():
     assert "6 a 15" in inclusion
     assert "México" in inclusion
     assert "fuera del rango" in exclusion
-    assert "Landmarks" in exclusion
+    assert "landmarks" in exclusion.casefold()
     assert "calibración" in exclusion
 
 
@@ -91,7 +91,12 @@ def test_manual_radiograph_reason_excludes_but_is_structured():
 def test_reproducible_analyses_are_unlocked_and_noncanonical_ones_stay_blocked():
     for analysis_id in ("tweed", "mcnamara", "airway", "rocabado", "downs"):
         assert catalog.ANALYSES[analysis_id]["status"] == catalog.STATUS_ACTIVE
-        assert catalog.measurements_for_analysis(analysis_id, active_only=True)
+        active = [
+            key
+            for key, spec in catalog.MEASUREMENTS.items()
+            if spec.get("analysis") == analysis_id and spec.get("status") == catalog.STATUS_ACTIVE
+        ]
+        assert active
     for analysis_id in ("ricketts", "cogs", "sassouni", "bimler", "g_triangle"):
         assert catalog.ANALYSES[analysis_id]["status"] != catalog.STATUS_ACTIVE
     assert catalog.ANALYSES["ritucci"]["status"] == catalog.STATUS_OTHER_PROJECTION

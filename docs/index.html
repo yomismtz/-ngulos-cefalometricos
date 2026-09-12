@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Sitio oficial de YOM Análisis Radiográficos y YOM Steiner.">
+  <meta name="theme-color" content="#071012">
+  <meta name="description" content="Sitio oficial de YOM Análisis Radiográficos y YOM Steiner: herramientas Android para análisis radiográfico y cefalometría con procesamiento local.">
   <title>YOM Apps · Análisis radiográficos y cefalometría</title>
   <link rel="stylesheet" href="/Cefalometria-/styles.css">
 </head>
@@ -12,7 +13,7 @@
     <div class="wrap nav">
       <a class="brand" href="/Cefalometria-/" aria-label="YOM Apps, inicio">YOM <span>Apps</span></a>
       <nav aria-label="Navegación principal">
-        <a href="/Cefalometria-/#apps">Aplicaciones</a>
+        <a href="#apps">Aplicaciones</a>
         <a href="/Cefalometria-/privacy/">Privacidad</a>
         <a href="/Cefalometria-/terms/">Términos</a>
         <a href="https://github.com/yomismtz/Cefalometria-/issues">Soporte</a>
@@ -25,55 +26,74 @@
       <div class="wrap hero-grid">
         <div>
           <p class="eyebrow">ODONTOLOGÍA · RADIOLOGÍA · CEFALOMETRÍA</p>
-          <h1>Herramientas YOM para análisis radiográficos.</h1>
-          <p class="lead">Aplicaciones Android orientadas al análisis y la formación en estudios radiográficos odontológicos y cefalométricos, con procesamiento local en el dispositivo.</p>
+          <h1>Análisis radiográficos con una interfaz clara y enfoque local.</h1>
+          <p class="lead">YOM Apps reúne herramientas Android para trazado, medición y evaluación radiográfica odontológica. Las versiones actuales priorizan el procesamiento local y el control del usuario sobre sus estudios.</p>
+          <div class="chips" aria-label="Características principales">
+            <span class="chip">Android</span>
+            <span class="chip">Procesamiento local</span>
+            <span class="chip">Sin cuentas</span>
+          </div>
           <div class="actions">
             <a class="button primary" href="#apps">Ver aplicaciones</a>
-            <a class="button secondary" href="/Cefalometria-/privacy/">Política de privacidad</a>
+            <a class="button secondary" href="/Cefalometria-/privacy/">Centro de privacidad</a>
           </div>
         </div>
-        <aside class="hero-card" aria-label="Principios de privacidad">
-          <span class="icon" aria-hidden="true">◌</span>
-          <h2>Privacidad por diseño</h2>
-          <p>Las versiones actuales no crean cuentas, no incluyen anuncios ni analítica y no envían automáticamente radiografías o resultados a servidores del desarrollador.</p>
+
+        <aside class="hero-card" aria-label="Resumen de privacidad">
+          <p class="eyebrow">PRIVACIDAD POR DISEÑO</p>
+          <h2>Tus estudios permanecen bajo tu control.</h2>
+          <p>La documentación actual de YOM Apps describe un funcionamiento local, sin cuentas de usuario, anuncios o analítica del desarrollador.</p>
+          <div class="status-list">
+            <div class="status-row"><span class="status-dot"></span><span>No se requiere registro</span></div>
+            <div class="status-row"><span class="status-dot"></span><span>No hay envío automático de radiografías</span></div>
+            <div class="status-row"><span class="status-dot"></span><span>La exportación la inicia el usuario</span></div>
+          </div>
         </aside>
       </div>
     </section>
 
     <section id="apps" class="section">
       <div class="wrap">
-        <p class="eyebrow">APLICACIONES</p>
-        <h2 class="section-title">Dos ediciones, objetivos distintos.</h2>
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">APLICACIONES</p>
+            <h2 class="section-title">Dos ediciones, objetivos distintos.</h2>
+          </div>
+          <p class="section-copy">Elige la edición completa para evaluaciones radiográficas y cefalométricas, o YOM Steiner para un flujo centrado en cefalometría lateral.</p>
+        </div>
+
         <div class="cards">
           <article class="app-card">
-            <div class="app-mark">XR</div>
+            <div class="app-mark" aria-hidden="true">XR</div>
             <div>
+              <span class="status-badge">Edición completa</span>
               <h3>YOM Análisis Radiográficos</h3>
               <p class="package">yom.Analisis</p>
-              <p>Edición completa con herramientas de análisis cefalométrico y evaluaciones radiográficas, almacenamiento local de estudios y utilidades de trazado.</p>
+              <p>Herramientas de análisis cefalométrico y evaluaciones radiográficas, almacenamiento local de estudios, trazado y exportación de resultados iniciada por el usuario.</p>
               <div class="actions">
-                <a class="button primary" href="https://play.google.com/store/apps/details?id=yom.Analisis" target="_blank" rel="noopener noreferrer" aria-label="Ver YOM Análisis Radiográficos en Google Play">Ver en Google Play</a>
+                <a class="button primary" href="https://play.google.com/store/apps/details?id=yom.Analisis" target="_blank" rel="noopener noreferrer">Ver en Google Play</a>
               </div>
               <div class="card-links">
-                <a href="/Cefalometria-/privacy/radiograficos/">Política de privacidad</a>
-                <a href="/Cefalometria-/terms/">Términos y condiciones</a>
+                <a href="/Cefalometria-/privacy/radiograficos/">Privacidad</a>
+                <a href="/Cefalometria-/terms/">Términos</a>
                 <a href="https://github.com/yomismtz/Cefalometria-">Proyecto</a>
               </div>
             </div>
           </article>
 
           <article class="app-card">
-            <div class="app-mark">ST</div>
+            <div class="app-mark" aria-hidden="true">ST</div>
             <div>
+              <span class="status-badge">Cefalometría lateral</span>
               <h3>YOM Steiner</h3>
               <p class="package">com.yomceph.cefalometrico</p>
-              <p>Edición enfocada en cefalometría lateral y análisis de Steiner, con una interfaz dedicada y el mismo enfoque de procesamiento local.</p>
+              <p>Edición enfocada en análisis de Steiner, colocación de puntos cefalométricos, mediciones y revisión de estudios con el mismo enfoque de privacidad local.</p>
               <div class="actions">
-                <a class="button primary" href="https://play.google.com/store/apps/details?id=com.yomceph.cefalometrico" target="_blank" rel="noopener noreferrer" aria-label="Ver YOM Steiner en Google Play">Ver en Google Play</a>
+                <a class="button primary" href="https://play.google.com/store/apps/details?id=com.yomceph.cefalometrico" target="_blank" rel="noopener noreferrer">Ver en Google Play</a>
               </div>
               <div class="card-links">
-                <a href="/Cefalometria-/privacy/steiner/">Política de privacidad</a>
-                <a href="/Cefalometria-/terms/">Términos y condiciones</a>
+                <a href="/Cefalometria-/privacy/steiner/">Privacidad</a>
+                <a href="/Cefalometria-/terms/">Términos</a>
                 <a href="https://github.com/yomismtz/Cefalometria-">Proyecto</a>
               </div>
             </div>
@@ -82,30 +102,54 @@
       </div>
     </section>
 
-    <section class="section soft">
-      <div class="wrap feature-grid">
-        <article><strong>Local</strong><span>Los estudios se procesan y guardan en el dispositivo.</span></article>
-        <article><strong>Sin cuentas</strong><span>No se requiere registro para usar las funciones actuales.</span></article>
-        <article><strong>Sin anuncios</strong><span>Las aplicaciones actuales no integran publicidad ni analítica.</span></article>
-        <article><strong>Uso responsable</strong><span>Se recomienda trabajar con material anonimizado o autorizado.</span></article>
+    <section class="section soft" aria-labelledby="privacidad-resumen">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">DATOS Y PRIVACIDAD</p>
+            <h2 id="privacidad-resumen" class="section-title">Información clara sobre tus estudios.</h2>
+          </div>
+          <p class="section-copy">Las radiografías pueden contener información relacionada con la salud. Por eso las políticas explican qué datos pueden manejar las apps, dónde se guardan y qué ocurre al exportarlos.</p>
+        </div>
+        <div class="feature-grid">
+          <article><strong>Procesamiento local</strong><span>Los estudios y resultados se trabajan principalmente en el dispositivo.</span></article>
+          <article><strong>Sin cuentas</strong><span>Las funciones actuales no requieren crear un perfil o iniciar sesión.</span></article>
+          <article><strong>Sin anuncios ni analítica</strong><span>Las versiones actuales no integran publicidad ni analítica del desarrollador.</span></article>
+          <article><strong>Exportación voluntaria</strong><span>Compartir informes o imágenes ocurre únicamente cuando el usuario lo decide.</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <p class="eyebrow">INFORMACIÓN LEGAL</p>
+        <div class="legal-grid">
+          <article class="legal-card">
+            <h3>Políticas de privacidad</h3>
+            <p>Consulta la política específica de cada aplicación, incluyendo datos tratados, almacenamiento, eliminación, seguridad y contacto.</p>
+            <a class="button secondary" href="/Cefalometria-/privacy/">Abrir centro de privacidad</a>
+          </article>
+          <article class="legal-card">
+            <h3>Términos y condiciones</h3>
+            <p>Revisa las condiciones de uso, responsabilidad profesional, contenido del usuario y limitaciones aplicables a las herramientas YOM.</p>
+            <a class="button secondary" href="/Cefalometria-/terms/">Leer términos</a>
+          </article>
+        </div>
       </div>
     </section>
 
     <section class="section notice">
       <div class="wrap narrow">
-        <p class="eyebrow">AVISO</p>
-        <h2>Uso educativo y de apoyo.</h2>
-        <p>Las aplicaciones YOM no sustituyen el juicio profesional ni constituyen por sí solas un diagnóstico médico u odontológico. Las mediciones y referencias deben interpretarse en su contexto clínico por personal cualificado.</p>
-        <div class="actions">
-          <a class="button secondary" href="/Cefalometria-/terms/">Leer términos y condiciones</a>
-        </div>
+        <p class="eyebrow">AVISO IMPORTANTE</p>
+        <h2>Uso educativo y de apoyo profesional.</h2>
+        <p>Las aplicaciones YOM no sustituyen el juicio profesional ni constituyen por sí solas un diagnóstico médico u odontológico. Las mediciones, trazados y referencias deben revisarse e interpretarse en su contexto clínico por personal cualificado.</p>
       </div>
     </section>
   </main>
 
   <footer>
     <div class="wrap footer-grid">
-      <span>© 2026 YOM Apps</span>
+      <span>© 2026 YOM Apps · Herramientas de análisis radiográfico</span>
       <div>
         <a href="/Cefalometria-/privacy/">Privacidad</a>
         <a href="/Cefalometria-/terms/">Términos</a>

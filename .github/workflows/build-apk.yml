@@ -17,7 +17,6 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Generate and verify release source
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/prepare-release-source.py
 
       - name: Read app version

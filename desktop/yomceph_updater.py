@@ -17,7 +17,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
-RELEASE_API_URL = "https://api.github.com/repos/yomismtz/-ngulos-cefalometricos/releases/latest"
+RELEASE_API_URL = "https://api.github.com/repos/yomismtz/Cefalometria-/releases/latest"
 INSTALLER_ASSET = "YomCeph_Desktop_Setup.exe"
 CHECKSUM_ASSET = "YomCeph_Desktop_Setup.exe.sha256"
 USER_AGENT_PREFIX = "YomCeph-Desktop"
@@ -184,8 +184,6 @@ def launch_installer(installer_path: str | Path) -> subprocess.Popen:
     path = Path(installer_path)
     if not path.is_file():
         raise UpdateError("No se encontró el instalador descargado.")
-    # SILENT conserva una ventana de progreso; no se oculta completamente al
-    # usuario. Inno cierra/reabre la aplicación y nunca reinicia Windows.
     return subprocess.Popen(
         [
             str(path),

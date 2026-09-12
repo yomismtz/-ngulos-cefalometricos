@@ -1,6 +1,6 @@
 (() => {
-  const APP_VERSION = '0.12.3';
-  const DOWNLOAD_URL = 'https://github.com/yomismtz/-ngulos-cefalometricos/releases/latest/download/YomCeph_Desktop_Setup.exe';
+  const APP_VERSION = '0.12.4';
+  const DOWNLOAD_URL = 'https://github.com/yomismtz/Cefalometria-/releases/latest/download/YomCeph_Desktop_Setup.exe';
   const isEnglish = document.documentElement.lang.toLowerCase().startsWith('en');
 
   // Mantiene visible la versión distribuida aunque el enlace de descarga sea

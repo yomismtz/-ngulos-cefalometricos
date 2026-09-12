@@ -2,7 +2,7 @@
 
 **Última actualización: 11 de septiembre de 2026**
 
-YOM Análisis Radiográficos es una aplicación para apoyar el análisis y la formación en estudios radiográficos odontológicos y cefalométricos. Su identificador de aplicación para Google Play es `com.yomceph.app`.
+YOM Análisis Radiográficos es una aplicación para apoyar el análisis y la formación en estudios radiográficos odontológicos y cefalométricos. Su identificador de aplicación para Google Play es `yom.Analisis`.
 
 ## Responsable y contacto
 

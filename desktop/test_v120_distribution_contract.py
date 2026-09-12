@@ -15,11 +15,11 @@ def test_version_is_consistent_across_distribution_and_installer():
     version = _read(DESKTOP / "VERSION").strip()
     assert re.fullmatch(r"\d+\.\d+\.\d+", version)
 
-    personalization = _read(DESKTOP / "yomceph_desktop_v124_personalization.py")
-    final_entry = _read(DESKTOP / "yomceph_desktop_v124_final.py")
+    research_flow = _read(DESKTOP / "yomceph_desktop_v125_research_flow.py")
+    final_entry = _read(DESKTOP / "yomceph_desktop_v125_final.py")
     installer = _read(DESKTOP / "YomCeph_v0120.iss")
-    assert f'APP_VERSION = "{version}"' in personalization
-    assert "YomCephV124Final" in final_entry
+    assert f'APP_VERSION = "{version}"' in research_flow
+    assert "YomCephV125Final" in final_entry
     assert f'#define MyAppVersion "{version}"' in installer
     assert "OutputBaseFilename=YomCeph_Desktop_Setup_v{#MyAppVersion}" in installer
 
@@ -71,3 +71,14 @@ def test_public_i18n_does_not_expose_institutional_profile():
         "nezahualcóyotl",
     ):
         assert forbidden not in i18n
+
+
+def test_v125_keeps_noncanonical_analyses_blocked():
+    extended = _read(DESKTOP / "yomceph_v125_extended_analyses.py")
+    assert 'catalog.ANALYSES["tweed"].update' in extended
+    assert 'catalog.ANALYSES["mcnamara"].update' in extended
+    assert 'catalog.ANALYSES["airway"].update' in extended
+    assert 'catalog.ANALYSES["rocabado"].update' in extended
+    assert 'catalog.ANALYSES["downs"].update' in extended
+    for forbidden_unlock in ('["ricketts"].update', '["cogs"].update', '["sassouni"].update', '["bimler"].update', '["g_triangle"].update'):
+        assert forbidden_unlock not in extended

@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = '0.12.5';
+  const APP_VERSION = '0.12.6';
   const DOWNLOAD_URL = 'https://github.com/yomismtz/Cefalometria-/releases/latest/download/YomCeph_Desktop_Setup.exe';
   const isEnglish = document.documentElement.lang.toLowerCase().startsWith('en');
 

@@ -18,11 +18,9 @@ jobs:
           - edition: radiograficos
             apply_steiner: 'false'
             app_id: com.yomceph.app
-            label: YOM Analisis Radiograficos
           - edition: steiner
             apply_steiner: 'true'
             app_id: com.yomceph.cefalometrico
-            label: YOM Steiner
 
     steps:
       - name: Checkout
@@ -136,6 +134,12 @@ jobs:
           jarsigner -verify app/build/outputs/bundle/release/app-release.aab >/dev/null
           echo "Signed AAB and ReTrace mapping generated successfully"
 
+      - name: Enable KVM for release launch test
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Verify minified release opens on Android
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
@@ -162,27 +166,29 @@ jobs:
 
           if unzip -l app/build/outputs/bundle/release/app-release.aab | grep -Eq '(^|[[:space:]])base/lib/.+\.so$'; then
             echo "Native libraries detected; a native debug-symbol archive is required." >&2
-            find app/build/outputs/native-debug-symbols -type f -name '*.zip' -print || true
             SYMBOLS=$(find app/build/outputs/native-debug-symbols -type f -name '*.zip' -print -quit 2>/dev/null || true)
             test -n "$SYMBOLS" || (echo "Native libraries found but no native debug symbols ZIP was generated" && exit 1)
             cp "$SYMBOLS" "dist/${STEM}-native-debug-symbols.zip"
+            NATIVE_FILE="${STEM}-native-debug-symbols.zip"
           else
-            cat > "dist/${STEM}-native-debug-symbols-NO-APLICA.txt" <<'EOF'
-NO SE REQUIERE ARCHIVO ZIP DE SIMBOLOS NATIVOS.
-
-Esta version no contiene bibliotecas nativas .so ni codigo C/C++/NDK.
-Google Play solo solicita native debug symbols (.zip) cuando existe codigo nativo.
-No subas el ZIP general de respaldo en el campo de simbolos nativos.
-EOF
+            printf '%s\n' \
+              'NO SE REQUIERE ARCHIVO ZIP DE SIMBOLOS NATIVOS.' \
+              '' \
+              'Esta version no contiene bibliotecas nativas .so ni codigo C/C++/NDK.' \
+              'Google Play solo solicita native debug symbols (.zip) cuando existe codigo nativo.' \
+              'No subas el ZIP general de respaldo en el campo de simbolos nativos.' \
+              > "dist/${STEM}-native-debug-symbols-NO-APLICA.txt"
+            NATIVE_FILE="${STEM}-native-debug-symbols-NO-APLICA.txt"
           fi
 
           sha256sum "dist/${STEM}-google-play.aab" "dist/${STEM}-mapping.txt" > "dist/${STEM}-SHA256.txt"
-          (
-            cd dist
-            zip -q "${STEM}-Google-Play-assets.zip" "${STEM}-google-play.aab" "${STEM}-mapping.txt" "${STEM}-SHA256.txt" "${STEM}-native-debug-symbols-NO-APLICA.txt" 2>/dev/null || \
-            zip -q "${STEM}-Google-Play-assets.zip" "${STEM}-google-play.aab" "${STEM}-mapping.txt" "${STEM}-SHA256.txt" "${STEM}-native-debug-symbols.zip"
-          )
-          ls -lh dist
+          cd dist
+          zip -q "${STEM}-Google-Play-assets.zip" \
+            "${STEM}-google-play.aab" \
+            "${STEM}-mapping.txt" \
+            "${STEM}-SHA256.txt" \
+            "$NATIVE_FILE"
+          ls -lh
 
       - name: Upload Play assets
         uses: actions/upload-artifact@v4

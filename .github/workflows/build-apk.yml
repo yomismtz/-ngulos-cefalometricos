@@ -11,101 +11,20 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Prepare current test build
+      - name: Generate and verify release source
         if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/prepare-test-build.py
-
-      - name: Normalize tangent help
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('app/src/main/java/com/cefalo/angulos/PointGuide.java')
-          s = path.read_text(encoding='utf-8')
-          s = s.replace(
-              'GUIDE.put("Go", "Gonion (Go): punto construido sobre el ángulo mandibular, en la bisectriz formada por la tangente al borde posterior de la rama y la tangente al borde inferior del cuerpo mandibular.");',
-              'GUIDE.put("Go", "Gonion (Go): punto construido sobre el ángulo mandibular. Para construirlo geométricamente trace 2 tangentes: una al borde posterior de la rama y otra al borde inferior del cuerpo mandibular. Cada tangente se define con 2 puntos de apoyo/contacto sobre su contorno; después se obtiene la bisectriz del ángulo formado por ambas tangentes y se localiza Go según el protocolo cefalométrico.");'
-          )
-          s = s.replace(
-              'GUIDE.put("CVT sup.", "CVT superior (etiqueta heredada): corresponde a CV2tg, punto de tangencia superoposterior de la odontoides de C2.");',
-              'GUIDE.put("CVT sup.", "CVT superior (etiqueta heredada): corresponde a CV2tg. Es un landmark, no una tangente completa. En el protocolo adoptado, CVT se forma con 2 puntos: CV2tg + CV4ip.");'
-          )
-          s = s.replace(
-              'GUIDE.put("CVT inf.", "CVT inferior (etiqueta heredada): corresponde a CV4ip, punto más inferoposterior del cuerpo de C4.");',
-              'GUIDE.put("CVT inf.", "CVT inferior (etiqueta heredada): corresponde a CV4ip, segundo landmark de CVT. La línea CVT se forma con 2 puntos: CV2tg + CV4ip.");'
-          )
-          s = s.replace(
-              'GUIDE.put("OPT sup.", "OPT superior (etiqueta heredada): corresponde a CV2tg, punto de tangencia superoposterior de la odontoides de C2.");',
-              'GUIDE.put("OPT sup.", "OPT superior (etiqueta heredada): corresponde a CV2tg. Es un landmark, no una tangente completa. OPT se forma con 2 puntos: CV2tg + CV2ip.");'
-          )
-          s = s.replace(
-              'GUIDE.put("OPT inf.", "OPT inferior (etiqueta heredada): corresponde a CV2ip, punto más inferoposterior del cuerpo de C2.");',
-              'GUIDE.put("OPT inf.", "OPT inferior (etiqueta heredada): corresponde a CV2ip, segundo landmark de OPT. La línea OPT se forma con 2 puntos: CV2tg + CV2ip.");'
-          )
-          path.write_text(s, encoding='utf-8')
-          PY
-
-      - name: Apply clinical extensions and visual guides
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/extend-clinical-build.py
-
-      - name: Expand McGregor cranio-cervical guide
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/augment-mcgregor-guide.py
-
-      - name: Keep only calculable partial results
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/fix-result-diagnostics.py
-
-      - name: Apply final radiographic audit
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/final-radiographic-audit.py
-
-      - name: Refine radiographic assessment logic
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/refine-radiographic-logic.py
-
-      - name: Apply branding and calibration assistant
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/mobile-brand-calibration.py
-
-      - name: Apply exact fine adjustment
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/mobile-fine-adjust.py
-
-      - name: Refine per-landmark visual guides
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/mobile-guide-polish.py
-
-      - name: Adapt SQLite generator to hardened persistence
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/patch-adaptive-store-compat.py
-
-      - name: Generate dedicated tablet layout
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/mobile-responsive-layouts.py
-
-      - name: Keep complete-app Steiner basic
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/full-app-basic-steiner.py
-
-      - name: Add independent carpal skeletal maturity module
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/add-carpal-fishman.py
-
-      - name: Apply persistence and assessment integrity fixes
-        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
-        run: python3 ci/audit-integrity-fixes.py
+        run: python3 ci/prepare-release-source.py
 
       - name: Read app version
         id: app_version
         shell: bash
         run: |
+          set -euo pipefail
           VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle | head -n 1)
           VERSION_CODE=$(sed -n "s/.*versionCode \([0-9][0-9]*\).*/\1/p" app/build.gradle | head -n 1)
           test -n "$VERSION_NAME" || (echo "Could not read versionName" && exit 1)

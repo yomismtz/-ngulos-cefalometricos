@@ -44,10 +44,8 @@ jobs:
           new = "            minifyEnabled true\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')\n"
           if old not in s:
               raise SystemExit('Expected minifyEnabled false anchor not found')
-          s = s.replace(old, new, 1)
-          p.write_text(s, encoding='utf-8')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
           PY
-          grep -nE 'applicationId|versionCode|versionName|minifyEnabled|proguardFiles' app/build.gradle
 
       - name: Read version and verify application id
         id: app
@@ -70,20 +68,6 @@ jobs:
           echo "app_id=$APP_ID" >> "$GITHUB_OUTPUT"
           echo "stem=$STEM" >> "$GITHUB_OUTPUT"
 
-      - name: Verify signing secrets
-        env:
-          KEYSTORE_B64: ${{ secrets.YOMCEPH_UPLOAD_KEYSTORE_BASE64 }}
-          STORE_PASSWORD: ${{ secrets.YOMCEPH_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.YOMCEPH_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.YOMCEPH_KEY_PASSWORD }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "$KEYSTORE_B64" || (echo "Missing YOMCEPH_UPLOAD_KEYSTORE_BASE64" && exit 1)
-          test -n "$STORE_PASSWORD" || (echo "Missing YOMCEPH_KEYSTORE_PASSWORD" && exit 1)
-          test -n "$KEY_ALIAS" || (echo "Missing YOMCEPH_KEY_ALIAS" && exit 1)
-          test -n "$KEY_PASSWORD" || (echo "Missing YOMCEPH_KEY_PASSWORD" && exit 1)
-
       - name: Set up Java 17
         uses: actions/setup-java@v5
         with:
@@ -101,38 +85,40 @@ jobs:
         with:
           gradle-version: '8.13'
 
-      - name: Decode and verify upload keystore
-        env:
-          KEYSTORE_B64: ${{ secrets.YOMCEPH_UPLOAD_KEYSTORE_BASE64 }}
-          STORE_PASSWORD: ${{ secrets.YOMCEPH_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.YOMCEPH_KEY_ALIAS }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/yomceph-upload.jks"
-          chmod 600 "$RUNNER_TEMP/yomceph-upload.jks"
-          keytool -list -keystore "$RUNNER_TEMP/yomceph-upload.jks" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
-
       - name: Run unit tests and release lint
         run: |
           gradle --no-daemon :app:testDebugUnitTest
           gradle --no-daemon :app:lintRelease
 
-      - name: Build signed minified AAB and release APK
-        env:
-          YOMCEPH_KEYSTORE_PATH: ${{ runner.temp }}/yomceph-upload.jks
-          YOMCEPH_KEYSTORE_PASSWORD: ${{ secrets.YOMCEPH_KEYSTORE_PASSWORD }}
-          YOMCEPH_KEY_ALIAS: ${{ secrets.YOMCEPH_KEY_ALIAS }}
-          YOMCEPH_KEY_PASSWORD: ${{ secrets.YOMCEPH_KEY_PASSWORD }}
+      - name: Build unsigned minified AAB and exact mapping
         shell: bash
         run: |
           set -euo pipefail
-          gradle --no-daemon :app:bundleRelease :app:assembleRelease
+          gradle --no-daemon :app:bundleRelease
           test -f app/build/outputs/bundle/release/app-release.aab
-          test -f app/build/outputs/mapping/release/mapping.txt
           test -s app/build/outputs/mapping/release/mapping.txt
-          jarsigner -verify app/build/outputs/bundle/release/app-release.aab >/dev/null
-          echo "Signed AAB and ReTrace mapping generated successfully"
+          mkdir -p dist
+          STEM='${{ steps.app.outputs.stem }}'
+          cp app/build/outputs/bundle/release/app-release.aab "dist/${STEM}-unsigned.aab"
+          cp app/build/outputs/mapping/release/mapping.txt "dist/${STEM}-mapping.txt"
+
+      - name: Create temporary test signing key
+        shell: bash
+        run: |
+          set -euo pipefail
+          keytool -genkeypair -noprompt \
+            -keystore "$RUNNER_TEMP/test-release.jks" \
+            -storepass testpass123 -keypass testpass123 \
+            -alias testrelease -keyalg RSA -keysize 2048 -validity 3650 \
+            -dname "CN=YOM CI Test, OU=CI, O=YOM, L=Test, ST=Test, C=MX"
+
+      - name: Build minified release APK for launch validation
+        env:
+          YOMCEPH_KEYSTORE_PATH: ${{ runner.temp }}/test-release.jks
+          YOMCEPH_KEYSTORE_PASSWORD: testpass123
+          YOMCEPH_KEY_ALIAS: testrelease
+          YOMCEPH_KEY_PASSWORD: testpass123
+        run: gradle --no-daemon :app:assembleRelease
 
       - name: Enable KVM for release launch test
         run: |
@@ -155,39 +141,35 @@ jobs:
             test -n "$(adb shell pidof ${{ steps.app.outputs.app_id }} | tr -d '\r')"
             echo "Minified release remained alive after cold start"
 
-      - name: Prepare Play Console files
+      - name: Prepare Play Console support files
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist
           STEM='${{ steps.app.outputs.stem }}'
-          cp app/build/outputs/bundle/release/app-release.aab "dist/${STEM}-google-play.aab"
-          cp app/build/outputs/mapping/release/mapping.txt "dist/${STEM}-mapping.txt"
-
-          if unzip -l app/build/outputs/bundle/release/app-release.aab | grep -Eq '(^|[[:space:]])base/lib/.+\.so$'; then
-            echo "Native libraries detected; a native debug-symbol archive is required." >&2
-            SYMBOLS=$(find app/build/outputs/native-debug-symbols -type f -name '*.zip' -print -quit 2>/dev/null || true)
-            test -n "$SYMBOLS" || (echo "Native libraries found but no native debug symbols ZIP was generated" && exit 1)
-            cp "$SYMBOLS" "dist/${STEM}-native-debug-symbols.zip"
-            NATIVE_FILE="${STEM}-native-debug-symbols.zip"
-          else
-            printf '%s\n' \
-              'NO SE REQUIERE ARCHIVO ZIP DE SIMBOLOS NATIVOS.' \
-              '' \
-              'Esta version no contiene bibliotecas nativas .so ni codigo C/C++/NDK.' \
-              'Google Play solo solicita native debug symbols (.zip) cuando existe codigo nativo.' \
-              'No subas el ZIP general de respaldo en el campo de simbolos nativos.' \
-              > "dist/${STEM}-native-debug-symbols-NO-APLICA.txt"
-            NATIVE_FILE="${STEM}-native-debug-symbols-NO-APLICA.txt"
+          if unzip -l "dist/${STEM}-unsigned.aab" | grep -Eq '(^|[[:space:]])base/lib/.+\.so$'; then
+            echo "Native libraries detected unexpectedly; refusing to create a fake symbols archive." >&2
+            exit 1
           fi
-
-          sha256sum "dist/${STEM}-google-play.aab" "dist/${STEM}-mapping.txt" > "dist/${STEM}-SHA256.txt"
+          printf '%s\n' \
+            'NO SE REQUIERE ARCHIVO ZIP DE SIMBOLOS NATIVOS.' \
+            '' \
+            'Esta version no contiene bibliotecas nativas .so ni codigo C/C++/NDK.' \
+            'Google Play solo solicita native debug symbols (.zip) cuando existe codigo nativo.' \
+            'No subas el ZIP general de respaldo en el campo de simbolos nativos.' \
+            > "dist/${STEM}-native-debug-symbols-NO-APLICA.txt"
+          printf '%s\n' \
+            'AAB SIN FIRMA DE CARGA DE GOOGLE PLAY.' \
+            'El repositorio no tiene configurados actualmente los secretos de la clave de carga.' \
+            'Debe firmarse con la clave de carga registrada antes de subirlo a Play Console.' \
+            > "dist/${STEM}-FIRMA-PENDIENTE.txt"
+          sha256sum "dist/${STEM}-unsigned.aab" "dist/${STEM}-mapping.txt" > "dist/${STEM}-SHA256.txt"
           cd dist
           zip -q "${STEM}-Google-Play-assets.zip" \
-            "${STEM}-google-play.aab" \
+            "${STEM}-unsigned.aab" \
             "${STEM}-mapping.txt" \
-            "${STEM}-SHA256.txt" \
-            "$NATIVE_FILE"
+            "${STEM}-native-debug-symbols-NO-APLICA.txt" \
+            "${STEM}-FIRMA-PENDIENTE.txt" \
+            "${STEM}-SHA256.txt"
           ls -lh
 
       - name: Upload Play assets

@@ -3,7 +3,7 @@ name: Build YOM Análisis Radiográficos APK and Bundle
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master, 'redesign/**' ]
+    branches: [ main, master, 'redesign/**', 'fix/**' ]
 
 permissions:
   contents: read
@@ -16,11 +16,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare current test build
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/prepare-test-build.py
 
       - name: Normalize tangent help
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         shell: bash
         run: |
           python3 - <<'PY'
@@ -51,48 +51,52 @@ jobs:
           PY
 
       - name: Apply clinical extensions and visual guides
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/extend-clinical-build.py
 
       - name: Expand McGregor cranio-cervical guide
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/augment-mcgregor-guide.py
 
       - name: Keep only calculable partial results
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/fix-result-diagnostics.py
 
       - name: Apply final radiographic audit
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/final-radiographic-audit.py
 
       - name: Refine radiographic assessment logic
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/refine-radiographic-logic.py
 
       - name: Apply branding and calibration assistant
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/mobile-brand-calibration.py
 
       - name: Apply exact fine adjustment
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/mobile-fine-adjust.py
 
       - name: Refine per-landmark visual guides
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/mobile-guide-polish.py
 
       - name: Generate dedicated tablet layout
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/mobile-responsive-layouts.py
 
       - name: Keep complete-app Steiner basic
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/full-app-basic-steiner.py
 
       - name: Add independent carpal skeletal maturity module
-        if: startsWith(github.ref_name, 'redesign/')
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/add-carpal-fishman.py
+
+      - name: Apply persistence and assessment integrity fixes
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
+        run: python3 ci/audit-integrity-fixes.py
 
       - name: Read app version
         id: app_version
@@ -104,6 +108,40 @@ jobs:
           test -n "$VERSION_CODE" || (echo "Could not read versionCode" && exit 1)
           echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Capture exact generated source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-audit
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF_NAME}"
+            echo "commit=${GITHUB_SHA}"
+            echo "versionName=${{ steps.app_version.outputs.name }}"
+            echo "versionCode=${{ steps.app_version.outputs.code }}"
+          } > build-audit/BUILD-MANIFEST.txt
+
+          find app/src -type f -print0 \
+            | sort -z \
+            | xargs -0 sha256sum > build-audit/SOURCE-SHA256.txt
+          sha256sum app/build.gradle build.gradle settings.gradle \
+            >> build-audit/SOURCE-SHA256.txt
+
+          tar -czf build-audit/generated-source.tar.gz \
+            app/src \
+            app/build.gradle \
+            build.gradle \
+            settings.gradle \
+            ci \
+            .github/workflows/build-apk.yml
+
+      - name: Upload exact generated source
+        uses: actions/upload-artifact@v4
+        with:
+          name: YOM-Generated-Source-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
+          path: build-audit/
+          if-no-files-found: error
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
@@ -183,3 +221,4 @@ jobs:
         with:
           name: YOM-Analisis-Radiograficos-Unsigned-AAB-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}
           path: YOM-Analisis-Radiograficos-v${{ steps.app_version.outputs.name }}-${{ steps.app_version.outputs.code }}-unsigned.aab
+          if-no-files-found: error

@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Política de privacidad de YOM Análisis Radiográficos.">
+  <meta name="theme-color" content="#071012">
+  <meta name="description" content="Política de privacidad de YOM Análisis Radiográficos (yom.Analisis).">
   <title>Política de privacidad · YOM Análisis Radiográficos</title>
   <link rel="stylesheet" href="/Cefalometria-/styles.css">
 </head>
@@ -13,7 +14,7 @@
       <a class="brand" href="/Cefalometria-/">YOM <span>Apps</span></a>
       <nav aria-label="Navegación principal">
         <a href="/Cefalometria-/#apps">Aplicaciones</a>
-        <a href="/Cefalometria-/privacy/">Privacidad</a>
+        <a href="/Cefalometria-/privacy/" aria-current="page">Privacidad</a>
         <a href="/Cefalometria-/terms/">Términos</a>
         <a href="https://github.com/yomismtz/Cefalometria-/issues">Soporte</a>
       </nav>
@@ -25,7 +26,8 @@
       <div class="wrap narrow">
         <p class="eyebrow">POLÍTICA DE PRIVACIDAD</p>
         <h1>YOM Análisis Radiográficos</h1>
-        <p class="meta">Última actualización: 11 de septiembre de 2026 · Identificador: <code>yom.Analisis</code></p>
+        <p class="lead">Información sobre el tratamiento de radiografías, datos de estudio, mediciones y archivos exportados en la aplicación Android.</p>
+        <p class="meta">Última actualización: 12 de septiembre de 2026 · Identificador: <code>yom.Analisis</code></p>
       </div>
     </section>
 
@@ -33,83 +35,110 @@
       <div class="wrap policy-layout">
         <aside class="policy-nav" aria-label="Contenido de la política">
           <strong>Contenido</strong>
+          <a href="#resumen">Resumen</a>
           <a href="#alcance">Alcance</a>
           <a href="#datos">Datos tratados</a>
+          <a href="#permisos">Permisos y acceso</a>
           <a href="#finalidad">Finalidad</a>
           <a href="#almacenamiento">Almacenamiento</a>
-          <a href="#comparticion">Exportación</a>
+          <a href="#comparticion">Exportación y terceros</a>
           <a href="#eliminacion">Conservación y eliminación</a>
           <a href="#seguridad">Seguridad</a>
           <a href="#menores">Menores</a>
-          <a href="#medico">Aviso médico</a>
+          <a href="#medico">Uso profesional</a>
+          <a href="#cambios">Cambios</a>
           <a href="#contacto">Contacto</a>
         </aside>
 
         <article class="policy-content">
+          <section id="resumen">
+            <div class="legal-callout">
+              <strong>Resumen de la versión actual</strong>
+              <ul>
+                <li>No requiere crear una cuenta.</li>
+                <li>No integra anuncios ni analítica del desarrollador.</li>
+                <li>No envía automáticamente radiografías o resultados a servidores del desarrollador.</li>
+                <li>Los estudios se procesan y guardan principalmente en el dispositivo.</li>
+                <li>Compartir o exportar información requiere una acción iniciada por el usuario.</li>
+              </ul>
+            </div>
+          </section>
+
           <section id="alcance">
-            <h2>1. Alcance</h2>
-            <p>Esta política describe cómo YOM Análisis Radiográficos trata la información cuando el usuario utiliza la aplicación Android identificada como <code>yom.Analisis</code>.</p>
-            <p>La aplicación está orientada al análisis y la formación en estudios radiográficos odontológicos y cefalométricos. La versión actual funciona principalmente de forma local en el dispositivo.</p>
+            <h2>1. Alcance y responsable</h2>
+            <p>Esta política describe las prácticas de privacidad de YOM Análisis Radiográficos, aplicación Android identificada como <code>yom.Analisis</code>, publicada bajo YOM Apps.</p>
+            <p>La aplicación está orientada al análisis, medición y formación en estudios radiográficos odontológicos y cefalométricos. Esta política se refiere al funcionamiento de la aplicación; los servicios externos que el usuario decida utilizar se rigen por sus propias políticas.</p>
           </section>
 
           <section id="datos">
             <h2>2. Datos que puede manejar la aplicación</h2>
-            <p>La aplicación puede trabajar con información seleccionada o introducida directamente por el usuario, entre ella:</p>
-            <ul>
-              <li>radiografías u otras imágenes usadas para análisis;</li>
-              <li>nombre del estudio;</li>
-              <li>identificador o pseudónimo opcional;</li>
-              <li>edad o sexo cuando una evaluación específica los requiere;</li>
-              <li>puntos cefalométricos, datos de calibración, mediciones y resultados;</li>
-              <li>anotaciones o selecciones realizadas durante evaluaciones radiográficas.</li>
-            </ul>
-            <p>Una radiografía y los resultados derivados pueden constituir información personal o relacionada con la salud si contienen o permiten vincular información a una persona.</p>
+            <p>La aplicación puede procesar información seleccionada, introducida o generada por el propio usuario durante un estudio, incluyendo:</p>
+            <div class="data-grid">
+              <div class="data-item"><strong>Imágenes</strong><span>Radiografías u otras imágenes que el usuario seleccione para análisis.</span></div>
+              <div class="data-item"><strong>Datos del estudio</strong><span>Nombre del estudio e identificador o pseudónimo opcional.</span></div>
+              <div class="data-item"><strong>Datos de evaluación</strong><span>Edad o sexo únicamente cuando una evaluación concreta los requiera.</span></div>
+              <div class="data-item"><strong>Resultados</strong><span>Puntos, calibraciones, líneas, mediciones, cálculos, anotaciones y resultados derivados.</span></div>
+            </div>
+            <p>Una radiografía y sus resultados pueden constituir información personal o relacionada con la salud cuando identifican o pueden vincularse con una persona.</p>
+          </section>
+
+          <section id="permisos">
+            <h2>3. Permisos y acceso al dispositivo</h2>
+            <p>En la configuración actual del proyecto, el manifiesto de Android no declara permisos adicionales de sistema. El acceso a una imagen seleccionada por el usuario puede realizarse mediante mecanismos del sistema Android que conceden acceso al archivo elegido sin otorgar acceso general a todo el almacenamiento.</p>
+            <p>La configuración actual también establece <code>allowBackup=false</code> y deshabilita el tráfico HTTP sin cifrar mediante <code>usesCleartextTraffic=false</code>.</p>
           </section>
 
           <section id="finalidad">
-            <h2>3. Finalidad</h2>
-            <p>La información se utiliza para ejecutar las funciones solicitadas por el usuario dentro de la aplicación: visualizar imágenes, colocar puntos, realizar mediciones, calcular resultados, guardar y revisar estudios, eliminar estudios y exportar resultados cuando el usuario lo decide.</p>
+            <h2>4. Para qué se utiliza la información</h2>
+            <p>La información se utiliza únicamente para ejecutar las funciones solicitadas por el usuario dentro de la aplicación: abrir y visualizar imágenes, colocar puntos, trazar referencias, calibrar, realizar mediciones, calcular resultados, guardar y revisar estudios, eliminar estudios y generar o exportar resultados.</p>
+            <p>El desarrollador no utiliza el contenido de los estudios para publicidad, creación de perfiles o entrenamiento de modelos.</p>
           </section>
 
           <section id="almacenamiento">
-            <h2>4. Procesamiento y almacenamiento</h2>
-            <p>En la versión actual, los datos de los estudios se procesan y almacenan localmente en el dispositivo.</p>
-            <p>YOM Análisis Radiográficos no crea cuentas de usuario, no integra anuncios, no utiliza analítica del desarrollador, no incluye telemetría del desarrollador y no envía automáticamente radiografías, datos personales o resultados a servidores del desarrollador.</p>
-            <p>Las copias de seguridad de los datos privados de la aplicación están desactivadas en la configuración actual.</p>
+            <h2>5. Procesamiento y almacenamiento</h2>
+            <p>Los datos del estudio se procesan y almacenan principalmente de forma local en el dispositivo. La versión actual no crea cuentas de usuario ni mantiene una base de datos remota de radiografías o resultados en servidores del desarrollador.</p>
+            <p>Las copias de seguridad de los datos privados de la aplicación están desactivadas en la configuración actual del proyecto.</p>
           </section>
 
           <section id="comparticion">
-            <h2>5. Exportación y compartición iniciadas por el usuario</h2>
-            <p>El usuario puede decidir exportar imágenes, informes u otros resultados y compartirlos mediante aplicaciones o servicios instalados en su dispositivo. Esa acción se realiza únicamente cuando el usuario la inicia expresamente.</p>
-            <p>Una vez que un archivo se entrega a otra aplicación o servicio elegido por el usuario, el tratamiento posterior depende de ese tercero y de sus propias políticas.</p>
+            <h2>6. Exportación, compartición y terceros</h2>
+            <p>El usuario puede decidir exportar imágenes, informes u otros resultados y entregarlos a otra aplicación o servicio disponible en su dispositivo. Esta transferencia se produce únicamente cuando el usuario inicia la acción.</p>
+            <p>Una vez que un archivo sale de YOM Análisis Radiográficos y se entrega a un servicio de terceros —por ejemplo, correo, mensajería, almacenamiento en la nube o cualquier otra aplicación elegida— el tratamiento posterior queda sujeto a las políticas y condiciones de ese tercero.</p>
+            <p>El desarrollador no vende ni alquila radiografías, datos de estudio o resultados que la aplicación no le transmite automáticamente.</p>
           </section>
 
           <section id="eliminacion">
-            <h2>6. Conservación y eliminación</h2>
-            <p>Los estudios permanecen en el dispositivo hasta que el usuario los elimina desde la aplicación, borra los datos de la aplicación o desinstala la aplicación. La versión actual no mantiene una copia de servidor del estudio que deba solicitarse al desarrollador para su eliminación.</p>
+            <h2>7. Conservación y eliminación</h2>
+            <p>Los estudios guardados localmente permanecen en el dispositivo hasta que el usuario los elimina desde la aplicación, borra los datos de la aplicación o desinstala la aplicación.</p>
+            <p>La versión actual no mantiene una copia de servidor del estudio que deba solicitarse al desarrollador para su eliminación. Los archivos que el usuario haya exportado fuera de la aplicación deben eliminarse desde el destino donde fueron guardados o compartidos.</p>
           </section>
 
           <section id="seguridad">
-            <h2>7. Seguridad y uso responsable</h2>
-            <p>La aplicación limita el tratamiento de los estudios al dispositivo y evita permisos amplios de almacenamiento o acceso de red innecesarios. Aun así, ningún dispositivo o sistema de almacenamiento puede considerarse absolutamente libre de riesgo.</p>
-            <p>Para docencia, demostraciones o pruebas se recomienda utilizar radiografías anonimizadas. El usuario es responsable de contar con las autorizaciones necesarias antes de introducir, conservar o compartir información identificable.</p>
+            <h2>8. Seguridad y uso responsable</h2>
+            <p>El diseño actual limita el tratamiento al dispositivo y evita permisos amplios innecesarios. Aun así, ningún dispositivo, archivo o sistema de almacenamiento puede considerarse absolutamente libre de riesgo.</p>
+            <p>Para docencia, demostraciones y pruebas se recomienda utilizar radiografías anonimizadas. Si se utiliza información identificable, el usuario es responsable de contar con las autorizaciones, medidas de seguridad y bases legales que resulten aplicables.</p>
           </section>
 
           <section id="menores">
-            <h2>8. Menores</h2>
-            <p>YOM Análisis Radiográficos no está diseñada específicamente para niños. Está orientada principalmente a estudiantes universitarios, profesionales y adultos en formación odontológica o áreas relacionadas.</p>
+            <h2>9. Menores</h2>
+            <p>YOM Análisis Radiográficos no está diseñada específicamente para niños ni como servicio infantil. Está orientada principalmente a estudiantes universitarios, profesionales y adultos en formación odontológica o áreas relacionadas.</p>
+            <p>La posible presencia de imágenes de pacientes menores dentro de un estudio no significa que la aplicación esté dirigida a menores; quien incorpore dichas imágenes es responsable de contar con la autorización correspondiente.</p>
           </section>
 
           <section id="medico">
-            <h2>9. Aviso médico</h2>
-            <p>La aplicación no sustituye el juicio profesional y no debe utilizarse como única base para diagnosticar, tratar, curar o prevenir una afección. Sus mediciones y referencias deben interpretarse en contexto por personal cualificado.</p>
+            <h2>10. Uso educativo y de apoyo profesional</h2>
+            <p>La aplicación no sustituye el juicio profesional y no debe utilizarse como única base para diagnosticar, tratar, curar o prevenir una afección. Los resultados dependen, entre otros factores, de la calidad de la imagen, calibración, selección de referencias y colocación de puntos por parte del usuario.</p>
+          </section>
+
+          <section id="cambios">
+            <h2>11. Cambios de esta política</h2>
+            <p>Esta política se actualizará cuando cambien las funciones o prácticas de datos. Si una versión futura incorpora cuentas, servicios en la nube, sincronización, publicidad, analítica, telemetría u otra transmisión de datos, la política y las declaraciones correspondientes en Google Play deberán revisarse antes de distribuir esa versión.</p>
           </section>
 
           <section id="contacto">
-            <h2>10. Contacto y cambios de esta política</h2>
-            <p>Para consultas relacionadas con privacidad o funcionamiento puede utilizar el canal público de soporte del proyecto en GitHub. Los datos de contacto del desarrollador también se muestran en la ficha oficial de Google Play cuando la aplicación está publicada.</p>
-            <p><a href="https://github.com/yomismtz/Cefalometria-/issues">Abrir soporte del proyecto</a></p>
-            <p>Esta política se actualizará si cambian las funciones o las prácticas de datos. Si en el futuro se incorporan cuentas, servicios en la nube, analítica, anuncios, sincronización o telemetría, esta política y las declaraciones de Google Play deberán revisarse antes de distribuir esa versión.</p>
+            <h2>12. Contacto</h2>
+            <p>Para consultas relacionadas con privacidad, funcionamiento o solicitudes sobre esta política puede utilizar el canal público de soporte del proyecto en GitHub. Cuando la aplicación se encuentre publicada, los datos de contacto del desarrollador también se muestran en su ficha oficial de Google Play.</p>
+            <div class="actions"><a class="button secondary" href="https://github.com/yomismtz/Cefalometria-/issues">Abrir soporte del proyecto</a></div>
           </section>
         </article>
       </div>
@@ -120,7 +149,7 @@
     <div class="wrap footer-grid">
       <span>© 2026 YOM Apps</span>
       <div>
-        <a href="/Cefalometria-/privacy/">Privacidad</a>
+        <a href="/Cefalometria-/privacy/">Centro de privacidad</a>
         <a href="/Cefalometria-/terms/">Términos</a>
         <a href="/Cefalometria-/">Inicio</a>
       </div>

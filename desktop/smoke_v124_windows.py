@@ -12,11 +12,8 @@ _TEMP_DATA = tempfile.mkdtemp(prefix="yomceph-v124-smoke-")
 os.environ["LOCALAPPDATA"] = _TEMP_DATA
 
 import yomceph_desktop_hidpi as ui
-from yomceph_desktop_v124_personalization import (
-    APP_VERSION,
-    PALETTES,
-    YomCephV124Personalization,
-)
+from yomceph_desktop_v124_personalization import APP_VERSION, PALETTES
+from yomceph_desktop_v124_final import YomCephV124Final
 
 
 def _destroy_toplevels(app):
@@ -37,7 +34,7 @@ def main():
     messagebox.showinfo = lambda *a, **k: None
     messagebox.showwarning = lambda *a, **k: None
     try:
-        app = YomCephV124Personalization()
+        app = YomCephV124Final()
         app.withdraw()
         app.update_idletasks()
 
@@ -51,7 +48,6 @@ def main():
             studies = con.execute("SELECT COUNT(*) FROM research_studies").fetchone()[0]
         assert studies == 0, f"La instalación limpia creó {studies} estudios"
 
-        # La paleta y la tipografía deben poder cambiar en caliente.
         app._apply_personalization(
             {"font_family": "Arial", "font_size": 12, "palette": "Azul clínico"},
             persist=True,
@@ -70,7 +66,10 @@ def main():
         assert loaded["font_size"] == 12
         assert loaded["palette"] == "Azul clínico"
 
-        # Los accesos rápidos A−/A+ no deben salir del rango permitido.
+        style = ttk.Style(app)
+        assert style.lookup("Treeview", "background") == PALETTES["Azul clínico"]["panel"]
+        assert style.lookup("Treeview", "foreground") == PALETTES["Azul clínico"]["text"]
+
         app._quick_font_step(1)
         assert app._personalization["font_size"] == 13
         for _ in range(20):
@@ -80,20 +79,25 @@ def main():
             app._quick_font_step(-1)
         assert app._personalization["font_size"] == 8
 
-        # El cuadro de configuración debe construirse sin romper Tkinter.
         app.open_personalization_settings()
         app.update_idletasks()
         dialogs = [c for c in app.winfo_children() if isinstance(c, tk.Toplevel)]
         assert any("Personalización" in d.title() for d in dialogs)
         _destroy_toplevels(app)
 
-        # Cambiar a paleta oscura y volver a la original debe seguir funcionando.
         app._apply_personalization(
             {"font_family": "Segoe UI", "font_size": 10, "palette": "Noche radiográfica"},
             persist=False,
         )
         app.update_idletasks()
         assert ui.C["paper"] == PALETTES["Noche radiográfica"]["paper"]
+        app.high_contrast_var.set(True)
+        app._apply_high_contrast()
+        assert app.canvas.cget("background") == "#000000"
+        app.high_contrast_var.set(False)
+        app._apply_high_contrast()
+        assert app.canvas.cget("background").lower() == PALETTES["Noche radiográfica"]["canvas"].lower()
+
         app._apply_personalization(
             {"font_family": "Segoe UI", "font_size": 10, "palette": "YomCeph violeta"},
             persist=False,

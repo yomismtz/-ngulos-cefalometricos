@@ -6,11 +6,11 @@ YomCeph es una herramienta educativa y de apoyo a investigación para trazados c
 
 ## Responsable y contacto
 
-YomCeph es un proyecto mantenido en el repositorio público de GitHub `yomismtz/-ngulos-cefalometricos`.
+YomCeph es un proyecto mantenido en el repositorio público de GitHub `yomismtz/Cefalometria-`.
 
 Para consultas sobre privacidad o incidencias puede utilizarse:
 
-https://github.com/yomismtz/-ngulos-cefalometricos/issues
+https://github.com/yomismtz/Cefalometria-/issues
 
 ## Datos que puede manejar YomCeph
 
@@ -28,7 +28,7 @@ Los datos clínicos y de investigación de YomCeph Desktop se procesan y almacen
 
 `%LOCALAPPDATA%\YomCeph\ResearchData`
 
-En esa carpeta pueden existir la base SQLite, copias de radiografías asociadas a casos, imágenes importadas desde PDF, respaldos y archivos temporales de actualización. Se almacenan fuera de la carpeta del programa para que una actualización o reinstalación no los sustituya automáticamente.
+En esa carpeta pueden existir la base SQLite, copias de radiografías asociadas a casos, imágenes importadas desde PDF, respaldos, preferencias visuales y archivos temporales de actualización. Se almacenan fuera de la carpeta del programa para que una actualización o reinstalación no los sustituya automáticamente.
 
 YomCeph Desktop:
 
@@ -48,7 +48,7 @@ Al visitar el sitio, abrir GitHub o descargar un instalador, GitHub puede proces
 
 ## Actualizaciones de YomCeph Desktop
 
-YomCeph Desktop v0.12.3 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
+YomCeph Desktop v0.12.4 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
 
 Como en cualquier conexión HTTPS, GitHub puede procesar datos técnicos necesarios para prestar el servicio, como dirección IP, fecha/hora, agente de usuario y versión instalada.
 
@@ -61,6 +61,12 @@ Cuando existe una actualización:
 5. Si no hay conexión a Internet, YomCeph continúa funcionando localmente.
 
 La comprobación de actualizaciones no se utiliza para analítica, perfiles de uso ni seguimiento de pacientes.
+
+## Personalización visual
+
+YomCeph Desktop v0.12.4 permite elegir tipografía, tamaño de letra y una de cinco paletas de color. Las preferencias se guardan localmente en el perfil de YomCeph y no contienen radiografías, resultados ni identificadores clínicos.
+
+La personalización sólo modifica la presentación de la interfaz. No cambia la radiografía, coordenadas de landmarks, calibración, fórmulas, normas de referencia ni resultados guardados.
 
 ## Exportación y compartición
 
@@ -80,7 +86,7 @@ Si el usuario desea retirar completamente los datos después de desinstalar, deb
 
 El usuario o la institución deben proteger el equipo y las exportaciones conforme a su contexto: control de acceso, cifrado del dispositivo cuando proceda, copias de seguridad autorizadas y manejo adecuado de información identificable.
 
-YomCeph Desktop v0.12.3 incorpora comprobaciones adicionales para advertir sobre cambios locales sin guardar antes de cerrar, cargar otro caso, cambiar de flujo o iniciar una actualización. Estas protecciones reducen el riesgo de pérdida accidental, pero no sustituyen las copias de seguridad ni las políticas institucionales de conservación.
+YomCeph Desktop v0.12.4 incorpora comprobaciones adicionales para advertir sobre cambios locales sin guardar antes de cerrar, cargar otro caso, cambiar de flujo o iniciar una actualización. Estas protecciones reducen el riesgo de pérdida accidental, pero no sustituyen las copias de seguridad ni las políticas institucionales de conservación.
 
 ## Público previsto
 

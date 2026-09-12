@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - '.github/workflows/capture-steiner-store-assets.yml'
+      - 'ci/prepare-steiner-play.py'
 
 permissions:
   contents: read
@@ -19,13 +20,14 @@ jobs:
       - name: Generate release source
         run: python3 ci/prepare-release-source.py
 
-      - name: Transform to Steiner-only edition
-        run: python3 ci/prepare-steiner-only.py
+      - name: Finalize Steiner Play edition
+        run: python3 ci/prepare-steiner-play.py
 
-      - name: Force Steiner package after base Play transform
+      - name: Verify Steiner identity
         run: |
-          sed -i "s/applicationId 'yom.Analisis'/applicationId 'com.yomceph.cefalometrico'/" app/build.gradle
           grep -F "applicationId 'com.yomceph.cefalometrico'" app/build.gradle
+          grep -F '<string name="app_name">YOM Steiner</string>' app/src/main/res/values/strings.xml
+          grep -F 'btnCarpal.setVisibility(android.view.View.GONE)' app/src/main/java/com/cefalo/angulos/MainActivity.java
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
@@ -59,6 +61,7 @@ jobs:
           api-level: 35
           arch: x86_64
           disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -prop persist.sys.locale=es-MX
           script: |
             mkdir -p store-assets
             adb shell wm size 1080x1920

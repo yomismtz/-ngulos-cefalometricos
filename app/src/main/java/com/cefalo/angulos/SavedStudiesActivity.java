@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -37,6 +38,7 @@ public class SavedStudiesActivity extends AppCompatActivity {
 
         TextView back = button("←", R.drawable.button_soft_purple_centered, getColor(R.color.brand_purple));
         back.setTextSize(24f);
+        back.setContentDescription("Volver");
         back.setOnClickListener(v -> finish());
         header.addView(back, new LinearLayout.LayoutParams(dp(48), dp(48)));
 
@@ -74,8 +76,7 @@ public class SavedStudiesActivity extends AppCompatActivity {
     private void refresh() {
         listContainer.removeAllViews();
 
-        List<SavedStudyStore.StudyData> studies =
-                SavedStudyStore.list(this);
+        List<SavedStudyStore.StudyData> studies = SavedStudyStore.list(this);
 
         if (studies.isEmpty()) {
             TextView empty = new TextView(this);
@@ -91,11 +92,10 @@ public class SavedStudiesActivity extends AppCompatActivity {
             return;
         }
 
-        DateFormat format =
-                DateFormat.getDateTimeInstance(
-                        DateFormat.SHORT,
-                        DateFormat.SHORT
-                );
+        DateFormat format = DateFormat.getDateTimeInstance(
+                DateFormat.SHORT,
+                DateFormat.SHORT
+        );
 
         for (SavedStudyStore.StudyData study : studies) {
             LinearLayout card = new LinearLayout(this);
@@ -121,7 +121,7 @@ public class SavedStudiesActivity extends AppCompatActivity {
             TextView patient = new TextView(this);
             String patientText =
                     study.patientName == null || study.patientName.trim().isEmpty()
-                            ? "Paciente sin nombre"
+                            ? "Sin identificador"
                             : study.patientName;
 
             if (study.patientAge != null && !study.patientAge.trim().isEmpty()) {
@@ -143,17 +143,17 @@ public class SavedStudiesActivity extends AppCompatActivity {
             TextView type = new TextView(this);
             String typeText;
             if ("VERTEBRAL".equals(study.mode)) {
-                typeText = "Análisis vertebral / Rocabado";
+                typeText = "Postura cráneo-cervical e hioides";
             } else if ("POWELL".equals(study.mode)) {
-                typeText = "Análisis de Powell";
+                typeText = "Perfil facial";
             } else if ("TWEED".equals(study.mode)) {
-                typeText = "Análisis de Tweed";
+                typeText = "Triángulo dentofacial";
             } else if ("LEVANDOSKI".equals(study.mode)) {
-                typeText = "Análisis panorámico de Levandoski";
+                typeText = "Simetría panorámica";
             } else if ("AIRWAY".equals(study.mode)) {
-                typeText = "Análisis de vía aérea";
+                typeText = "Vía aérea superior";
             } else {
-                typeText = "Análisis de Steiner";
+                typeText = "Análisis cefalométrico";
             }
             type.setText(typeText);
             type.setTextColor(getColor(R.color.text_primary));
@@ -190,21 +190,14 @@ public class SavedStudiesActivity extends AppCompatActivity {
             );
 
             open.setOnClickListener(v -> {
-                Intent intent = new Intent(
-                        this,
-                        AnalysisActivity.class
-                );
+                Intent intent = new Intent(this, AnalysisActivity.class);
                 intent.putExtra("STUDY_ID", study.id);
                 startActivity(intent);
             });
 
             row.addView(
                     open,
-                    new LinearLayout.LayoutParams(
-                            0,
-                            dp(50),
-                            1f
-                    )
+                    new LinearLayout.LayoutParams(0, dp(50), 1f)
             );
 
             TextView delete = button(
@@ -213,12 +206,11 @@ public class SavedStudiesActivity extends AppCompatActivity {
                     getColor(R.color.mint_text)
             );
 
-            LinearLayout.LayoutParams deleteLp =
-                    new LinearLayout.LayoutParams(
-                            0,
-                            dp(50),
-                            1f
-                    );
+            LinearLayout.LayoutParams deleteLp = new LinearLayout.LayoutParams(
+                    0,
+                    dp(50),
+                    1f
+            );
             deleteLp.setMargins(dp(8), 0, 0, 0);
             row.addView(delete, deleteLp);
 
@@ -226,19 +218,25 @@ public class SavedStudiesActivity extends AppCompatActivity {
                     new AlertDialog.Builder(this)
                             .setTitle("Eliminar análisis")
                             .setMessage(
-                                    "¿Desea eliminar \"" +
-                                    name.getText() +
-                                    "\"?"
+                                    "¿Desea eliminar \"" + name.getText() + "\"?"
                             )
                             .setNegativeButton("Cancelar", null)
                             .setPositiveButton(
                                     "Eliminar",
                                     (dialog, which) -> {
-                                        SavedStudyStore.delete(
+                                        boolean deleted = SavedStudyStore.delete(
                                                 this,
                                                 study.id
                                         );
-                                        refresh();
+                                        if (deleted) {
+                                            refresh();
+                                        } else {
+                                            Toast.makeText(
+                                                    this,
+                                                    "No se pudo eliminar el análisis. Inténtelo de nuevo.",
+                                                    Toast.LENGTH_LONG
+                                            ).show();
+                                        }
                                     }
                             )
                             .show()
@@ -246,16 +244,13 @@ public class SavedStudiesActivity extends AppCompatActivity {
 
             card.addView(row);
 
-            int availableWidth =
-                    getResources().getDisplayMetrics().widthPixels - dp(28);
-            int cardWidth =
-                    Math.min(availableWidth, dp(560));
+            int availableWidth = getResources().getDisplayMetrics().widthPixels - dp(28);
+            int cardWidth = Math.min(availableWidth, dp(560));
 
-            LinearLayout.LayoutParams cardLp =
-                    new LinearLayout.LayoutParams(
-                            cardWidth,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                    );
+            LinearLayout.LayoutParams cardLp = new LinearLayout.LayoutParams(
+                    cardWidth,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
             cardLp.gravity = Gravity.CENTER_HORIZONTAL;
             cardLp.setMargins(0, 0, 0, dp(12));
 
@@ -263,11 +258,7 @@ public class SavedStudiesActivity extends AppCompatActivity {
         }
     }
 
-    private TextView button(
-            String text,
-            int bg,
-            int color
-    ) {
+    private TextView button(String text, int bg, int color) {
         TextView view = new TextView(this);
         view.setText(text);
         view.setGravity(Gravity.CENTER);

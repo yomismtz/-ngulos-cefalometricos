@@ -23,6 +23,9 @@ jobs:
       - name: Finalize Steiner Play edition
         run: python3 ci/prepare-steiner-play.py
 
+      - name: Use Spanish resources for localized store capture
+        run: rm -rf app/src/main/res/values-en
+
       - name: Verify Steiner identity
         run: |
           grep -F "applicationId 'com.yomceph.cefalometrico'" app/build.gradle
@@ -63,12 +66,6 @@ jobs:
           disable-animations: true
           script: |
             mkdir -p store-assets
-            adb shell setprop persist.sys.locale es-MX
-            adb shell stop
-            sleep 5
-            adb shell start
-            adb wait-for-device
-            sleep 12
             adb shell wm size 1080x1920
             adb shell wm density 420
             adb install -r app/build/outputs/apk/debug/app-debug.apk

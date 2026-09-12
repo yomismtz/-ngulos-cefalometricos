@@ -15,9 +15,11 @@ def test_version_is_consistent_across_distribution_and_installer():
     version = _read(DESKTOP / "VERSION").strip()
     assert re.fullmatch(r"\d+\.\d+\.\d+", version)
 
-    distribution = _read(DESKTOP / "yomceph_desktop_v123_hardening.py")
+    personalization = _read(DESKTOP / "yomceph_desktop_v124_personalization.py")
+    final_entry = _read(DESKTOP / "yomceph_desktop_v124_final.py")
     installer = _read(DESKTOP / "YomCeph_v0120.iss")
-    assert f'APP_VERSION = "{version}"' in distribution
+    assert f'APP_VERSION = "{version}"' in personalization
+    assert "YomCephV124Final" in final_entry
     assert f'#define MyAppVersion "{version}"' in installer
     assert "OutputBaseFilename=YomCeph_Desktop_Setup_v{#MyAppVersion}" in installer
 
@@ -29,21 +31,19 @@ def test_installer_identity_stays_stable_for_in_place_updates():
 
 
 def test_public_distribution_uses_verified_release_updater():
-    hardening = _read(DESKTOP / "yomceph_desktop_v123_hardening.py")
-    distribution = _read(DESKTOP / "yomceph_desktop_v120_distribution.py")
+    final_entry = _read(DESKTOP / "yomceph_desktop_v124_final.py")
     updater = _read(DESKTOP / "yomceph_updater.py")
-    assert "fetch_latest_update" in hardening
-    assert "download_verified_installer" in hardening
-    assert "YomCephV120Distribution" in distribution
+    assert "fetch_latest_update" in final_entry
+    assert "download_verified_installer" in final_entry
     assert "sha256_file" in updater
     assert "YomCeph_Desktop_Setup.exe.sha256" in updater
-    assert "https://api.github.com/repos/yomismtz/-ngulos-cefalometricos/releases/latest" in updater
+    assert "https://api.github.com/repos/yomismtz/Cefalometria-/releases/latest" in updater
 
 
 def test_website_download_is_version_independent_latest_release_link():
     js = _read(WEBSITE / "app.js")
     privacy = _read(WEBSITE / "privacy.html")
-    stable = "https://github.com/yomismtz/-ngulos-cefalometricos/releases/latest/download/YomCeph_Desktop_Setup.exe"
+    stable = "https://github.com/yomismtz/Cefalometria-/releases/latest/download/YomCeph_Desktop_Setup.exe"
     assert stable in js
     assert stable in privacy
 

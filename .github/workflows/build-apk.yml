@@ -117,10 +117,10 @@ jobs:
           script: |
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c
-            adb shell am force-stop com.yomceph.app
-            adb shell am start -W -n com.yomceph.app/com.cefalo.angulos.MainActivity
+            adb shell am force-stop yom.Analisis
+            adb shell am start -W -n yom.Analisis/com.cefalo.angulos.MainActivity
             sleep 4
-            test -n "$(adb shell pidof com.yomceph.app | tr -d '\r')"
+            test -n "$(adb shell pidof yom.Analisis | tr -d '\r')"
             echo "Launcher remained alive after cold start"
 
       - name: Build release App Bundle

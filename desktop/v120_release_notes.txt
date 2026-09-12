@@ -1,0 +1,18 @@
+YomCeph Desktop v0.12.0 — candidata de prueba
+
+- Inicio por objetivo: Caso individual o Investigación.
+- Distribución pública neutral: sin universidad, escuela, clínica, país, muestra o estudio preconfigurados.
+- Barra superior compacta y paneles laterales responsivos.
+- Constructor de investigaciones con muestra 1–1000 y aumento opcional.
+- Rango de edad y elegibilidad del caso.
+- Criterios de inclusión/exclusión.
+- Variables de grupo configurables por el usuario (centro, caso/control, pre/post, etc.).
+- Selección combinable de análisis y mediciones.
+- Landmarks filtrados según resultados seleccionados.
+- Separación estricta entre casos individuales e investigaciones.
+- Exportación Excel + CSV UTF-8 + sintaxis IBM SPSS.
+- Steiner, postura, Powell, Wits, Björk–Jarabak, YEN y W disponibles.
+- Catálogo explícito de módulos En validación / Otra proyección.
+- Referencia Steiner clásica opcional; no se incluye un protocolo institucional preconfigurado.
+- Migración neutral de datos creados con versiones anteriores.
+- Pruebas automáticas de catálogo, geometría y reglas metodológicas.

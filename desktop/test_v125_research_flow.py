@@ -88,7 +88,11 @@ def test_manual_radiograph_reason_excludes_but_is_structured():
     assert reasons == [reason]
 
 
-def test_reproducible_analyses_are_unlocked_and_noncanonical_ones_stay_blocked():
+def test_v125_reproducible_blocks_remain_available_in_current_catalog():
+    # El catálogo es mutable y v0.12.6 añade análisis posteriores durante la
+    # colección de pruebas. Aquí sólo se protege el bloque que v0.12.5 activó;
+    # el contrato histórico de qué NO activó v0.12.5 se comprueba por fuente en
+    # test_v120_distribution_contract.py.
     for analysis_id in ("tweed", "mcnamara", "airway", "rocabado", "downs"):
         assert catalog.ANALYSES[analysis_id]["status"] == catalog.STATUS_ACTIVE
         active = [
@@ -97,8 +101,6 @@ def test_reproducible_analyses_are_unlocked_and_noncanonical_ones_stay_blocked()
             if spec.get("analysis") == analysis_id and spec.get("status") == catalog.STATUS_ACTIVE
         ]
         assert active
-    for analysis_id in ("ricketts", "cogs", "sassouni", "bimler", "g_triangle"):
-        assert catalog.ANALYSES[analysis_id]["status"] != catalog.STATUS_ACTIVE
     assert catalog.ANALYSES["ritucci"]["status"] == catalog.STATUS_OTHER_PROJECTION
     assert catalog.ANALYSES["alexander"]["status"] == catalog.STATUS_REFERENCE_ONLY
 
@@ -136,6 +138,8 @@ def test_tweed_and_mcnamara_geometry_is_independent_of_reference_norms_and_mirro
         "McNamara · Co–Gn",
         "McNamara · ANS–Me",
         "McNamara · FH–GoMe",
+        # Compatibilidad histórica de v0.12.5. v0.12.6 elimina este resultado
+        # porque el eje facial de Ricketts usa Pt, no Ptm.
         "McNamara · eje facial BaN–PtmGn",
     ):
         assert key in a and key in b

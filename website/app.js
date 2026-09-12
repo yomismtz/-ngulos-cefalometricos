@@ -1,6 +1,15 @@
 (() => {
+  const APP_VERSION = '0.12.3';
   const DOWNLOAD_URL = 'https://github.com/yomismtz/-ngulos-cefalometricos/releases/latest/download/YomCeph_Desktop_Setup.exe';
   const isEnglish = document.documentElement.lang.toLowerCase().startsWith('en');
+
+  // Mantiene visible la versión distribuida aunque el enlace de descarga sea
+  // estable y siempre apunte a la última Release.
+  document.querySelectorAll('.eyebrow').forEach((node) => {
+    if (node.textContent.trim().startsWith('YomCeph Desktop')) {
+      node.textContent = `YomCeph Desktop · v${APP_VERSION}`;
+    }
+  });
 
   const button = document.getElementById('language-toggle');
   if (button) {
@@ -12,8 +21,6 @@
     });
   }
 
-  // El enlace es estable: cada nueva Release sustituye el destino "latest" sin
-  // tener que cambiar manualmente la web.
   const nav = document.querySelector('.main-nav');
   if (nav && !nav.querySelector('[data-yomceph-download]')) {
     const link = document.createElement('a');

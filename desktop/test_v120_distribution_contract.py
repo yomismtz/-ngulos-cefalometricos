@@ -15,11 +15,10 @@ def test_version_is_consistent_across_distribution_and_installer():
     version = _read(DESKTOP / "VERSION").strip()
     assert re.fullmatch(r"\d+\.\d+\.\d+", version)
 
-    research_flow = _read(DESKTOP / "yomceph_desktop_v125_research_flow.py")
-    final_entry = _read(DESKTOP / "yomceph_desktop_v125_final.py")
+    final_entry = _read(DESKTOP / "yomceph_desktop_v126_final.py")
     installer = _read(DESKTOP / "YomCeph_v0120.iss")
-    assert f'APP_VERSION = "{version}"' in research_flow
-    assert "YomCephV125Final" in final_entry
+    assert f'APP_VERSION = "{version}"' in final_entry
+    assert "YomCephV126Final" in final_entry
     assert f'#define MyAppVersion "{version}"' in installer
     assert "OutputBaseFilename=YomCeph_Desktop_Setup_v{#MyAppVersion}" in installer
 
@@ -73,7 +72,7 @@ def test_public_i18n_does_not_expose_institutional_profile():
         assert forbidden not in i18n
 
 
-def test_v125_keeps_noncanonical_analyses_blocked():
+def test_v125_historical_layer_did_not_fabricate_noncanonical_analyses():
     extended = _read(DESKTOP / "yomceph_v125_extended_analyses.py")
     assert 'catalog.ANALYSES["tweed"].update' in extended
     assert 'catalog.ANALYSES["mcnamara"].update' in extended
@@ -82,3 +81,12 @@ def test_v125_keeps_noncanonical_analyses_blocked():
     assert 'catalog.ANALYSES["downs"].update' in extended
     for forbidden_unlock in ('["ricketts"].update', '["cogs"].update', '["sassouni"].update', '["bimler"].update', '["g_triangle"].update'):
         assert forbidden_unlock not in extended
+
+
+def test_v126_activates_only_documented_lateral_blocks_and_keeps_projection_limits():
+    source = _read(DESKTOP / "yomceph_v126_remaining_analyses.py")
+    for analysis_id in ("ricketts", "cogs", "sassouni", "bimler", "g_triangle"):
+        assert f'catalog.ANALYSES["{analysis_id}"].update' in source
+    assert 'catalog.ANALYSES["alexander"].update(status=catalog.STATUS_REFERENCE_ONLY' in source
+    assert 'catalog.ANALYSES["ritucci"].update(status=catalog.STATUS_OTHER_PROJECTION' in source
+    assert "Pt ≠ Ptm" in source

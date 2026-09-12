@@ -15,7 +15,7 @@ def test_version_is_consistent_across_distribution_and_installer():
     version = _read(DESKTOP / "VERSION").strip()
     assert re.fullmatch(r"\d+\.\d+\.\d+", version)
 
-    distribution = _read(DESKTOP / "yomceph_desktop_v120_distribution.py")
+    distribution = _read(DESKTOP / "yomceph_desktop_v123_hardening.py")
     installer = _read(DESKTOP / "YomCeph_v0120.iss")
     assert f'APP_VERSION = "{version}"' in distribution
     assert f'#define MyAppVersion "{version}"' in installer
@@ -29,10 +29,12 @@ def test_installer_identity_stays_stable_for_in_place_updates():
 
 
 def test_public_distribution_uses_verified_release_updater():
+    hardening = _read(DESKTOP / "yomceph_desktop_v123_hardening.py")
     distribution = _read(DESKTOP / "yomceph_desktop_v120_distribution.py")
     updater = _read(DESKTOP / "yomceph_updater.py")
-    assert "fetch_latest_update" in distribution
-    assert "download_verified_installer" in distribution
+    assert "fetch_latest_update" in hardening
+    assert "download_verified_installer" in hardening
+    assert "YomCephV120Distribution" in distribution
     assert "sha256_file" in updater
     assert "YomCeph_Desktop_Setup.exe.sha256" in updater
     assert "https://api.github.com/repos/yomismtz/-ngulos-cefalometricos/releases/latest" in updater

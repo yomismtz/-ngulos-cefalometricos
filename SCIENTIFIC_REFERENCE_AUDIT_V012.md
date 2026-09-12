@@ -1,154 +1,258 @@
-# YomCeph v0.12.0 — Auditoría científica de análisis, landmarks y referencias
+# YomCeph v0.12.6 — Auditoría científica de análisis, landmarks y referencias
 
 **Fecha de revisión:** 11 de septiembre de 2026  
-**Alcance:** telerradiografía lateral de cráneo, salvo que se indique otra proyección.
+**Alcance:** telerradiografía lateral de cráneo, salvo que se indique expresamente otra proyección.
 
-YomCeph distingue entre **geometría de una medición**, **conjunto de referencia publicado** e **interpretación clínica**. Un valor puede calcularse correctamente sin que exista una norma universal aplicable a toda edad, sexo o población.
+YomCeph separa **geometría**, **referencia poblacional** e **interpretación**. Una medición puede estar geométricamente bien implementada sin que exista una norma universal para todas las edades, sexos o poblaciones. La etiqueta **Disponible** significa que existe un bloque reproducible y probado; no implica que todos los componentes históricos del análisis estén automatizados ni que YomCeph realice un diagnóstico clínico.
 
 ## Principios de implementación
 
-- La distribución pública es neutral: no incluye universidad, escuela, clínica, país, muestra ni investigación preconfigurados.
-- Los valores crudos se conservan independientemente de la referencia seleccionada.
-- Cuando se utiliza una referencia publicada, queda identificada como tal y separada de cualquier protocolo propio del usuario.
-- Una medición nueva sólo se activa cuando sus landmarks y geometría pueden definirse de forma reproducible.
-- Un análisis incompleto permanece visible como **En validación**; YomCeph no fabrica resultados.
-- Ritucci–Burstone se marca **Otra proyección**, porque el método publicado para asimetría utiliza submentovertex (SMV), no lateral.
-- “Prevalencia” sólo se calcula para categorías con una regla explícita; las variables continuas se resumen con n, media, DE, mínimo y máximo.
+- La distribución pública es neutral: no incluye universidad, clínica, país, muestra ni investigación preconfigurados.
+- El valor crudo se conserva independientemente de la referencia seleccionada.
+- Las normas poblacionales no intervienen en la construcción geométrica de un ángulo o una distancia.
+- Las mediciones lineales en milímetros requieren calibración.
+- Un bloque nuevo sólo se activa cuando sus landmarks, geometría, unidad y convención de signo/sector pueden reproducirse.
+- Las referencias dependientes de edad/sexo/población no se convierten en una “normalidad” universal.
+- Una lateral 2D no se usa para diagnosticar apnea u obstrucción por sí sola.
+- Ritucci–Burstone permanece como **Otra proyección** porque el método de asimetría publicado usa submentovertex (SMV).
+- Alexander permanece como **Referencia** porque la literatura localizada describe principalmente la Alexander Discipline y no un único análisis cefalométrico canónico equivalente a Steiner.
 
-## Separación entre geometría y norma
+## Geometría antes que norma
 
-Versiones históricas contenían `closest_supplement(theta, target)`, que elegía un ángulo o su suplemento según cuál quedaba más cerca de un valor esperado. Esa estrategia se conserva en archivos heredados únicamente para compatibilidad de versiones antiguas, pero **la entrada pública v0.12 ya no utiliza esa decisión para sus resultados activos**.
+Las versiones heredadas contenían rutas que podían elegir un ángulo o su suplemento por proximidad a un valor esperado. La entrada pública actual recalcula las mediciones activas con reglas geométricas explícitas. Entre otras:
 
-La candidata pública recalcula antes de mostrar o guardar:
+- SN–PoOr, SN–GoGn y AB–GoGn: sector agudo.
+- IS–SN: sector obtuso del eje incisivo respecto de SN.
+- SN–OPT y SN–CVT: sector obtuso/inferiormente abierto.
+- MGP–OP: sector obtuso McGregor/plano odontoideo.
+- Powell nasomental: sector obtuso entre tangente dorsonasal y Prn–Pg′.
+- Powell mentocervical: vectores anatómicamente ordenados G′→Pg′ y Me′→C.
 
-- SN–PoOr, SN–GoGn y AB–GoGn como el sector agudo entre sus líneas.
-- IS–SN como el sector obtuso del eje del incisivo superior respecto de SN.
-- SN–OPT y SN–CVT como el sector obtuso/inferiormente abierto descrito en la metodología de postura craneocervical.
-- MGP–OP como el sector obtuso entre McGregor y el plano odontoideo.
-- MGP–CVT con la dirección anatómica explícita de las líneas, sin valor objetivo.
-- Powell nasomental como el sector obtuso entre la tangente dorsonasal y Prn–Pg'.
-- Powell mentocervical mediante los vectores anatómicamente ordenados G'→Pg' y Me'→C.
+Las pruebas incluyen reflexión izquierda/derecha para evitar que el resultado cambie sólo por orientación de la imagen.
 
-Estas reglas están implementadas en funciones geométricas puras y tienen pruebas de reflexión izquierda/derecha. Por tanto, cambiar una referencia normativa no puede cambiar el valor geométrico medido.
+## Steiner — disponible
 
-**Fuentes de orientación:** Solow B, Tallgren A. *Am J Phys Anthropol*. 1976;44:417-435. PMID: 937521. Revisiones de postura describen SN/OPT y SN/CVT como ángulos de apertura inferior. Para el ángulo craneocervical de Rocabado se usa la intersección McGregor/plano odontoideo con intervalo de referencia 96–106° (PMCID: PMC7710100).
+Incluye el bloque esquelético, vertical, dentoalveolar y de tejidos blandos ya auditado. La opción **Sin clasificación automática** conserva el valor crudo sin inyectar una norma heredada. Una referencia clásica sólo se usa cuando el usuario la selecciona explícitamente.
 
-## Steiner
+**Fuentes:** Steiner CC. *Am J Orthod*. 1953; PMCID PMC8686945.
 
-Landmarks principales: S, N, A, B, D, Pg, Po, Or, ANS, PNS, Ar, Go, Me, Gn, CI, ejes incisivos, plano oclusal y tejidos blandos para línea S.
+## Wits — disponible
 
-Una tabla contemporánea que reproduce valores tradicionales reporta aproximadamente SNA 82°, SNB 80°, ANB 2°, SN-GoGn 32°, plano oclusal-SN 14°, U1-NA 22°/4 mm, L1-NB 25°/4 mm y línea S 0 mm. En la versión pública, el usuario puede trabajar **Sin clasificación automática** o seleccionar una referencia clásica publicada. No se incluye una referencia institucional propia como opción preconfigurada.
+A y B se proyectan perpendicularmente sobre el plano oclusal funcional para obtener AO y BO. La dirección posterior→anterior del plano fija el signo. La referencia original varía según sexo y convención.
 
-Cuando se selecciona **Sin clasificación**, las columnas `norm`, `sd`, `difference` y `diagnosis` quedan vacías para las mediciones Steiner: no se inyectan valores heredados. Una base histórica importada puede conservar internamente una referencia `legacy_imported` exclusivamente para reproducibilidad; no se ofrece como una universidad o protocolo público seleccionable.
+**Fuente:** Jacobson A. *Am J Orthod*. 1975;67(2):125–138. PMID 1054214.
 
-**Fuentes:** Steiner CC. *Am J Orthod*. 1953; PMCID: PMC8686945.
+## YEN y W — disponibles
 
-## Wits appraisal — activo
+YEN usa S–M–G con vértice M; W usa M–G y la perpendicular desde M a S–G. M y G se describen mediante las construcciones circulares publicadas, no como simples “puntos medios”.
 
-Landmarks: A, B y plano oclusal funcional. A y B se proyectan perpendicularmente para obtener AO y BO y se mide su separación sobre el plano. La referencia original de Jacobson depende del sexo y de la convención de signo, por lo que YomCeph conserva el valor crudo y documenta la dirección anatómica posterior→anterior.
+**Fuentes:** PMID 19582259; PMID 21303811.
 
-**Fuente:** Jacobson A. *Am J Orthod*. 1975;67(2):125-138. PMID: 1054214.
+## Björk–Jarabak — disponible
 
-## YEN y W — activos
+Incluye ángulos silla, articular y gonial, suma angular, S–N, S–Ar, Ar–Go, Go–Me, S–Go, N–Me y ratio S–Go/N–Me ×100. Las longitudes requieren calibración y sus referencias cambian según población/edad/sexo.
 
-Landmarks: S, M y G. YEN es el ángulo S-M-G. Referencia original: 117–123° Clase I, <117° Clase II, >123° Clase III. El ángulo W utiliza M-G y la perpendicular desde M a S-G; referencia original 51–56° Clase I, <51° Clase II, >56° Clase III.
+**Fuente:** PMCID PMC6191777.
 
-Para reducir ambigüedad, M y G se describen mediante la construcción de los mayores círculos inscritos correspondientes en premaxila y sínfisis mandibular, no como simples “puntos medios”.
+## Postura craneocervical / Solow–Tallgren — disponible como geometría descriptiva
 
-**Fuentes:** Neela PK et al. PMID: 19582259; Bhad WA et al. PMID: 21303811.
+Incluye SN–OPT, SN–CVT, OPT–CVT, tangentes cervicales, MGP–CVT y profundidad cervical. No se asigna una única norma universal.
 
-## Björk–Jarabak — activo
+**Fuentes:** Solow B, Tallgren A. PMID 937521; revisión PMCID PMC4009738.
 
-Landmarks: N, S, Ar, Go y Me. Incluye ángulos silla, articular y gonial, suma angular, S-N, S-Ar, Ar-Go, Go-Me, S-Go, N-Me y ratio S-Go/N-Me ×100. Las longitudes absolutas requieren calibración y las referencias varían por población, edad y sexo.
+## Powell — disponible
 
-Referencias históricas reproducidas: silla 123±6°, articular 143±5°, gonial 130±6°, suma 396±5°, S-Ar 32±3 mm, S-N 71±3 mm, Ar-Go 44±5 mm, Go-Me 71±5 mm, S-Go 77.5±7.5 mm, N-Me 112.5±7.5 mm y ratio 63.5±1.5%.
+Dn y Prn son landmarks distintos. Se calculan los ángulos nasofrontal, nasofacial, nasomental y mentocervical. Los rangos estéticos, cuando se muestran, son referencias y no diagnóstico.
 
-**Fuente:** PMCID: PMC6191777.
+## Tweed — disponible
 
-## Postura craneofacial / Solow–Tallgren — activa como variables descriptivas
+Se calculan FMA, FMIA e IMPA a partir de Frankfort, plano mandibular y eje del incisivo inferior. El sector se define por la geometría, no por proximidad a una norma.
 
-Landmarks actuales: S, N, cv2ip, cv2tg, cv4ip, pares posteriores C2–C7, PC, PNS, C0, Ops y Opi. Se calculan SN-OPT, SN-CVT, OPT-CVT, tangente posterior C2-C7, MGP-CVT y profundidad cervical. La literatura define SN/OPT y SN/CVT como relaciones angulares entre SN y las tangentes cervicales; varias publicaciones especifican la apertura inferior. No se asigna una única “normal universal” a los ángulos posturales: dependen de técnica, edad, postura y población.
+**Fuente primaria:** Tweed CH, trabajos sobre Frankfort-mandibular incisor angle y triángulo diagnóstico de Tweed.
 
-**Fuentes:** Solow B, Tallgren A. PMID: 937521; revisión PMCID: PMC4009738.
+## McNamara — núcleo reproducible disponible
 
-## Rocabado — parcialmente activo
+Se calculan:
 
-El ángulo craneocervical McGregor/plano odontoideo permanece disponible y su geometría ya no depende de una norma para elegir el suplemento. Para el módulo completo se requieren H, RGn, C3 anteroinferior y referencias C0/C1/C2 adicionales para el triángulo hioideo y espacios suboccipitales. Esas extensiones permanecen en validación hasta cerrar la geometría exacta.
+- A a N-perpendicular.
+- Pg a N-perpendicular.
+- Co–A.
+- Co–Gn.
+- Diferencia maxilomandibular Co–Gn − Co–A.
+- ANS–Me.
+- Plano mandibular respecto de Frankfort.
 
-**Fuentes de revisión:** PMCID: PMC4942290; PMC3555465; PMC11495177; PMC7710100.
+Las variables lineales requieren calibración. No se aplican automáticamente normas pediátricas/adultas o por sexo.
 
-## Powell — activo y corregido
+### Corrección Pt vs Ptm
 
-Landmarks: G', N', Dn, Prn, Pg', Me' y punto cervical C. Desde v0.9 YomCeph separa Dn de Prn: la dirección del dorso nasal usa N'–Dn y Prn sigue siendo la punta nasal. Rangos de referencia actuales: nasofrontal 115–130°, nasofacial 30–40°, nasomental 120–132° y mentocervical 80–95°. Se presentan como referencias estéticas, no diagnóstico de patología.
+En v0.12.5 existió una salida histórica denominada `BaN–PtmGn`. La auditoría bibliográfica mostró que el **eje facial de Ricketts** utiliza **Pt**, no Ptm. v0.12.6 retira esa medición del catálogo activo y la reemplaza por el eje facial correcto dentro del bloque Ricketts. Pt y Ptm quedan definidos como landmarks distintos.
 
-La construcción pública v0.12 ya no selecciona nasomental o mentocervical por cercanía a esos rangos: primero calcula el sector anatómico y después, de forma separada, puede compararlo con la referencia.
+**Fuentes:** McNamara JA Jr. *A method of cephalometric evaluation*. Am J Orthod. 1984; reproducción metodológica PMCID PMC8018756.
 
-**Fuentes:** literatura de perfil de Powell/Humphreys; definiciones concordantes en textos de cirugía facial y estudios contemporáneos de análisis de perfil.
+## Vía aérea 2D — disponible como morfometría descriptiva
 
-## McNamara y vías aéreas — en validación
+Se calculan las anchuras faríngeas superior e inferior mediante los puntos anteriores/posteriores correspondientes. No se infiere apnea, obstrucción ni patología a partir de una lateral aislada.
 
-Se han identificado Co y Ptm como landmarks prioritarios, además de puntos faríngeos superiores/inferiores. El catálogo contempla A a N-perpendicular, Pog a N-perpendicular, Co-A, Co-Gn, diferencia maxilomandibular, altura facial y variables 2D de vía aérea. No se aplicará una norma universal porque las referencias dependen de edad, sexo y población. Una lateral 2D no se utilizará para diagnosticar apnea u obstrucción por sí sola.
+## Rocabado — bloque reproducible disponible
 
-## Downs y Tweed — en validación
+Incluye MGP–OP y el bloque lineal C0–C1, C1–C2, C3–RGn, C3–H, H–RGn y distancia perpendicular de H a C3–RGn. Las distancias requieren calibración.
 
-Downs requiere validar orientación/signo del ángulo facial, convexidad, AB-plane, plano mandibular, eje Y y variables dentales. Tweed requiere cerrar la orientación de FMA, FMIA e IMPA antes de activar clasificación automática.
+**Fuentes de revisión:** PMCID PMC7710100, PMC4942290, PMC3555465, PMC11495177 y literatura de espacios cervicales/hioides.
 
-## Ricketts — en validación por edad
+## Downs — disponible y completado en v0.12.6
 
-Landmarks prioritarios: Pt, DC, CC, CF, Xi y Pm, además de los ya existentes. Varias referencias de Ricketts cambian con crecimiento, por lo que YomCeph no aplicará una norma adulta fija a niños y adolescentes.
+Además del ángulo facial, plano mandibular, eje Y, plano oclusal y variables dentales, v0.12.6 incorpora:
 
-## COGS / Burstone — en validación
+- convexidad N–A/A–Pg: magnitud geométrica con signo según la posición de A respecto de N–Pg;
+- plano A–B/N–Pg: magnitud aguda con signo anatómico explícito;
+- ángulo interincisal.
 
-Landmarks/construcciones: Ar, Ptm, N, A, B, Pg, ANS, PNS, Gn, Go, ejes incisivos, primeros molares y plano horizontal HP construido según COGS. Las tablas de referencia originales dependen del sexo y no deben extrapolarse automáticamente a otras poblaciones.
+La convención de signo se basa en el eje anatómico posterior→anterior de Frankfort y está desacoplada de cualquier valor normal.
 
-**Fuente primaria:** Burstone CJ et al. *J Oral Surg*. 1978;36:269-277. Referencias reproducidas en PMCID: PMC4252385 y PMC3723291.
+**Fuente primaria:** Downs WB. *Variations in facial relationships: their significance in treatment and prognosis*. Am J Orthod. 1948; reproducciones metodológicas en literatura indexada, entre ella PMCID PMC6266314.
 
-## Sassouni y Bimler — en validación documental
+## Ricketts — núcleo reproducible disponible en v0.12.6
 
-Sassouni requiere formalizar el centro de convergencia y las construcciones de arcos exactas; no se codificarán aproximaciones. Para Bimler, las publicaciones indexadas localizadas no aportan en sus resúmenes una especificación suficiente de todo el método; el módulo permanece en validación hasta revisar la metodología completa/original.
+### Landmarks nuevos
 
-## Alexander
+- **Pt:** punto pterigoideo de Ricketts, definido en relación con el borde inferior del foramen redondo y pared posterior de la fisura pterigomaxilar.
+- **Pm:** protuberance menti, transición de concavidad a convexidad del contorno anterior de la sínfisis.
+- **DC:** referencia del centro/cuello condilar usada con Xi.
+- **R1, R2, R3, R4:** límites para construir Xi.
+- **Xi:** se construye como centro del rectángulo de la rama; no se exige marcarlo manualmente.
 
-La literatura indexada localizada describe principalmente la Alexander Discipline como filosofía/técnica terapéutica. No se confirmó un único análisis cefalométrico canónico equivalente a Steiner, por lo que YomCeph no inventará uno bajo ese nombre.
+### Variables activas
 
-## Sagittal G-triangle — en validación
+- eje facial Ba–N/Pt–Gn;
+- profundidad facial FH/N–Pg;
+- plano mandibular FH/Go–Me;
+- altura facial inferior ANS–Xi–Pm;
+- arco mandibular DC–Xi/Xi–Pm;
+- profundidad maxilar FH/N–A;
+- convexidad A a N–Pg;
+- longitud del corpus Xi–Pm;
+- L1 a A–Pg en mm y °;
+- U6 a PTV.
 
-Requiere Ba, Bo, Po, Or, G y construcciones X/K antes de medir AXK/BXK. La construcción geométrica y las referencias poblacionales/por sexo deben implementarse y probarse antes de activar el módulo.
+### VERT
 
-**Fuente:** PMID: 34669681; PMCID: PMC8865203.
+El índice VERT combina componentes de Ricketts con referencias que cambian con el crecimiento. YomCeph v0.12.6 conserva los componentes crudos y **no produce una clasificación VERT automática sin una referencia etaria explícita**.
+
+**Fuentes:** reproducciones de componentes/landmarks en PMCID PMC7486496 y PMC3971129; referencias relacionadas con VERT y edad en PMCID PMC10625683.
+
+## COGS / Burstone — bloque de tejidos duros disponible en v0.12.6
+
+El plano horizontal (HP) se construye a **7° respecto de SN** y se orienta de forma coherente con Frankfort. Se incorporaron U6 y L6 para las variables dentales/oclusales.
+
+Variables implementadas:
+
+- Ar–Ptm // HP, Ptm–N // HP;
+- N–A–Pg;
+- N–A // HP, N–B // HP, N–Pg // HP;
+- N–ANS ⟂ HP, ANS–Gn ⟂ HP, PNS–N ⟂ HP;
+- MP–HP;
+- U1/U6 al piso nasal;
+- L1/L6 al plano mandibular;
+- PNS–ANS // HP;
+- Ar–Go, Go–Pg, B–Pg // MP, Ar–Go–Gn;
+- OP–HP, A–B // OP;
+- U1–NF y L1–MP angulares.
+
+Las tablas originales son específicas de sexo/población; YomCeph no las generaliza automáticamente.
+
+**Fuente primaria:** Burstone CJ, James RB, Legan H, Murphy GA, Norton LA. *Cephalometrics for orthognathic surgery*. J Oral Surg. 1978;36:269–277. PMID 273073. Reproducciones metodológicas: PMCID PMC4252385, PMC3244091 y PMC3723291.
+
+## Sassouni — núcleo estructural disponible en v0.12.6
+
+Se añadieron landmarks para la dirección supraorbitaria/basal y el plano mandibular. Se implementan las divergencias entre:
+
+- plano basal;
+- plano palatino ANS–PNS;
+- plano oclusal;
+- plano mandibular.
+
+El método histórico también usa un punto de convergencia **O** y arcos. Las fuentes describen una región/zona de convergencia y manuales posteriores proponen procedimientos gráficos, pero no se identificó una única construcción computacional suficientemente canónica para automatizar O sin introducir una decisión arbitraria. Por eso **O y los arcos siguen fuera del bloque activo**.
+
+**Fuentes:** Sassouni V. *A roentgenographic cephalometric analysis of cephalo-facio-dental relationships*. Am J Orthod. 1955;41:735–764; *Sassouni Plus Analysis*, Ohlendorf Company, 1987.
+
+## Bimler — núcleo verificable disponible en v0.12.6
+
+La revisión del artículo de Bimler y del libro técnico permitió implementar un subconjunto con construcción clara en el sistema de Frankfort:
+
+- F1: perfil superior N–A;
+- F2: perfil inferior A–B;
+- F3: inclinación mandibular Me–GoA;
+- F4: inclinación maxilar ANS–PNS;
+- F5: inclinación del clivus Cls–Cli;
+- F7: inclinación S–N;
+- ángulo de perfil F1+F2;
+- ángulo basal superior F4+F5;
+- ángulo basal inferior |F3|+|F4|;
+- ángulo basal total;
+- U1/FH, L1/FH e interincisal.
+
+F6, F8–F10 y el correlómetro **no se automatizan** hasta disponer de una construcción completa inequívoca en las fuentes revisadas.
+
+**Fuentes:** Bimler HP. *Bimler therapy. Part 1. Bimler cephalometric analysis*. J Clin Orthod. 1985;19(7):501–523. PMID 3861619. Bastien GB. *The Bimler Cephalometric Analysis*. Ortho Organizers; 1985.
+
+## Sagittal G-triangle — disponible en v0.12.6
+
+Se reproduce la construcción publicada:
+
+1. unir Ba–G y Po–Or; su intersección es I;
+2. usar la semirrecta Bo→I;
+3. desde G construir la recta que forma 60° con Bo–I; su intersección determina X;
+4. construir el triángulo equilátero invertido Bo–X–K;
+5. calcular AXK y BXK con signo según la posición anterior/posterior respecto de X–K.
+
+Para evitar colisión con el punto **G** de YEN/W, YomCeph denomina internamente **Gtri** a la glabela de tejido blando de este método.
+
+Los rangos del artículo original proceden de adultos jóvenes del sur de China y no se aplican como norma universal a niños u otras poblaciones.
+
+**Fuente:** Li B, Zhang Z, Lin X, Dong Y. *Sagittal Cephalometric Evaluation Without Point Nasion: Sagittal G-Triangle Analysis*. J Craniofac Surg. 2022;33(2):521–525. PMID 34669681; PMCID PMC8865203.
+
+## Alexander — referencia, no análisis activado
+
+La literatura localizada describe principalmente la Alexander Discipline como filosofía/técnica terapéutica. No se identificó un único análisis cefalométrico canónico comparable a Steiner que pueda codificarse sin inventar una definición.
 
 ## Ritucci–Burstone — otra proyección
 
-El sistema publicado para asimetría usa radiografía **submental-vertical (SMV)** y evalúa pares de landmarks. No se ofrecerá falsamente dentro del flujo “misma lateral de cráneo”.
+El método publicado de asimetría usa radiografía **submentovertex (SMV)** y pares de landmarks bilaterales. No se ofrecerá dentro del flujo de una lateral única.
 
-**Fuentes:** PMID: 8074089; PMID: 6584032.
+**Fuentes:** PMID 8074089; PMID 6584032.
 
-## Landmarks nuevos prioritarios
+## Investigación y elegibilidad
 
-M, G, Co, Ptm, H, C3 anteroinferior, RGn, Ba y Bo ya están incorporados al catálogo de expansión. En fases posteriores se añadirán los puntos faríngeos específicos, puntos de Ricketts (Pt/DC/CC/CF/Xi/Pm), molares COGS y referencias de C1 cuando sus definiciones queden cerradas.
+En investigación, el protocolo se activa sin abrir automáticamente la ficha del sujeto. Primero se abre la radiografía y se intenta el trazado. Al finalizar YomCeph evalúa:
+
+- edad respecto del rango del protocolo;
+- país/procedencia cuando se definió;
+- presencia de todos los landmarks requeridos;
+- calibración si existen variables lineales;
+- causas radiográficas documentadas por el investigador.
+
+Un caso excluido se conserva para trazabilidad y no cuenta como incluido.
 
 ## Estadística y exportación
 
-Para casos **incluidos** YomCeph calcula n válido, media, desviación estándar, mínimo y máximo. Las frecuencias del estudio distinguen todos los registros de la muestra incluida. Sólo reporta prevalencia (%) cuando existe una categoría explícita y reproducible y exporta además el denominador `N válido categorizado`.
-
-La exportación para IBM SPSS se hace mediante CSV UTF-8 con nombres de variables ASCII, válidos y únicos + archivo `.sps` de importación reproducible; el diccionario conserva simultáneamente el nombre humano y el nombre SPSS. No se crea un `.sav` falso.
+Para los casos incluidos se calculan n válido, media, DE, mínimo y máximo. La prevalencia sólo se reporta cuando existe una regla categórica explícita y exporta su denominador. Excel incluye Datos, Descriptivos, Frecuencias, Prevalencias, Diccionario, Protocolo e Historial protocolo. SPSS recibe CSV UTF-8 y sintaxis `.sps`; no se crea un `.sav` falso.
 
 ## Referencias principales verificadas
 
-1. Steiner CC. Cephalometrics for you and me. *Am J Orthod*. 1953.
-2. PMCID: PMC8686945 — tabla contemporánea basada en Steiner.
-3. Jacobson A. The Wits appraisal of jaw disharmony. PMID: 1054214.
-4. Neela PK, Mascarenhas R, Husain A. YEN angle. PMID: 19582259.
-5. Bhad WA, Nayak S, Doshi UH. W angle. PMID: 21303811.
-6. Björk–Jarabak norms. PMCID: PMC6191777.
-7. Solow B, Tallgren A. Head posture and craniofacial morphology. PMID: 937521.
-8. Cervical posture measurement review. PMCID: PMC4009738.
-9. Rocabado/cranio-cervical definition: PMCID: PMC7710100; PMC4942290; PMC3555465; PMC11495177.
-10. McNamara population comparison. PMCID: PMC8018756.
-11. Burstone/COGS: PMCID: PMC4252385; PMC3723291.
-12. Ricketts growth/landmarks: PMCID: PMC3971129.
-13. Sassouni validation: PMID: 2638077; arc analysis PMID: 4081484.
-14. Sagittal G-triangle: PMID: 34669681; PMCID: PMC8865203.
-15. Ritucci/Burstone SMV asymmetry: PMID: 8074089; 6584032.
+1. Steiner CC. *Cephalometrics for you and me*. Am J Orthod. 1953.
+2. Jacobson A. Wits appraisal. PMID 1054214.
+3. Neela PK et al. YEN angle. PMID 19582259.
+4. Bhad WA et al. W angle. PMID 21303811.
+5. Björk–Jarabak. PMCID PMC6191777.
+6. Solow B, Tallgren A. PMID 937521; revisión PMCID PMC4009738.
+7. McNamara JA Jr. *A method of cephalometric evaluation*. Am J Orthod. 1984; PMCID PMC8018756.
+8. Downs WB. *Variations in facial relationships*. Am J Orthod. 1948.
+9. Ricketts: PMCID PMC7486496, PMC3971129, PMC10625683.
+10. Burstone/COGS: PMID 273073; PMCID PMC4252385, PMC3244091, PMC3723291.
+11. Sassouni V. *Am J Orthod*. 1955;41:735–764; *Sassouni Plus Analysis*, 1987.
+12. Bimler HP. J Clin Orthod. 1985;19(7):501–523. PMID 3861619; Bastien GB, 1985.
+13. Sagittal G-triangle: PMID 34669681; PMCID PMC8865203.
+14. Ritucci–Burstone SMV: PMID 8074089; PMID 6584032.
 
-**Estado:** suficiente para activar de forma trazable Steiner, Postura como variables seleccionables, Powell, Wits, Björk–Jarabak y YEN/W. Los demás módulos permanecen visibles, pero no producen resultados hasta completar su validación geométrica y bibliográfica.
+**Estado v0.12.6:** disponibles los bloques reproducibles de Steiner, postura, Powell, Wits, Björk–Jarabak, YEN/W, Tweed, McNamara, vía aérea 2D descriptiva, Rocabado, Downs, Ricketts, COGS/Burstone, Sassouni estructural, Bimler y Sagittal G-triangle. Alexander permanece como referencia y Ritucci–Burstone como método de otra proyección.

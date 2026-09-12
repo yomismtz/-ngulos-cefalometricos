@@ -2,371 +2,174 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:fitsSystemWindows="true"
-    android:background="@drawable/bg_home"
-    android:padding="8dp">
-
-    <ScrollView
-        android:layout_width="330dp"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:scrollbars="none">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="8dp"
-                android:background="@drawable/header_gradient">
-
-                <TextView
-                    android:id="@+id/btnBack"
-                    android:layout_width="44dp"
-                    android:layout_height="48dp"
-                    android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-                    android:text="@string/back_arrow"
-            android:contentDescription="@string/back_accessibility"
-                    android:textSize="22sp"
-                    android:textColor="@color/brand_purple"
-                    android:background="@drawable/button_soft_purple_centered"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <TextView
-                    android:id="@+id/txtTitle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/analysis_title_placeholder"
-                    android:textColor="@color/white"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    android:maxLines="2"
-                    android:gravity="center"
-                    android:textAlignment="center" />
-
-                <TextView
-                    android:id="@+id/btnOpen"
-                    android:layout_width="78dp"
-                    android:layout_height="48dp"
-                    android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-                    android:text="@string/open_image"
-                    android:textStyle="bold"
-                    android:textSize="10.5sp"
-                    android:textColor="@color/mint_text"
-                    android:background="@drawable/button_soft_mint_centered"
-                    android:clickable="true"
-                    android:focusable="true" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtStudyInfo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/study_placeholder"
-                android:textColor="@color/brand_teal"
-                android:textStyle="bold"
-                android:textSize="11sp"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:paddingTop="6dp"
-                android:paddingBottom="4dp" />
-
-            
-    <TextView
-        android:id="@+id/txtAutosaveStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="24dp"
-        android:text="@string/autosave_ready"
-        android:textColor="@color/text_secondary"
-        android:textSize="11sp"
-        android:gravity="center"
-        android:textAlignment="center"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:paddingBottom="2dp" />
-
-<LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:id="@+id/txtCalibration"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:text="@string/linear_uncalibrated"
-                    android:textSize="10.5sp"
-                    android:textColor="@color/brand_teal"
-                    android:paddingLeft="5dp"
-                    android:paddingRight="5dp" />
-
-                <TextView
-                    android:id="@+id/btnCalibrate"
-                    android:layout_width="102dp"
-                    android:layout_height="48dp"
-                    android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-                    android:text="@string/calibrate"
-                    android:textStyle="bold"
-                    android:textSize="10.5sp"
-                    android:textColor="@color/mint_text"
-                    android:background="@drawable/button_soft_mint_centered"
-                    android:clickable="true"
-                    android:focusable="true" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtProgress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/point_selected"
-                android:textStyle="bold"
-                android:textSize="12sp"
-                android:textColor="@color/brand_purple"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp" />
-
-            <TextView
-                android:id="@+id/txtInstruction"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="92dp"
-                android:background="@drawable/card_point_help"
-                android:text="@string/instruction_placeholder"
-                android:textSize="11.5sp"
-                android:textColor="@color/text_primary"
-                android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:orientation="horizontal"
-                android:layout_marginTop="6dp">
-
-                <TextView
-                    android:id="@+id/btnPrevious"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textAlignment="center"
-                    android:includeFontPadding="false"
-                    android:text="@string/previous"
-                    android:textStyle="bold"
-                    android:textSize="10.5sp"
-                    android:textColor="@color/brand_purple"
-                    android:background="@drawable/button_soft_purple_centered"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginRight="4dp" />
-
-                <TextView
-                    android:id="@+id/btnNext"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textAlignment="center"
-                    android:includeFontPadding="false"
-                    android:text="@string/next"
-                    android:textStyle="bold"
-                    android:textSize="10.5sp"
-                    android:textColor="@color/brand_purple"
-                    android:background="@drawable/button_soft_purple_centered"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginLeft="4dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:orientation="horizontal"
-                android:layout_marginTop="7dp">
-
-                <TextView
-                    android:id="@+id/btnUndo"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textAlignment="center"
-            android:includeFontPadding="false"
-                    android:text="@string/undo_previous"
-                    android:textStyle="bold"
-                    android:textSize="10sp"
-                    android:textColor="@color/brand_purple"
-                    android:background="@drawable/button_soft_purple_centered"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginRight="4dp" />
-
-                <TextView
-                    android:id="@+id/btnReset"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textAlignment="center"
-            android:includeFontPadding="false"
-                    android:text="@string/delete_all_points"
-                    android:textStyle="bold"
-                    android:textSize="10sp"
-                    android:textColor="@color/brand_purple"
-                    android:background="@drawable/button_soft_purple_centered"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginLeft="4dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:orientation="horizontal"
-                android:layout_marginTop="6dp">
-
-                <TextView
-                    android:id="@+id/btnFit"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-                    android:text="@string/center_image"
-                    android:textStyle="bold"
-                    android:textSize="10sp"
-                    android:textColor="@color/mint_text"
-                    android:background="@drawable/button_soft_mint_centered"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginRight="3dp" />
-
-                <TextView
-                    android:id="@+id/btnSaveStudy"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1.25"
-                    android:gravity="center"
-                    android:textAlignment="center"
-                    android:includeFontPadding="false"
-                    android:text="@string/data_save"
-                    android:textStyle="bold"
-                    android:textSize="10sp"
-                    android:textColor="@color/mint_text"
-                    android:background="@drawable/button_soft_mint_centered"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginLeft="3dp"
-                    android:layout_marginRight="3dp" />
-
-                <TextView
-                    android:id="@+id/btnLock"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textAlignment="center"
-            android:includeFontPadding="false"
-                    android:text="@string/lock_trace"
-                    android:textStyle="bold"
-                    android:textSize="10sp"
-                    android:textColor="@color/brand_purple"
-                    android:background="@drawable/button_soft_purple_centered"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginLeft="3dp" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/btnCalculate"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:text="@string/calculate_analysis"
-                android:textStyle="bold"
-                android:textSize="12.5sp"
-                android:textColor="@color/white"
-                android:background="@drawable/button_primary_centered"
-                android:includeFontPadding="false"
-                android:padding="0dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:layout_marginTop="6dp" />
-        </LinearLayout>
-    </ScrollView>
+    android:background="@drawable/bg_home">
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:id="@+id/analysisHeader"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp"
+        android:background="@drawable/header_gradient">
+        <TextView android:id="@+id/btnBack" android:layout_width="48dp" android:layout_height="44dp"
+            android:gravity="center" android:textAlignment="center" android:includeFontPadding="false"
+            android:text="@string/back_arrow" android:contentDescription="@string/back_accessibility"
+            android:textSize="22sp" android:textColor="@color/brand_purple"
+            android:background="@drawable/button_soft_purple_centered" android:clickable="true" android:focusable="true" />
+        <TextView android:id="@+id/txtTitle" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:gravity="center" android:textAlignment="center"
+            android:text="@string/analysis_title_placeholder" android:textStyle="bold" android:textSize="14sp"
+            android:textColor="@color/white" android:maxLines="1" android:ellipsize="end" />
+        <TextView android:id="@+id/btnOpen" android:layout_width="80dp" android:layout_height="44dp"
+            android:gravity="center" android:textAlignment="center" android:includeFontPadding="false"
+            android:text="@string/open_image" android:textStyle="bold" android:textSize="10sp"
+            android:textColor="@color/mint_text" android:background="@drawable/button_soft_mint_centered"
+            android:clickable="true" android:focusable="true" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:paddingLeft="8dp">
+        android:orientation="horizontal"
+        android:padding="5dp">
 
         <com.cefalo.angulos.MeasurementView
             android:id="@+id/measurementView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_marginBottom="8dp"
             android:background="@drawable/panel_dark" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingTop="5dp"
-            android:paddingBottom="6dp"
-            android:background="@drawable/card_points_bar">
-
-            <TextView
+        <ScrollView
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:fillViewport="true"
+            android:scrollbars="none">
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/landmarks_bar"
-                android:textStyle="bold"
-                android:textSize="10sp"
-                android:textColor="@color/brand_purple"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:includeFontPadding="false"
-                android:paddingBottom="4dp" />
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
 
-            <com.cefalo.angulos.LandmarkFlowLayout
-                android:id="@+id/pointChips"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="2dp"
-                android:paddingRight="2dp" />
-        </LinearLayout>
+                <TextView android:id="@+id/txtStudyInfo" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:maxLines="2" android:ellipsize="end" android:gravity="center" android:textAlignment="center"
+                    android:text="@string/study_placeholder" android:textSize="10sp" android:textColor="@color/brand_teal"
+                    android:textStyle="bold" android:padding="3dp" />
+                <TextView android:id="@+id/txtAutosaveStatus" android:layout_width="match_parent" android:layout_height="20dp"
+                    android:gravity="center" android:textAlignment="center" android:text="@string/autosave_ready"
+                    android:textSize="9sp" android:textColor="@color/text_secondary" />
+
+                <LinearLayout android:id="@+id/calibrationRow" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:gravity="center">
+                    <TextView android:id="@+id/txtCalibration" android:layout_width="match_parent" android:layout_height="40dp"
+                        android:gravity="center" android:textAlignment="center" android:includeFontPadding="false"
+                        android:text="@string/linear_uncalibrated" android:textSize="9.5sp" android:textColor="@color/brand_teal"
+                        android:padding="3dp" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="44dp" android:orientation="horizontal">
+                        <TextView android:id="@+id/btnCalibrate" android:layout_width="0dp" android:layout_height="44dp"
+                            android:layout_weight="1" android:gravity="center" android:textAlignment="center"
+                            android:text="@string/calibrate" android:textStyle="bold" android:textSize="9.5sp"
+                            android:textColor="@color/mint_text" android:background="@drawable/button_soft_mint_centered"
+                            android:clickable="true" android:focusable="true" />
+                        <TextView android:id="@+id/btnVerifyCalibration" android:layout_width="0dp" android:layout_height="44dp"
+                            android:layout_weight="1" android:layout_marginLeft="3dp" android:gravity="center"
+                            android:textAlignment="center" android:text="@string/verify_calibration" android:textStyle="bold"
+                            android:textSize="9sp" android:textColor="@color/brand_purple"
+                            android:background="@drawable/button_soft_purple_centered" android:clickable="true" android:focusable="true" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/traceNavRow" android:layout_width="match_parent" android:layout_height="46dp"
+                    android:orientation="horizontal" android:gravity="center">
+                    <TextView android:id="@+id/btnPrevious" android:layout_width="46dp" android:layout_height="44dp"
+                        android:gravity="center" android:textAlignment="center" android:text="@string/previous_short"
+                        android:textSize="8.5sp" android:textColor="@color/brand_purple"
+                        android:background="@drawable/button_soft_purple_centered" android:clickable="true" android:focusable="true" />
+                    <TextView android:id="@+id/btnTraceUndo" android:layout_width="40dp" android:layout_height="44dp"
+                        android:gravity="center" android:textAlignment="center" android:text="@string/trace_undo"
+                        android:contentDescription="@string/trace_undo_accessibility" android:textSize="20sp"
+                        android:textColor="@color/brand_purple" android:background="@drawable/button_soft_purple_centered"
+                        android:clickable="true" android:focusable="true" />
+                    <TextView android:id="@+id/txtProgress" android:layout_width="0dp" android:layout_height="44dp"
+                        android:layout_weight="1" android:gravity="center" android:textAlignment="center"
+                        android:text="@string/point_selected" android:textStyle="bold" android:textSize="9.5sp"
+                        android:textColor="@color/brand_purple" android:maxLines="2" />
+                    <TextView android:id="@+id/btnNext" android:layout_width="46dp" android:layout_height="44dp"
+                        android:gravity="center" android:textAlignment="center" android:text="@string/next_short"
+                        android:textSize="8.5sp" android:textColor="@color/brand_purple"
+                        android:background="@drawable/button_soft_purple_centered" android:clickable="true" android:focusable="true" />
+                    <TextView android:id="@+id/btnTraceMode" android:layout_width="48dp" android:layout_height="44dp"
+                        android:gravity="center" android:textAlignment="center" android:text="@string/trace_mode_enter"
+                        android:textSize="8sp" android:textColor="@color/mint_text"
+                        android:background="@drawable/button_soft_mint_centered" android:clickable="true" android:focusable="true" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/helpRow" android:layout_width="match_parent" android:layout_height="54dp"
+                    android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:id="@+id/txtInstruction" android:layout_width="0dp" android:layout_height="52dp"
+                        android:layout_weight="1" android:gravity="center" android:textAlignment="center"
+                        android:maxLines="3" android:ellipsize="end" android:text="@string/instruction_placeholder"
+                        android:textSize="9sp" android:textColor="@color/text_primary" android:background="@drawable/card_point_help"
+                        android:clickable="true" android:focusable="true" android:padding="4dp" />
+                    <TextView android:id="@+id/btnWhereIs" android:layout_width="72dp" android:layout_height="48dp"
+                        android:layout_marginLeft="3dp" android:gravity="center" android:textAlignment="center"
+                        android:text="@string/where_is_point" android:textStyle="bold" android:textSize="8.5sp"
+                        android:textColor="@color/mint_text" android:background="@drawable/button_soft_mint_centered"
+                        android:clickable="true" android:focusable="true" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/pointStrip" android:layout_width="match_parent" android:layout_height="64dp"
+                    android:orientation="vertical" android:background="@drawable/card_points_bar" android:padding="3dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="14dp" android:gravity="center"
+                        android:textAlignment="center" android:text="@string/landmarks_bar" android:textStyle="bold"
+                        android:textSize="8.5sp" android:textColor="@color/brand_purple" />
+                    <HorizontalScrollView android:layout_width="match_parent" android:layout_height="48dp" android:scrollbars="none">
+                        <LinearLayout android:id="@+id/pointChips" android:layout_width="wrap_content" android:layout_height="48dp"
+                            android:orientation="horizontal" android:gravity="center_vertical" />
+                    </HorizontalScrollView>
+                </LinearLayout>
+
+                <HorizontalScrollView android:id="@+id/bottomControlsScroll" android:layout_width="match_parent"
+                    android:layout_height="54dp" android:scrollbars="none">
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="54dp"
+                        android:orientation="horizontal" android:gravity="center_vertical">
+                        <TextView android:id="@+id/btnUndo" android:layout_width="86dp" android:layout_height="46dp"
+                            android:gravity="center" android:textAlignment="center" android:text="@string/undo_previous"
+                            android:textSize="8.5sp" android:textColor="@color/brand_purple"
+                            android:background="@drawable/button_soft_purple_centered" android:clickable="true" android:focusable="true" />
+                        <TextView android:id="@+id/btnReset" android:layout_width="82dp" android:layout_height="46dp"
+                            android:gravity="center" android:textAlignment="center" android:text="@string/delete_all_points"
+                            android:textSize="8.5sp" android:textColor="@color/brand_purple"
+                            android:background="@drawable/button_soft_purple_centered" android:clickable="true" android:focusable="true" />
+                        <TextView android:id="@+id/btnFit" android:layout_width="72dp" android:layout_height="46dp"
+                            android:gravity="center" android:textAlignment="center" android:text="@string/center_image"
+                            android:textSize="8.5sp" android:textColor="@color/mint_text"
+                            android:background="@drawable/button_soft_mint_centered" android:clickable="true" android:focusable="true" />
+                        <TextView android:id="@+id/btnFineAdjust" android:layout_width="90dp" android:layout_height="46dp"
+                            android:gravity="center" android:textAlignment="center" android:text="@string/fine_adjust"
+                            android:textSize="8.5sp" android:textStyle="bold" android:textColor="@color/brand_purple"
+                            android:background="@drawable/button_soft_purple_centered" android:clickable="true" android:focusable="true" />
+                        <TextView android:id="@+id/btnSaveStudy" android:layout_width="84dp" android:layout_height="46dp"
+                            android:gravity="center" android:textAlignment="center" android:text="@string/data_save"
+                            android:textSize="8.5sp" android:textColor="@color/mint_text"
+                            android:background="@drawable/button_soft_mint_centered" android:clickable="true" android:focusable="true" />
+                        <TextView android:id="@+id/btnLock" android:layout_width="82dp" android:layout_height="46dp"
+                            android:gravity="center" android:textAlignment="center" android:text="@string/lock_trace"
+                            android:textSize="8.5sp" android:textColor="@color/brand_purple"
+                            android:background="@drawable/button_soft_purple_centered" android:clickable="true" android:focusable="true" />
+                        <TextView android:id="@+id/btnCalculate" android:layout_width="116dp" android:layout_height="46dp"
+                            android:gravity="center" android:textAlignment="center" android:text="@string/calculate_analysis"
+                            android:textSize="9sp" android:textStyle="bold" android:textColor="@color/white"
+                            android:background="@drawable/button_primary_centered" android:clickable="true" android:focusable="true" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+            </LinearLayout>
+        </ScrollView>
     </LinearLayout>
-
 </LinearLayout>

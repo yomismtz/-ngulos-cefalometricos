@@ -5,7 +5,8 @@ public class LinearMeasurementDefinition {
     public enum Type {
         DISTANCE,
         SIGNED_PERPENDICULAR,
-        PERPENDICULAR_ABS
+        PERPENDICULAR_ABS,
+        AXIAL_PROJECTION
     }
 
     public enum Interpretation {
@@ -53,14 +54,14 @@ public class LinearMeasurementDefinition {
     public String diagnosis(double valueMm) {
         if (interpretation == Interpretation.HYOID_TRIANGLE) {
             if (valueMm > 0.01) {
-                return "H está por debajo de la línea C3-RGn (triángulo hioideo positivo). Es una descripción cefalométrica y no un diagnóstico respiratorio.";
+                return "H está por debajo de la línea C3-RGn (triángulo hioideo positivo). Es una descripción cefalométrica; la magnitud debe interpretarse con la referencia utilizada y no diagnostica por sí sola una alteración respiratoria o postural.";
             }
 
             if (valueMm < -0.01) {
-                return "H está por encima de la línea C3-RGn (triángulo hioideo negativo). Es una descripción cefalométrica y no un diagnóstico respiratorio.";
+                return "H está por encima de la línea C3-RGn (triángulo hioideo negativo/invertido). Es una descripción cefalométrica y requiere correlación clínica.";
             }
 
-            return "H se encuentra prácticamente sobre la línea C3-RGn. Interpretar junto con el resto del trazado.";
+            return "H se encuentra prácticamente sobre la línea C3-RGn (triángulo lineal). Interpretar junto con el resto del trazado.";
         }
 
         if (interpretation == Interpretation.COMPARATIVE) {
@@ -68,19 +69,19 @@ public class LinearMeasurementDefinition {
         }
 
         if (interpretation == Interpretation.CERVICAL_DEPTH) {
-            if (valueMm < 2.0) {
-                return "Profundidad <2 mm: curvatura cifótica/invertida según la referencia Penning/Rocabado; requiere correlación clínica.";
+            if (valueMm < 0.0) {
+                return "Profundidad negativa: curvatura cervical cifótica/invertida según el método de Penning; correlacionar clínicamente.";
             }
 
             if (valueMm < 8.0) {
-                return "Profundidad de 2 a <8 mm: rectificación de la curvatura cervical según la referencia Penning/Rocabado.";
+                return "Profundidad de 0 a <8 mm: rectificación de la curvatura cervical según el método de Penning.";
             }
 
             if (valueMm <= 12.0) {
-                return "Profundidad de 8 a 12 mm: dentro del intervalo de referencia Penning/Rocabado.";
+                return "Profundidad de 8 a 12 mm: intervalo fisiológico de referencia del método de Penning (10 ± 2 mm).";
             }
 
-            return "Profundidad >12 mm: lordosis cervical aumentada según la referencia Penning/Rocabado; correlacionar clínicamente.";
+            return "Profundidad >12 mm: lordosis cervical aumentada/hiperlordosis según el método de Penning; correlacionar clínicamente.";
         }
 
         if (Double.isNaN(normalMin) || Double.isNaN(normalMax)) {

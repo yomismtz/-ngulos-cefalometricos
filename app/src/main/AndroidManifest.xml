@@ -12,6 +12,7 @@
         <activity android:name=".SavedStudiesActivity" android:exported="false" />
         <activity android:name=".InfoActivity" android:exported="false" />
         <activity android:name=".AnalysisActivity" android:exported="false" />
+        <activity android:name=".RadiographicAssessmentActivity" android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

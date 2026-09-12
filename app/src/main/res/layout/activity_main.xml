@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:fitsSystemWindows="true"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:fillViewport="true"
     android:background="@drawable/bg_home">
 
@@ -13,26 +13,26 @@
         android:gravity="center_horizontal"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:paddingTop="14dp"
+        android:paddingTop="12dp"
         android:paddingBottom="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="184dp"
+            android:layout_height="168dp"
             android:orientation="vertical"
             android:gravity="center"
             android:background="@drawable/cover_hero"
-            android:padding="14dp"
+            android:padding="12dp"
             android:elevation="4dp"
-            android:layout_marginBottom="18dp">
+            android:layout_marginBottom="14dp">
 
             <ImageView
                 android:id="@+id/imgLogo"
-                android:layout_width="86dp"
-                android:layout_height="86dp"
+                android:layout_width="78dp"
+                android:layout_height="78dp"
                 android:src="@drawable/ic_yomceph_foreground"
                 android:background="@drawable/cover_icon_circle"
-                android:padding="8dp"
+                android:padding="7dp"
                 android:scaleType="fitCenter"
                 android:contentDescription="@string/cd_yomceph_icon" />
 
@@ -41,127 +41,102 @@
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
                 android:textStyle="bold"
-                android:textSize="30sp"
+                android:textSize="28sp"
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:includeFontPadding="false"
-                android:layout_marginTop="5dp" />
+                android:layout_marginTop="4dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_slogan"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textColor="@color/hero_subtitle"
                 android:textStyle="bold"
                 android:gravity="center"
                 android:textAlignment="center"
                 android:includeFontPadding="false"
-                android:layout_marginTop="4dp" />
+                android:layout_marginTop="3dp" />
         </LinearLayout>
 
         <TextView
-            android:id="@+id/btnSteiner"
+            android:id="@+id/sectionLateral"
             android:layout_width="match_parent"
-            android:layout_height="58dp"
+            android:layout_height="wrap_content"
+            android:text="@string/section_lateral"
+            android:textColor="@color/brand_purple"
+            android:textStyle="bold"
+            android:textSize="16sp"
             android:gravity="center"
             android:textAlignment="center"
-            android:includeFontPadding="false"
-            android:background="@drawable/button_primary_centered"
-            android:text="@string/analysis_steiner"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="3dp"
-            android:layout_marginBottom="9dp" />
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/btnSteiner"
+            style="@style/HomePrimaryButton"
+            android:text="@string/analysis_steiner" />
 
         <TextView
             android:id="@+id/btnVertebral"
-            android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-            android:background="@drawable/button_secondary_centered"
-            android:text="@string/analysis_vertebral"
-            android:textColor="@color/mint_text"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="3dp"
-            android:layout_marginBottom="9dp" />
-
-        <TextView
-            android:id="@+id/btnPowell"
-            android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-            android:background="@drawable/button_primary_centered"
-            android:text="@string/analysis_powell"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="3dp"
-            android:layout_marginBottom="9dp" />
-
-        <TextView
-            android:id="@+id/btnTweed"
-            android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-            android:background="@drawable/button_secondary_centered"
-            android:text="@string/analysis_tweed"
-            android:textColor="@color/mint_text"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="3dp"
-            android:layout_marginBottom="9dp" />
-
-        <TextView
-            android:id="@+id/btnLevandoski"
-            android:layout_width="match_parent"
-            android:layout_height="62dp"
-            android:gravity="center"
-            android:textAlignment="center"
-            android:includeFontPadding="false"
-            android:background="@drawable/button_primary_centered"
-            android:text="@string/analysis_levandoski"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:textSize="13sp"
-            android:maxLines="2"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="3dp"
-            android:layout_marginBottom="9dp" />
+            style="@style/HomeSecondaryButton"
+            android:text="@string/analysis_vertebral" />
 
         <TextView
             android:id="@+id/btnAirway"
+            style="@style/HomePrimaryButton"
+            android:text="@string/analysis_airway" />
+
+        <TextView
+            android:id="@+id/btnTweed"
+            style="@style/HomeSecondaryButton"
+            android:text="@string/analysis_tweed" />
+
+        <TextView
+            android:id="@+id/btnPowell"
+            style="@style/HomePrimaryButton"
+            android:text="@string/analysis_powell" />
+
+        <TextView
+            android:id="@+id/btnCvm"
+            style="@style/HomeSecondaryButton"
+            android:text="@string/analysis_cvm"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/sectionPanoramic"
             android:layout_width="match_parent"
-            android:layout_height="58dp"
+            android:layout_height="wrap_content"
+            android:text="@string/section_panoramic"
+            android:textColor="@color/brand_teal"
+            android:textStyle="bold"
+            android:textSize="16sp"
             android:gravity="center"
             android:textAlignment="center"
-            android:includeFontPadding="false"
-            android:background="@drawable/button_secondary_centered"
-            android:text="@string/analysis_airway"
-            android:textColor="@color/mint_text"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="3dp"
-            android:layout_marginBottom="14dp" />
+            android:paddingTop="2dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/btnLevandoski"
+            style="@style/HomePrimaryButton"
+            android:text="@string/analysis_levandoski" />
+
+        <TextView
+            android:id="@+id/btnNolla"
+            style="@style/HomeSecondaryButton"
+            android:text="@string/analysis_nolla" />
+
+        <TextView
+            android:id="@+id/btnResorption"
+            style="@style/HomePrimaryButton"
+            android:text="@string/analysis_resorption" />
+
+        <TextView
+            android:id="@+id/btnPanoramicReview"
+            style="@style/HomeSecondaryButton"
+            android:text="@string/analysis_panoramic_review"
+            android:layout_marginBottom="16dp" />
 
         <TextView
             android:id="@+id/btnStudies"
@@ -196,6 +171,7 @@
             android:focusable="true"
             android:elevation="1dp"
             android:layout_marginBottom="10dp" />
+
         <TextView
             android:id="@+id/btnTheme"
             android:layout_width="match_parent"
@@ -216,12 +192,10 @@
             android:elevation="1dp"
             android:layout_marginBottom="10dp" />
 
-
-
         <ImageView
             android:id="@+id/imgMascot"
             android:layout_width="match_parent"
-            android:layout_height="108dp"
+            android:layout_height="96dp"
             android:src="@drawable/tooth_ruler_mascot"
             android:scaleType="fitCenter"
             android:contentDescription="@string/cd_tooth_ruler" />

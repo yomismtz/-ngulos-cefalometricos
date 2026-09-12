@@ -1,10 +1,11 @@
 package com.cefalo.angulos;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PointF;
 import android.net.Uri;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,11 +16,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 
 public final class SavedStudyStore {
 
+    private static final String TAG = "SavedStudyStore";
     private static final String PREFS = "yom_saved_studies";
     private static final String IDS = "study_ids";
+    private static final int SCHEMA_VERSION = 2;
 
     public static class StudyData {
         public String id;
@@ -49,7 +53,7 @@ public final class SavedStudyStore {
     private SavedStudyStore() {}
 
     public static String newId() {
-        return String.valueOf(System.currentTimeMillis());
+        return UUID.randomUUID().toString();
     }
 
     public static String suggestedStudyName(Context context) {
@@ -67,58 +71,80 @@ public final class SavedStudyStore {
                 );
                 if (value > max) max = value;
             } catch (Exception ignored) {
+                // Custom names do not participate in automatic numbering.
             }
         }
 
         return "Estudio " + (max + 1);
     }
 
-    public static void save(Context context, StudyData study) {
-        if (study == null || study.id == null || study.imageUri == null) return;
+    /**
+     * Persists one study synchronously and reports whether Android confirmed the
+     * compatibility-mirror write. The build-time SQLite migration also stores
+     * the same JSON payload in the indexed local database.
+     */
+    public static boolean save(Context context, StudyData study) {
+        if (context == null
+                || study == null
+                || isBlank(study.id)
+                || isBlank(study.imageUri)) {
+            return false;
+        }
 
-        study.updatedAt = System.currentTimeMillis();
+        final long updatedAt = System.currentTimeMillis();
+        study.updatedAt = updatedAt;
 
         try {
             JSONObject root = new JSONObject();
 
+            root.put("schemaVersion", SCHEMA_VERSION);
             root.put("id", study.id);
-            root.put("mode", study.mode);
+            root.put("mode", study.mode == null ? "STEINER" : study.mode);
             root.put("imageUri", study.imageUri);
-            root.put("studyName", study.studyName == null ? "" : study.studyName);
-            root.put("patientName", study.patientName == null ? "" : study.patientName);
-            root.put("patientAge", study.patientAge == null ? "" : study.patientAge);
-            root.put("patientSex", study.patientSex == null ? "" : study.patientSex);
-            root.put("updatedAt", study.updatedAt);
+            root.put("studyName", safe(study.studyName));
+            root.put("patientName", safe(study.patientName));
+            root.put("patientAge", safe(study.patientAge));
+            root.put("patientSex", safe(study.patientSex));
+            root.put("updatedAt", updatedAt);
             root.put("locked", study.locked);
+
             if (Double.isNaN(study.mmPerPixel) || Double.isInfinite(study.mmPerPixel)) {
                 root.put("mmPerPixel", JSONObject.NULL);
             } else {
                 root.put("mmPerPixel", study.mmPerPixel);
             }
-            root.put("calibrationLabel", study.calibrationLabel == null ? "" : study.calibrationLabel);
+            root.put("calibrationLabel", safe(study.calibrationLabel));
 
             JSONArray labels = new JSONArray();
-            for (String label : study.labels) {
-                labels.put(label);
+            if (study.labels != null) {
+                for (String label : study.labels) {
+                    labels.put(safe(label));
+                }
             }
             root.put("labels", labels);
 
             JSONArray points = new JSONArray();
-            for (PointF p : study.points) {
-                if (p == null) {
-                    points.put(JSONObject.NULL);
-                } else {
-                    JSONObject obj = new JSONObject();
-                    obj.put("x", p.x);
-                    obj.put("y", p.y);
-                    points.put(obj);
+            if (study.points != null) {
+                for (PointF p : study.points) {
+                    if (p == null
+                            || !Float.isFinite(p.x)
+                            || !Float.isFinite(p.y)) {
+                        points.put(JSONObject.NULL);
+                    } else {
+                        JSONObject obj = new JSONObject();
+                        obj.put("x", p.x);
+                        obj.put("y", p.y);
+                        points.put(obj);
+                    }
                 }
             }
             root.put("points", points);
 
             JSONArray locks = new JSONArray();
-            for (Boolean value : study.pointLocks) {
-                locks.put(Boolean.TRUE.equals(value));
+            if (study.pointLocks != null) {
+                for (Boolean value : study.pointLocks) {
+                    locks.put(Boolean.TRUE.equals(value));
+                }
             }
             root.put("pointLocks", locks);
 
@@ -130,17 +156,24 @@ public final class SavedStudyStore {
             );
             ids.add(study.id);
 
-            prefs.edit()
+            boolean committed = prefs.edit()
                     .putString("study_" + study.id, root.toString())
                     .putStringSet(IDS, ids)
-                    .apply();
+                    .commit();
 
-        } catch (Exception ignored) {
+            if (!committed) {
+                Log.e(TAG, "SharedPreferences commit returned false for study " + study.id);
+            }
+            return committed;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Could not persist study " + study.id, e);
+            return false;
         }
     }
 
     public static StudyData load(Context context, String id) {
-        if (id == null) return null;
+        if (context == null || isBlank(id)) return null;
 
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
@@ -150,6 +183,11 @@ public final class SavedStudyStore {
 
         try {
             JSONObject root = new JSONObject(raw);
+            int schemaVersion = root.optInt("schemaVersion", 1);
+            if (schemaVersion < 1 || schemaVersion > SCHEMA_VERSION) {
+                Log.e(TAG, "Unsupported study schema version: " + schemaVersion);
+                return null;
+            }
 
             StudyData study = new StudyData();
             study.id = root.optString("id", id);
@@ -166,7 +204,7 @@ public final class SavedStudyStore {
                     : root.optDouble("mmPerPixel", Double.NaN);
             study.calibrationLabel = root.optString("calibrationLabel", "");
 
-            if (study.studyName == null || study.studyName.trim().isEmpty()) {
+            if (isBlank(study.studyName)) {
                 study.studyName = "Estudio";
             }
 
@@ -182,25 +220,30 @@ public final class SavedStudyStore {
                 for (int i = 0; i < points.length(); i++) {
                     if (points.isNull(i)) {
                         study.points.add(null);
-                    } else {
-                        JSONObject p = points.optJSONObject(i);
+                        continue;
+                    }
 
-                        if (p == null) {
-                            study.points.add(null);
-                        } else {
-                            study.points.add(
-                                    new PointF(
-                                            (float) p.optDouble("x", 0),
-                                            (float) p.optDouble("y", 0)
-                                    )
-                            );
-                        }
+                    JSONObject p = points.optJSONObject(i);
+                    if (p == null) {
+                        study.points.add(null);
+                        continue;
+                    }
+
+                    double x = p.optDouble("x", Double.NaN);
+                    double y = p.optDouble("y", Double.NaN);
+                    if (!Double.isFinite(x) || !Double.isFinite(y)) {
+                        study.points.add(null);
+                    } else {
+                        study.points.add(new PointF((float) x, (float) y));
                     }
                 }
             }
 
             while (study.points.size() < study.labels.size()) {
                 study.points.add(null);
+            }
+            while (study.points.size() > study.labels.size()) {
+                study.points.remove(study.points.size() - 1);
             }
 
             JSONArray locks = root.optJSONArray("pointLocks");
@@ -213,15 +256,21 @@ public final class SavedStudyStore {
             while (study.pointLocks.size() < study.labels.size()) {
                 study.pointLocks.add(false);
             }
+            while (study.pointLocks.size() > study.labels.size()) {
+                study.pointLocks.remove(study.pointLocks.size() - 1);
+            }
 
             return study;
 
         } catch (Exception e) {
+            Log.e(TAG, "Could not load study " + id, e);
             return null;
         }
     }
 
     public static List<StudyData> list(Context context) {
+        if (context == null) return new ArrayList<>();
+
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
@@ -239,8 +288,8 @@ public final class SavedStudyStore {
         return result;
     }
 
-    public static void delete(Context context, String id) {
-        if (id == null) return;
+    public static boolean delete(Context context, String id) {
+        if (context == null || isBlank(id)) return false;
 
         StudyData removedStudy = load(context, id);
 
@@ -250,25 +299,25 @@ public final class SavedStudyStore {
         Set<String> ids = new HashSet<>(
                 prefs.getStringSet(IDS, Collections.emptySet())
         );
-
         ids.remove(id);
 
-        prefs.edit()
+        boolean committed = prefs.edit()
                 .remove("study_" + id)
                 .putStringSet(IDS, ids)
-                .apply();
+                .commit();
 
-        if (removedStudy == null
-                || removedStudy.imageUri == null
-                || removedStudy.imageUri.trim().isEmpty()) {
-            return;
+        if (!committed) {
+            Log.e(TAG, "Could not delete study " + id);
+            return false;
+        }
+
+        if (removedStudy == null || isBlank(removedStudy.imageUri)) {
+            return true;
         }
 
         boolean stillUsed = false;
-
         for (String remainingId : ids) {
             StudyData remaining = load(context, remainingId);
-
             if (remaining != null
                     && removedStudy.imageUri.equals(remaining.imageUri)) {
                 stillUsed = true;
@@ -278,13 +327,25 @@ public final class SavedStudyStore {
 
         if (!stillUsed) {
             try {
-                context.getContentResolver()
-                        .releasePersistableUriPermission(
-                                Uri.parse(removedStudy.imageUri),
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        );
-            } catch (Exception ignored) {
+                context.getContentResolver().releasePersistableUriPermission(
+                        Uri.parse(removedStudy.imageUri),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                );
+            } catch (SecurityException ignored) {
+                // Provider may not have granted a persistable permission.
+            } catch (Exception e) {
+                Log.w(TAG, "Could not release image URI permission", e);
             }
         }
+
+        return true;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private static String safe(String value) {
+        return value == null ? "" : value;
     }
 }

@@ -31,7 +31,7 @@ public class CephalometricReferenceTest {
     }
 
     @Test
-    public void steinerCoreReferencesRemainConsistent() {
+    public void cephalometricCoreReferencesMatchAuditedCatalog() {
         List<MeasurementDefinition> defs = MeasurementCatalog.steiner();
 
         MeasurementDefinition sna = angular(defs, "SNA");
@@ -44,56 +44,73 @@ public class CephalometricReferenceTest {
 
         MeasurementDefinition anb = angular(defs, "ANB");
         assertEquals(MeasurementDefinition.Type.SIGNED_ANB, anb.type);
-        assertArrayEquals(
-                new String[]{"S", "N", "A", "B"},
-                anb.pointLabels
-        );
+        assertArrayEquals(new String[]{"S", "N", "A", "B"}, anb.pointLabels);
         assertEquals(0.0, anb.normalMin, 0.001);
         assertEquals(4.0, anb.normalMax, 0.001);
 
-        MeasurementDefinition mpSn = angular(defs, "Go-Gn / SN");
+        MeasurementDefinition mpSn = angular(defs, "SN / Go-Gn");
         assertEquals(27.0, mpSn.normalMin, 0.001);
         assertEquals(37.0, mpSn.normalMax, 0.001);
 
-        MeasurementDefinition upperNa = angular(defs, "IS / NA (angular)");
+        MeasurementDefinition upperNa = angular(defs, "Incisivo superior / NA · angular");
         assertEquals(20.0, upperNa.normalMin, 0.001);
         assertEquals(24.0, upperNa.normalMax, 0.001);
 
-        MeasurementDefinition lowerNb = angular(defs, "II / NB (angular)");
-        assertEquals(23.0, lowerNb.normalMin, 0.001);
-        assertEquals(27.0, lowerNb.normalMax, 0.001);
+        MeasurementDefinition lowerNb = angular(defs, "Incisivo inferior / NB · angular");
+        assertEquals(21.0, lowerNb.normalMin, 0.001);
+        assertEquals(29.0, lowerNb.normalMax, 0.001);
+
+        MeasurementDefinition occlusal = angular(defs, "Plano oclusal / SN");
+        assertEquals(11.0, occlusal.normalMin, 0.001);
+        assertEquals(17.0, occlusal.normalMax, 0.001);
+
+        MeasurementDefinition interincisal = angular(defs, "Ángulo interincisal");
+        assertEquals(127.0, interincisal.normalMin, 0.001);
+        assertEquals(135.0, interincisal.normalMax, 0.001);
+
+        MeasurementDefinition snFh = angular(defs, "Inclinación SN / Frankfort");
+        assertTrue(Double.isNaN(snFh.normalMin));
+        assertTrue(Double.isNaN(snFh.normalMax));
+        assertArrayEquals(new String[]{"S", "N", "Po", "Or"}, snFh.pointLabels);
     }
 
     @Test
-    public void vertebralAnbUsesSameSignedDefinitionAsSteiner() {
-        MeasurementDefinition anb =
-                angular(MeasurementCatalog.vertebral(), "ANB");
+    public void cephalometricLinearSegmentsUseConstructedProjections() {
+        List<LinearMeasurementDefinition> defs = LinearMeasurementCatalog.cephalometric();
 
-        assertEquals(MeasurementDefinition.Type.SIGNED_ANB, anb.type);
-        assertArrayEquals(
-                new String[]{"S", "N", "A", "B"},
-                anb.pointLabels
-        );
+        LinearMeasurementDefinition sl = linear(defs, "Segmento SL");
+        assertEquals(LinearMeasurementDefinition.Type.AXIAL_PROJECTION, sl.type);
+        assertArrayEquals(new String[]{"S", "N", "Pg"}, sl.pointLabels);
+        assertEquals(47.0, sl.normalMin, 0.001);
+        assertEquals(55.0, sl.normalMax, 0.001);
+
+        LinearMeasurementDefinition se = linear(defs, "Segmento SE");
+        assertEquals(LinearMeasurementDefinition.Type.AXIAL_PROJECTION, se.type);
+        assertArrayEquals(new String[]{"S", "N", "Cóndilo posterior"}, se.pointLabels);
+        assertEquals(20.0, se.normalMin, 0.001);
+        assertEquals(24.0, se.normalMax, 0.001);
+
+        LinearMeasurementDefinition upper = linear(defs, "Incisivo superior a NA · lineal");
+        assertEquals(2.0, upper.normalMin, 0.001);
+        assertEquals(6.0, upper.normalMax, 0.001);
+
+        LinearMeasurementDefinition lower = linear(defs, "Incisivo inferior a NB · lineal");
+        assertEquals(3.0, lower.normalMin, 0.001);
+        assertEquals(5.0, lower.normalMax, 0.001);
     }
 
     @Test
-    public void snFrankfortReferenceDoesNotChangeBetweenModules() {
-        MeasurementDefinition steiner =
-                angular(
-                        MeasurementCatalog.steiner(),
-                        "SN / Frankfort (complementaria)"
-                );
+    public void postureModuleUsesDefinedCervicalLandmarks() {
+        List<MeasurementDefinition> defs = MeasurementCatalog.vertebral();
 
-        MeasurementDefinition vertebral =
-                angular(
-                        MeasurementCatalog.vertebral(),
-                        "SN / Frankfort"
-                );
+        MeasurementDefinition opt = angular(defs, "SN / OPT");
+        assertArrayEquals(new String[]{"S", "N", "CV2tg", "CV2ip"}, opt.pointLabels);
 
-        assertEquals(steiner.normalMin, vertebral.normalMin, 0.001);
-        assertEquals(steiner.normalMax, vertebral.normalMax, 0.001);
-        assertEquals(4.0, vertebral.normalMin, 0.001);
-        assertEquals(10.0, vertebral.normalMax, 0.001);
+        MeasurementDefinition cvt = angular(defs, "SN / CVT");
+        assertArrayEquals(new String[]{"S", "N", "CV2tg", "CV4ip"}, cvt.pointLabels);
+
+        MeasurementDefinition curve = angular(defs, "Curvatura cervical · CVT / EVT");
+        assertArrayEquals(new String[]{"CV2tg", "CV4ip", "CV4ip", "CV6ip"}, curve.pointLabels);
     }
 
     @Test
@@ -104,41 +121,38 @@ public class CephalometricReferenceTest {
         MeasurementDefinition fmia = angular(defs, "FMIA");
         MeasurementDefinition impa = angular(defs, "IMPA");
 
-        assertEquals(20.0, fma.normalMin, 0.001);
-        assertEquals(30.0, fma.normalMax, 0.001);
-
-        assertEquals(60.0, fmia.normalMin, 0.001);
-        assertEquals(75.0, fmia.normalMax, 0.001);
-
-        assertEquals(85.0, impa.normalMin, 0.001);
-        assertEquals(95.0, impa.normalMax, 0.001);
+        assertEquals(21.0, fma.normalMin, 0.001);
+        assertEquals(29.0, fma.normalMax, 0.001);
+        assertEquals(61.0, fmia.normalMin, 0.001);
+        assertEquals(69.0, fmia.normalMax, 0.001);
+        assertEquals(86.0, impa.normalMin, 0.001);
+        assertEquals(94.0, impa.normalMax, 0.001);
     }
 
     @Test
-    public void cervicalDepthUsesPenningRocabadoBoundaries() {
-        LinearMeasurementDefinition depth =
-                linear(
-                        LinearMeasurementCatalog.rocabado(),
-                        "Profundidad de la columna cervical"
-                );
+    public void cervicalDepthUsesAuditedPenningBoundaries() {
+        LinearMeasurementDefinition depth = linear(
+                LinearMeasurementCatalog.rocabado(),
+                "Profundidad de la columna cervical · Penning"
+        );
 
-        assertTrue(depth.diagnosis(1.9).contains("<2 mm"));
-        assertTrue(depth.diagnosis(2.0).contains("2 a <8 mm"));
-        assertTrue(depth.diagnosis(7.9).contains("2 a <8 mm"));
+        assertTrue(depth.diagnosis(-0.1).contains("cifótica"));
+        assertTrue(depth.diagnosis(0.0).contains("rectificación"));
+        assertTrue(depth.diagnosis(7.9).contains("rectificación"));
         assertTrue(depth.diagnosis(8.0).contains("8 a 12 mm"));
         assertTrue(depth.diagnosis(12.0).contains("8 a 12 mm"));
-        assertTrue(depth.diagnosis(12.1).contains(">12 mm"));
+        assertTrue(depth.diagnosis(12.1).contains("lordosis cervical aumentada"));
     }
 
     @Test
-    public void hyoidPublishedReferenceIsDisplayed() {
-        LinearMeasurementDefinition hyoid =
-                linear(
-                        LinearMeasurementCatalog.rocabado(),
-                        "Posición vertical H respecto a RGn-C3"
-                );
+    public void hyoidTriangleIsExplicitlyRepresented() {
+        LinearMeasurementDefinition hyoid = linear(
+                LinearMeasurementCatalog.rocabado(),
+                "Altura / posición del hioides respecto a C3-RGn"
+        );
 
-        assertTrue(hyoid.normText.contains("4.80"));
-        assertTrue(hyoid.normText.contains("4.64"));
+        assertEquals(LinearMeasurementDefinition.Interpretation.HYOID_TRIANGLE, hyoid.interpretation);
+        assertArrayEquals(new String[]{"C3", "RGn", "H"}, hyoid.pointLabels);
+        assertTrue(hyoid.normText.contains("C3-RGn-H"));
     }
 }

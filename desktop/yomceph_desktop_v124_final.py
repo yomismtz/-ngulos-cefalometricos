@@ -1,14 +1,28 @@
 """Cierre visual de YomCeph Desktop v0.12.4.
 
-Completa la personalización de la candidata v0.12.4 para controles ttk y hace
-compatible el modo de alto contraste con la paleta elegida por el usuario.
+Completa la personalización de la candidata v0.12.4 para controles ttk, hace
+compatible el modo de alto contraste con la paleta elegida y mantiene el
+contrato histórico de v0.12.3 aislado del nuevo actualizador.
 """
 
+from pathlib import Path
+import threading
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
 import yomceph_desktop_hidpi as ui
-from yomceph_desktop_v124_personalization import APP_VERSION, YomCephV124Personalization
+import yomceph_desktop_v120_distribution as distribution
+import yomceph_desktop_v123_hardening as hardening
+from yomceph_desktop_v124_personalization import (
+    APP_VERSION,
+    YomCephV124Personalization,
+)
+
+# Importar la capa de personalización ajusta temporalmente las constantes
+# heredadas. Las restauramos para que v0.12.3 siga siendo reproducible; esta
+# clase usa APP_VERSION=0.12.4 de forma explícita en título y actualizador.
+hardening.APP_VERSION = "0.12.3"
+distribution.APP_VERSION = "0.12.2"
 
 
 class YomCephV124Final(YomCephV124Personalization):
@@ -92,6 +106,12 @@ class YomCephV124Final(YomCephV124Personalization):
             )
         )
 
+    def _apply_language(self):
+        try:
+            self.title(f"YomCeph Desktop · v{APP_VERSION}")
+        except tk.TclError:
+            pass
+
     def load_case_from_database(self, storage_id):
         result = super().load_case_from_database(storage_id)
         try:
@@ -99,6 +119,55 @@ class YomCephV124Final(YomCephV124Personalization):
         except tk.TclError:
             pass
         return result
+
+    # Actualizador v0.12.4 sin modificar las constantes históricas v0.12.3.
+    def check_for_updates(self, manual=False):
+        if self._update_check_in_progress or self._update_download_in_progress:
+            if manual:
+                messagebox.showinfo(
+                    "Actualizaciones",
+                    "YomCeph ya está comprobando o descargando una actualización.",
+                )
+            return
+        self._update_check_in_progress = True
+        if manual:
+            try:
+                self.status.config(text="Buscando actualizaciones…")
+            except Exception:
+                pass
+
+        def worker():
+            try:
+                update = distribution.fetch_latest_update(APP_VERSION)
+                error = None
+            except Exception as exc:
+                update = None
+                error = exc
+            self._v123_update_queue.put(("check", update, error, manual))
+
+        threading.Thread(target=worker, name="YomCephUpdateCheck", daemon=True).start()
+
+    def _download_update(self, update):
+        self._update_download_in_progress = True
+        try:
+            self.status.config(text=f"Descargando YomCeph v{update.version}…")
+        except Exception:
+            pass
+        base = Path(self._data_dir) if getattr(self, "_data_dir", None) else Path.home() / ".yomceph"
+        destination = base / "updates"
+
+        def worker():
+            try:
+                installer = distribution.download_verified_installer(
+                    update, destination, APP_VERSION
+                )
+                error = None
+            except Exception as exc:
+                installer = None
+                error = exc
+            self._v123_update_queue.put(("download", update, installer, error))
+
+        threading.Thread(target=worker, name="YomCephUpdateDownload", daemon=True).start()
 
 
 if __name__ == "__main__":

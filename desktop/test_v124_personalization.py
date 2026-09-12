@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-import pytest
-
+import yomceph_desktop_v120_distribution as distribution
+import yomceph_desktop_v123_hardening as hardening
 from yomceph_desktop_v124_personalization import (
     DEFAULT_PREFERENCES,
     PALETTES,
@@ -10,6 +10,13 @@ from yomceph_desktop_v124_personalization import (
     contrast_ratio,
     normalize_preferences,
 )
+
+# El módulo v0.12.4 ajusta las constantes de versión heredadas porque será el
+# siguiente entrypoint del EXE. Mientras v0.12.3 siga siendo la versión publicada,
+# sus pruebas contractuales deben continuar comprobando 0.12.3 sin contaminación
+# por el import de esta candidata.
+hardening.APP_VERSION = "0.12.3"
+distribution.APP_VERSION = "0.12.3"
 
 
 def test_five_palettes_are_complete():

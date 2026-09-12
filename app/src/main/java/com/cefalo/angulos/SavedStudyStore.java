@@ -71,7 +71,7 @@ public final class SavedStudyStore {
                 );
                 if (value > max) max = value;
             } catch (Exception ignored) {
-                // A custom study name is allowed and does not participate in numbering.
+                // Custom names do not participate in automatic numbering.
             }
         }
 
@@ -79,9 +79,9 @@ public final class SavedStudyStore {
     }
 
     /**
-     * Persists one study synchronously and reports whether Android confirmed the write.
-     * This intentionally uses commit() instead of apply(): the UI must never say
-     * "guardado" when the persistence layer has already reported a failure.
+     * Persists one study synchronously and reports whether Android confirmed the
+     * compatibility-mirror write. The build-time SQLite migration also stores
+     * the same JSON payload in the indexed local database.
      */
     public static boolean save(Context context, StudyData study) {
         if (context == null
@@ -92,6 +92,7 @@ public final class SavedStudyStore {
         }
 
         final long updatedAt = System.currentTimeMillis();
+        study.updatedAt = updatedAt;
 
         try {
             JSONObject root = new JSONObject();
@@ -160,9 +161,7 @@ public final class SavedStudyStore {
                     .putStringSet(IDS, ids)
                     .commit();
 
-            if (committed) {
-                study.updatedAt = updatedAt;
-            } else {
+            if (!committed) {
                 Log.e(TAG, "SharedPreferences commit returned false for study " + study.id);
             }
             return committed;
@@ -275,9 +274,8 @@ public final class SavedStudyStore {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
-        Set<String> ids = new HashSet<>(
-                prefs.getStringSet(IDS, Collections.emptySet())
-        );
+        Set<String> ids =
+                prefs.getStringSet(IDS, Collections.emptySet());
 
         List<StudyData> result = new ArrayList<>();
 
@@ -334,7 +332,7 @@ public final class SavedStudyStore {
                         Intent.FLAG_GRANT_READ_URI_PERMISSION
                 );
             } catch (SecurityException ignored) {
-                // The provider may not have granted a persistable permission.
+                // Provider may not have granted a persistable permission.
             } catch (Exception e) {
                 Log.w(TAG, "Could not release image URI permission", e);
             }

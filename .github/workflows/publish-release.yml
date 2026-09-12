@@ -36,11 +36,10 @@ jobs:
         run: |
           $version = (Get-Content desktop/VERSION -Raw).Trim()
           if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "VERSION inválida: $version" }
-          $research = Get-Content desktop/yomceph_desktop_v125_research_flow.py -Raw
-          $final = Get-Content desktop/yomceph_desktop_v125_final.py -Raw
+          $final = Get-Content desktop/yomceph_desktop_v126_final.py -Raw
           $iss = Get-Content desktop/YomCeph_v0120.iss -Raw
-          if ($research -notmatch ('APP_VERSION = "' + [regex]::Escape($version) + '"')) { throw "APP_VERSION no coincide con VERSION" }
-          if ($final -notmatch 'YomCephV125Final') { throw "El entrypoint v0.12.5 no es el esperado" }
+          if ($final -notmatch ('APP_VERSION = "' + [regex]::Escape($version) + '"')) { throw "APP_VERSION no coincide con VERSION" }
+          if ($final -notmatch 'YomCephV126Final') { throw "El entrypoint v0.12.6 no es el esperado" }
           if ($iss -notmatch ('#define MyAppVersion "' + [regex]::Escape($version) + '"')) { throw "Inno AppVersion no coincide con VERSION" }
 
           $tag = "v$version"
@@ -57,7 +56,7 @@ jobs:
       - name: Create brand assets
         run: python desktop/create_brand_assets.py
 
-      - name: Run complete v0.12.5 test suite
+      - name: Run complete v0.12.6 test suite
         shell: pwsh
         run: |
           python -m py_compile desktop/yomceph_desktop_v115_quality_audit.py
@@ -79,11 +78,14 @@ jobs:
           python -m py_compile desktop/yomceph_v125_extended_analyses.py
           python -m py_compile desktop/yomceph_desktop_v125_research_flow.py
           python -m py_compile desktop/yomceph_desktop_v125_final.py
+          python -m py_compile desktop/yomceph_v126_remaining_analyses.py
+          python -m py_compile desktop/yomceph_desktop_v126_final.py
           python -m py_compile desktop/smoke_v123_windows.py
           python -m py_compile desktop/smoke_v124_windows.py
           python -m py_compile desktop/smoke_v125_windows.py
+          python -m py_compile desktop/smoke_v126_windows.py
           python -m json.tool desktop/yomceph_i18n.json | Out-Null
-          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py desktop/test_v120_distribution_contract.py desktop/test_v123_hardening.py desktop/test_v124_personalization.py desktop/test_v124_release_contract.py desktop/test_v125_research_flow.py -q
+          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py desktop/test_v120_distribution_contract.py desktop/test_v123_hardening.py desktop/test_v124_personalization.py desktop/test_v124_release_contract.py desktop/test_v125_research_flow.py desktop/test_v126_remaining_analyses.py -q
 
       - name: Windows Tkinter functional smoke test
         shell: pwsh
@@ -91,11 +93,12 @@ jobs:
           python desktop/smoke_v123_windows.py
           python desktop/smoke_v124_windows.py
           python desktop/smoke_v125_windows.py
+          python desktop/smoke_v126_windows.py
 
       - name: Build application
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --add-data "desktop/yomceph_i18n.json;." --name YomCeph_Desktop desktop/yomceph_desktop_v125_final.py
+          pyinstaller --noconfirm --clean --onedir --windowed --manifest desktop/yomceph.manifest --icon desktop/yomceph.ico --add-data "desktop/yomceph.ico;." --add-data "desktop/yomceph_logo.png;." --add-data "desktop/yomceph_i18n.json;." --name YomCeph_Desktop desktop/yomceph_desktop_v126_final.py
 
       - name: Packaged EXE startup smoke test
         shell: pwsh
@@ -168,7 +171,7 @@ jobs:
           $releaseExists = ($LASTEXITCODE -eq 0)
           if (-not $releaseExists) {
             $global:LASTEXITCODE = 0
-            gh release create $tag --repo "${{ github.repository }}" --target "$env:GITHUB_SHA" --title "YomCeph Desktop v$version" --notes "YomCeph Desktop v$version. En Investigación, la radiografía y el trazado se realizan antes de decidir la elegibilidad: YomCeph revisa edad, país, landmarks requeridos y calibración al finalizar, permite documentar causas de exclusión radiográfica y conserva los casos excluidos sin contarlos como incluidos. Activa bloques reproducibles de Tweed, McNamara, vía aérea 2D, Rocabado y Downs; los análisis que aún requieren construcciones canónicas completas o una proyección distinta permanecen bloqueados. Mantiene importación de imágenes/PDF, personalización visual, exportación Excel/SPSS, control de calidad y actualizaciones verificadas mediante SHA-256."
+            gh release create $tag --repo "${{ github.repository }}" --target "$env:GITHUB_SHA" --title "YomCeph Desktop v$version" --notes "YomCeph Desktop v$version. Amplía el catálogo científico con núcleos reproducibles de Ricketts, COGS/Burstone, Sassouni, Bimler y Sagittal G-triangle; completa Downs y corrige la distinción entre Pt de Ricketts y Ptm. Mantiene los valores crudos separados de normas poblacionales: VERT no se clasifica sin referencia etaria explícita y los rangos del G-triangle no se generalizan fuera de su muestra publicada. Alexander permanece como referencia de disciplina y Ritucci–Burstone como método de proyección SMV, porque activarlos en una lateral única sería científicamente incorrecto. Conserva el flujo de investigación posterior al trazado, exclusiones automáticas/documentadas, Excel/SPSS, control de calidad, personalización y actualizaciones verificadas SHA-256."
             if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la Release" }
           }
           gh release upload $tag --repo "${{ github.repository }}" --clobber `

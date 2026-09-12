@@ -52,13 +52,17 @@ jobs:
           python -m py_compile desktop/yomceph_desktop_v120_release_final.py
           python -m py_compile desktop/yomceph_desktop_v120_distribution.py
           python -m py_compile desktop/yomceph_desktop_v123_hardening.py
+          python -m py_compile desktop/yomceph_desktop_v124_personalization.py
           python -m py_compile desktop/smoke_v123_windows.py
+          python -m py_compile desktop/smoke_v124_windows.py
           python -m json.tool desktop/yomceph_i18n.json | Out-Null
-          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py desktop/test_v120_distribution_contract.py desktop/test_v123_hardening.py -q
+          python -m pytest desktop/test_v120_catalog.py desktop/test_v120_geometry.py desktop/test_v120_protocol_rules.py desktop/test_v120_public_release.py desktop/test_v120_radiograph_loader.py desktop/test_v120_updater.py desktop/test_v120_distribution_contract.py desktop/test_v123_hardening.py desktop/test_v124_personalization.py -q
 
       - name: Windows Tkinter functional smoke test
         shell: pwsh
-        run: python desktop/smoke_v123_windows.py
+        run: |
+          python desktop/smoke_v123_windows.py
+          python desktop/smoke_v124_windows.py
 
       - name: Build installed application folder
         shell: pwsh

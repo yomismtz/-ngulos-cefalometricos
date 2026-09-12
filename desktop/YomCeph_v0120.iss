@@ -1,5 +1,5 @@
 #define MyAppName "YomCeph Desktop"
-#define MyAppVersion "0.12.3"
+#define MyAppVersion "0.12.4"
 #define MyAppPublisher "YomCeph"
 #define MyAppExeName "YomCeph_Desktop.exe"
 

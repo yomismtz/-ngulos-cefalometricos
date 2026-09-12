@@ -22,8 +22,10 @@ jobs:
       - name: Transform to Steiner-only edition
         run: python3 ci/prepare-steiner-only.py
 
-      - name: Verify Steiner package
-        run: grep -F "applicationId 'com.yomceph.cefalometrico'" app/build.gradle
+      - name: Force Steiner package after base Play transform
+        run: |
+          sed -i "s/applicationId 'yom.Analisis'/applicationId 'com.yomceph.cefalometrico'/" app/build.gradle
+          grep -F "applicationId 'com.yomceph.cefalometrico'" app/build.gradle
 
       - name: Set up Java 17
         uses: actions/setup-java@v5

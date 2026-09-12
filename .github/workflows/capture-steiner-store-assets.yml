@@ -70,18 +70,15 @@ jobs:
             adb shell am start -W -n com.yomceph.cefalometrico/com.cefalo.angulos.MainActivity
             sleep 4
             adb exec-out screencap -p > store-assets/01-inicio-steiner.png
-            adb shell am start -W -n com.yomceph.cefalometrico/com.cefalo.angulos.AnalysisActivity --es MODE STEINER
+            adb shell uiautomator dump /sdcard/window.xml
+            adb pull /sdcard/window.xml /tmp/window.xml
+            coords=$(python3 -c 'import re,xml.etree.ElementTree as E; r=E.parse("/tmp/window.xml").getroot(); n=next(n for n in r.iter("node") if "btnSteiner" in n.attrib.get("resource-id","")); m=re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]",n.attrib["bounds"]); print((int(m.group(1))+int(m.group(3)))//2,(int(m.group(2))+int(m.group(4)))//2)') && adb shell input tap $coords
             sleep 4
             adb exec-out screencap -p > store-assets/02-analisis-steiner.png
-            adb shell am start -W -n com.yomceph.cefalometrico/com.cefalo.angulos.SavedStudiesActivity
-            sleep 3
-            adb exec-out screencap -p > store-assets/03-mis-analisis.png
-            adb shell am start -W -n com.yomceph.cefalometrico/com.cefalo.angulos.InfoActivity
-            sleep 3
-            adb exec-out screencap -p > store-assets/04-informacion-privacidad.png
             file store-assets/*.png
 
       - name: Upload screenshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: YOM-Steiner-Play-Store-Real-Screenshots

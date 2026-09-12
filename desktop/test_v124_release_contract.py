@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 
 from yomceph_desktop_v124_final import APP_VERSION
 
@@ -12,24 +11,23 @@ def _read(path):
     return path.read_text(encoding="utf-8")
 
 
-def test_v124_release_contract_is_consistent():
-    version = _read(DESKTOP / "VERSION").strip()
-    assert version == "0.12.4"
-    assert re.fullmatch(r"\d+\.\d+\.\d+", version)
-    assert APP_VERSION == version
-    installer = _read(DESKTOP / "YomCeph_v0120.iss")
-    assert f'#define MyAppVersion "{version}"' in installer
+def test_v124_module_contract_is_preserved_as_regression_baseline():
+    # v0.12.4 permanece como capa histórica de personalización. La versión
+    # distribuida puede avanzar sin reescribir retrospectivamente este módulo.
+    assert APP_VERSION == "0.12.4"
+    final_entry = _read(DESKTOP / "yomceph_desktop_v124_final.py")
+    personalization = _read(DESKTOP / "yomceph_desktop_v124_personalization.py")
+    assert "YomCephV124Final" in final_entry
+    assert 'APP_VERSION = "0.12.4"' in personalization
 
 
-def test_workflows_package_v124_final_entrypoint():
+def test_v124_regression_tests_remain_in_workflows():
     build = _read(ROOT / ".github" / "workflows" / "build-windows-exe.yml")
     publish = _read(ROOT / ".github" / "workflows" / "publish-release.yml")
     for workflow in (build, publish):
-        assert "desktop/yomceph_desktop_v124_final.py" in workflow
         assert "desktop/smoke_v124_windows.py" in workflow
         assert "desktop/test_v124_personalization.py" in workflow
         assert "desktop/test_v124_release_contract.py" in workflow
-    assert "desktop/yomceph_desktop_v124_final.py -Raw" in publish
 
 
 def test_v124_personalization_contract_has_five_named_palettes():

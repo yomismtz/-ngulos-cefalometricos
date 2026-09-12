@@ -48,7 +48,7 @@ Al visitar el sitio, abrir GitHub o descargar un instalador, GitHub puede proces
 
 ## Actualizaciones de YomCeph Desktop
 
-YomCeph Desktop v0.12.2 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
+YomCeph Desktop v0.12.3 consulta automáticamente la API pública de **GitHub Releases** poco después de iniciar para saber si existe una versión nueva. Esta consulta está separada de la base clínica y no transmite radiografías, información de pacientes, landmarks, protocolos, resultados ni contenido de investigaciones.
 
 Como en cualquier conexión HTTPS, GitHub puede procesar datos técnicos necesarios para prestar el servicio, como dirección IP, fecha/hora, agente de usuario y versión instalada.
 
@@ -79,6 +79,8 @@ Si el usuario desea retirar completamente los datos después de desinstalar, deb
 ## Seguridad y uso responsable
 
 El usuario o la institución deben proteger el equipo y las exportaciones conforme a su contexto: control de acceso, cifrado del dispositivo cuando proceda, copias de seguridad autorizadas y manejo adecuado de información identificable.
+
+YomCeph Desktop v0.12.3 incorpora comprobaciones adicionales para advertir sobre cambios locales sin guardar antes de cerrar, cargar otro caso, cambiar de flujo o iniciar una actualización. Estas protecciones reducen el riesgo de pérdida accidental, pero no sustituyen las copias de seguridad ni las políticas institucionales de conservación.
 
 ## Público previsto
 

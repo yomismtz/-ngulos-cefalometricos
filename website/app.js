@@ -1,10 +1,8 @@
 (() => {
-  const APP_VERSION = '0.12.4';
+  const APP_VERSION = '0.12.5';
   const DOWNLOAD_URL = 'https://github.com/yomismtz/Cefalometria-/releases/latest/download/YomCeph_Desktop_Setup.exe';
   const isEnglish = document.documentElement.lang.toLowerCase().startsWith('en');
 
-  // Mantiene visible la versión distribuida aunque el enlace de descarga sea
-  // estable y siempre apunte a la última Release.
   document.querySelectorAll('.eyebrow').forEach((node) => {
     if (node.textContent.trim().startsWith('YomCeph Desktop')) {
       node.textContent = `YomCeph Desktop · v${APP_VERSION}`;

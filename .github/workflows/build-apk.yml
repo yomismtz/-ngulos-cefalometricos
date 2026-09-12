@@ -82,6 +82,10 @@ jobs:
         if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/mobile-guide-polish.py
 
+      - name: Adapt SQLite generator to hardened persistence
+        if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
+        run: python3 ci/patch-adaptive-store-compat.py
+
       - name: Generate dedicated tablet layout
         if: startsWith(github.ref_name, 'redesign/') || startsWith(github.ref_name, 'fix/')
         run: python3 ci/mobile-responsive-layouts.py
